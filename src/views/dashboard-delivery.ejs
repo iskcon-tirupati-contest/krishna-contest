@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track My Delivery - KNC 2026</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f6f8fb}
+    .wrap{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0f1b3d;color:#fff;padding:18px;display:flex;flex-direction:column;gap:10px}
+    .brand{font-weight:700;font-size:18px;margin-bottom:10px}
+    .nav{display:block;color:#dbe3ff;text-decoration:none;padding:12px 12px;border-radius:10px}
+    .nav:hover{background:rgba(255,255,255,.08)}
+    .nav.active{background:rgba(255,215,0,.18);color:#ffd700}
+    .nav.danger{color:#ffbdbd}
+    .main{flex:1;padding:24px}
+    .card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:18px}
+    .muted{color:#667085}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+    .badge{display:inline-block;background:#eef2ff;color:#3730a3;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <%- include('partials/dashboard-sidebar', { activeTab }) %>
+
+  <div class="main">
+    <h2 style="margin:0 0 14px 0;color:#0f1b3d">Track My Delivery</h2>
+    <div class="muted" style="margin-bottom:14px">Shows tracking details for the gift book option.</div>
+
+    <% if (!shipments || shipments.length === 0) { %>
+      <div class="card">
+        <div class="muted">No book deliveries found. (Either you didn’t opt for book, or it is not created yet.)</div>
+      </div>
+    <% } else { %>
+      <div class="grid">
+        <% shipments.forEach(s => { %>
+          <div class="card">
+            <div style="font-weight:800;color:#0f1b3d"><%= s.title %></div>
+            <div style="margin:10px 0">
+              <span class="badge"><%= s.status || 'Processing' %></span>
+            </div>
+
+            <div class="muted" style="font-size:13px">Courier: <%= s.courier_mode || 'TBD' %></div>
+            <div class="muted" style="font-size:13px">Tracking ID: <%= s.tracking_id || 'Not generated yet' %></div>
+            <div class="muted" style="font-size:13px">Last update: <%= s.updated_at ? new Date(s.updated_at).toDateString() : '-' %></div>
+
+            <div class="muted" style="margin-top:10px;font-size:13px">
+              Tracking link will appear here once courier integration is added.
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>
+</body>
+</html>

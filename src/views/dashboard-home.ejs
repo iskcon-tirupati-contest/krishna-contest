@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - KNC 2026</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f6f8fb}
+    .wrap{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0f1b3d;color:#fff;padding:18px;display:flex;flex-direction:column;gap:10px}
+    .brand{font-weight:700;font-size:18px;margin-bottom:10px}
+    .nav{display:block;color:#dbe3ff;text-decoration:none;padding:12px 12px;border-radius:10px}
+    .nav:hover{background:rgba(255,255,255,.08)}
+    .nav.active{background:rgba(255,215,0,.18);color:#ffd700}
+    .nav.danger{color:#ffbdbd}
+
+    .main{flex:1;padding:24px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+    h2{margin:0 0 6px 0;color:#0f1b3d}
+    .muted{color:#667085}
+    .badge{display:inline-block;background:#eef2ff;color:#3730a3;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+    .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .btn{border:none;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
+    .btn.primary{background:#1a237e;color:#fff}
+    .btn.primary:hover{opacity:.92}
+    .btn.ghost{background:#f2f4f7}
+    .small{font-size:13px}
+    .dangerText{color:#b42318}
+    .warnText{color:#b54708}
+    .okText{color:#027a48}
+    .fileRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    progress{width:100%;height:14px;border-radius:10px;overflow:hidden;margin-top:10px;display:none}
+    progress::-webkit-progress-bar{background:#eef2f6}
+    progress::-webkit-progress-value{background:#1a237e}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+    .pill.closed{background:#fee4e2;color:#b42318}
+    .pill.open{background:#dcfce7;color:#166534}
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <%- include('partials/dashboard-sidebar', { activeTab }) %>
+
+  <div class="main">
+    <div class="top">
+      <div>
+        <h2>🙏 Welcome, <%= (user && user.name) ? user.name : 'Devotee' %></h2>
+        <div class="muted">Your registered contests, pending contests, and submissions.</div>
+      </div>
+      <span class="badge">KNC 2026</span>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 10px 0;color:#0f1b3d">Current Contests Registered</h3>
+
+      <% if (!registered || registered.length === 0) { %>
+        <div class="muted">You have not registered for any contests yet.</div>
+      <% } else { %>
+        <div class="grid">
+          <% registered.forEach(r => { %>
+            <div class="card contest-card"
+                 data-order-id="<%= r.order_id %>"
+                 data-has-submission="<%= r.file_url ? '1' : '0' %>"
+                 data-deadline-passed="<%= r.deadline_passed ? '1' : '0' %>">
+
+              <div class="row">
+                <div>
+                  <div style="font-weight:800;color:#0f1b3d"><%= r.title %></div>
+                  <div class="muted small"><%= r.description || '' %></div>
+
+                  <% if (r.submission_deadline) { %>
+                    <div class="muted small">
+                      Deadline (IST): <%= new Date(r.submission_deadline).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %>
+                      <% if (r.deadline_passed) { %>
+                        <span class="pill closed" style="margin-left:8px">Closed</span>
+                      <% } else { %>
+                        <span class="pill open" style="margin-left:8px">Open</span>
+                      <% } %>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="badge">₹<%= r.price %></div>
+              </div>
+
+              <div style="margin-top:12px">
+                <% if (r.file_url) { %>
+                  <div class="small okText" style="font-weight:800">✅ Submission received</div>
+                  <div class="muted small">
+                    File: <strong><%= r.original_name || 'Uploaded file' %></strong>
+                  </div>
+                  <div class="muted small">
+                    Last submitted (IST):
+                    <%= (r.last_updated_at || r.uploaded_at)
+      ? new Date(r.last_updated_at || r.uploaded_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+      : '-' %>
+                  </div>
+                  <br>
+                  <div style="margin-top:8px">
+                    <a class="btn ghost" style="text-decoration:none;color:#111"
+                       href="/dashboard/submission/download?orderId=<%= r.order_id %>">Download</a>
+                  </div>
+                <% } else { %>
+                  <div class="small muted">No submission uploaded yet.</div>
+                  <div class="small warnText" style="margin-top:6px;font-weight:800">
+                    ⚠️ Not submitted yet. Only submitted entries are eligible for prize evaluation.
+                  </div>
+                <% } %>
+              </div>
+
+              <hr style="border:none;border-top:1px solid #eef2f6;margin:14px 0"/>
+
+              <div class="small" style="font-weight:800;color:#0f1b3d">Upload / Update Submission</div>
+              <div class="muted small">Allowed: audio/video/pdf/doc/docx (Max 500MB)</div>
+
+              <% if (r.deadline_passed) { %>
+                <div class="small dangerText" style="margin-top:8px;font-weight:900">
+                  🚫 Submissions closed (deadline passed).
+                </div>
+              <% } %>
+
+              <div class="fileRow">
+                <input type="file" class="file"
+                  <%= r.deadline_passed ? 'disabled' : '' %>
+                  accept=".pdf,.doc,.docx,.mp3,.wav,.aac,.m4a,.ogg,.mp4,.m4v,.mov,.webm,.mkv" />
+
+                <button type="button" class="btn primary upload-btn"
+                  <%= r.deadline_passed ? 'disabled' : '' %>
+                  data-order-id="<%= r.order_id %>">
+                  <%= r.file_url ? 'Resubmit' : 'Upload' %>
+                </button>
+
+                <a href="#" class="btn ghost rules-btn" style="text-decoration:none;color:#111">Rules</a>
+                <div id="rulesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;max-width:520px;width:92%;padding:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:900;color:#0f1b3d">Submission Rules</div>
+      <button id="rulesClose" class="btn ghost">Close</button>
+    </div>
+    <div class="small" style="margin-top:10px;line-height:1.5;color:#111">
+      • Max size: 500MB<br/>
+      • Allowed: audio/video/pdf/doc/docx<br/>
+      • Resubmitting will replace your previous submission for evaluation<br/>
+      • Use stable internet (Wi-Fi recommended for video)<br/>
+      • Submit before deadline shown in IST
+    </div>
+  </div>
+</div>
+
+              </div>
+
+              <div class="muted small status" style="margin-top:8px"></div>
+              <progress class="prog" value="0" max="100"></progress>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px 0;color:#0f1b3d">Pending Contests</h3>
+      <% if (!pending || pending.length === 0) { %>
+        <div class="muted">No pending contests right now.</div>
+      <% } else { %>
+        <div class="grid">
+          <% pending.forEach(c => { %>
+            <div class="card">
+              <div style="font-weight:800;color:#0f1b3d"><%= c.title %></div>
+              <div class="muted small"><%= c.description || '' %></div>
+              <div style="margin:10px 0" class="badge">₹<%= c.price %></div>
+
+              <form method="POST" action="/participate/<%= c.id %>">
+                <button class="btn primary" type="submit" style="width:100%">Register Now</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.querySelectorAll(".rules-btn").forEach(b=>{
+  b.addEventListener("click",(e)=>{
+    e.preventDefault();
+    document.getElementById("rulesModal").style.display="flex";
+  });
+});
+document.getElementById("rulesClose").addEventListener("click",()=>{
+  document.getElementById("rulesModal").style.display="none";
+});
+document.getElementById("rulesModal").addEventListener("click",(e)=>{
+  if (e.target.id === "rulesModal") document.getElementById("rulesModal").style.display="none";
+});
+
+
+(() => {
+  const MAX_MB = 500;
+  const PART_SIZE = 10 * 1024 * 1024; // 10MB parts
+
+  function setError(el, msg) { el.textContent = msg; el.classList.add("dangerText"); }
+  function setInfo(el, msg) { el.textContent = msg; el.classList.remove("dangerText"); }
+
+  async function logFailure(orderId, stage, message, meta) {
+    try {
+      await fetch("/dashboard/upload/log", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ orderId, stage, message, meta })
+      });
+    } catch (_) {}
+  }
+
+  async function uploadMultipart(orderId, file, ui) {
+    if (file.size > MAX_MB * 1024 * 1024) throw new Error(`Max file size is ${MAX_MB}MB`);
+
+    setInfo(ui.status, "Starting upload...");
+    ui.prog.style.display = "block";
+    ui.prog.value = 0;
+
+    // 1) start
+    let start;
+    try {
+      const startRes = await fetch("/dashboard/upload/start", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          orderId,
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          fileSize: file.size
+        })
+      });
+
+      start = await startRes.json().catch(() => ({}));
+      if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
+    } catch (e) {
+      await logFailure(orderId, "start", e.message || "start failed", { fileName: file.name, fileType: file.type, size: file.size });
+      throw e;
+    }
+
+    const { key, uploadId } = start;
+
+    const totalParts = Math.ceil(file.size / PART_SIZE);
+    const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
+
+    // 2) presign parts
+    let presign;
+    try {
+      setInfo(ui.status, "Preparing parts...");
+      const presignRes = await fetch("/dashboard/upload/presign-parts", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ orderId, key, uploadId, partNumbers })
+      });
+
+      presign = await presignRes.json().catch(() => ({}));
+      if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
+    } catch (e) {
+      await logFailure(orderId, "presign", e.message || "presign failed", { key });
+      // try abort best-effort
+      await fetch("/dashboard/upload/abort", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ orderId, key, uploadId })
+      }).catch(() => {});
+      throw e;
+    }
+
+    const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
+    const uploadedParts = [];
+
+    // 3) upload parts
+    for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
+      const startByte = (partNumber - 1) * PART_SIZE;
+      const endByte = Math.min(partNumber * PART_SIZE, file.size);
+      const blob = file.slice(startByte, endByte);
+
+      setInfo(ui.status, `Uploading part ${partNumber}/${totalParts}...`);
+
+      try {
+        const putRes = await fetch(urlMap.get(partNumber), { method: "PUT", body: blob });
+        if (!putRes.ok) throw new Error(`Part ${partNumber} failed`);
+
+        const etag = putRes.headers.get("ETag");
+        uploadedParts.push({ ETag: etag, PartNumber: partNumber });
+
+        ui.prog.value = Math.round((partNumber / totalParts) * 100);
+      } catch (e) {
+        await logFailure(orderId, "part", e.message || "part upload failed", { key, partNumber });
+        await fetch("/dashboard/upload/abort", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ orderId, key, uploadId })
+        }).catch(() => {});
+        throw new Error("Upload failed due to network issue. Please retry (Wi-Fi recommended for videos).");
+      }
+    }
+
+    // 4) complete
+    try {
+      setInfo(ui.status, "Finalizing...");
+      const completeRes = await fetch("/dashboard/upload/complete", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          orderId,
+          key,
+          uploadId,
+          parts: uploadedParts,
+          contentType: file.type || "application/octet-stream",
+          originalName: file.name,
+          fileSize: file.size
+        })
+      });
+
+      const complete = await completeRes.json().catch(() => ({}));
+      if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
+    } catch (e) {
+      await logFailure(orderId, "complete", e.message || "complete failed", { key });
+      throw e;
+    }
+
+    setInfo(ui.status, "✅ Uploaded successfully!");
+    setTimeout(() => window.location.reload(), 700);
+  }
+
+  document.querySelectorAll(".upload-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const card = btn.closest(".contest-card");
+      const fileInput = card.querySelector(".file");
+      const status = card.querySelector(".status");
+      const prog = card.querySelector(".prog");
+      const orderId = btn.dataset.orderId;
+
+      if (btn.disabled) return;
+
+      if (!fileInput.files || !fileInput.files[0]) {
+        setError(status, "Please choose a file first.");
+        return;
+      }
+
+      const hasSubmission = card.dataset.hasSubmission === "1";
+      if (hasSubmission) {
+        const ok = confirm("This will replace your previous submission for evaluation. Continue?");
+        if (!ok) return;
+      }
+
+      try {
+        btn.disabled = true;
+        await uploadMultipart(orderId, fileInput.files[0], { status, prog });
+      } catch (e) {
+        setError(status, e.message || "Upload error");
+        prog.style.display = "none";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

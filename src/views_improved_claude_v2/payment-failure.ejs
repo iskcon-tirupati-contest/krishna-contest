@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Payment Failed - Krishna Contest</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%); min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar { background: rgba(13, 19, 38, 0.95); padding: 18px 0; }
+        .navbar-content { max-width: 1200px; margin: 0 auto; padding: 0 30px; display: flex; align-items: center; gap: 15px; }
+        .logo-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ffd700; }
+        .logo-text { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .failure-container { background: white; border-radius: 25px; max-width: 550px; width: 100%; text-align: center; padding: 60px 40px; }
+        .failure-icon { width: 100px; height: 100px; background: linear-gradient(135deg, #f44336 0%, #e57373 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; font-size: 48px; color: white; }
+        h1 { color: #c62828; font-size: 32px; margin-bottom: 15px; }
+        .message { color: #546e7a; margin-bottom: 30px; }
+        .retry-btn { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #f44336 0%, #e57373 100%); color: white; text-decoration: none; border-radius: 30px; font-weight: 600; margin-bottom: 15px; }
+        .home-link { color: #1a237e; text-decoration: none; }
+        .footer { background: rgba(13, 19, 38, 0.95); padding: 25px; text-align: center; border-top: 2px solid rgba(255, 215, 0, 0.2); }
+        .footer p { color: #b0bec5; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <img src="/lord_krishna.avif" alt="Krishna" class="logo-img" onerror="this.style.display='none'">
+            <div class="logo-text">Krishna Contest 2026</div>
+        </div>
+    </nav>
+    <div class="main-content">
+        <div class="failure-container">
+            <div class="failure-icon">✕</div>
+            <h1>Payment Failed</h1>
+            <p class="message">There was an issue processing your payment.</p>
+            <p class="message">Please try again.</p>
+            <a href="/payment" class="retry-btn">Retry Payment</a><br><br>
+            <a href="/" class="home-link">← Back to Home</a>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2026 Krishna Contest. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

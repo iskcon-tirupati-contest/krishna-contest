@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>About - Krishna Contest 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: white;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .header-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 50px 50px 60px;
+        }
+
+        .content p {
+            color: #37474f;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-top: 40px;
+        }
+
+        .section h3 {
+            color: #1a237e;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid rgba(255, 215, 0, 0.3);
+            display: inline-block;
+        }
+
+        .info-card {
+            background: rgba(26, 35, 126, 0.05);
+            border-left: 4px solid #1a237e;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .info-card p {
+            margin-bottom: 10px;
+        }
+
+        .info-card strong {
+            color: #1a237e;
+        }
+
+        .contact-details {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .contact-details p {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+            color: #37474f;
+        }
+
+        .contact-details p::before {
+            font-size: 24px;
+        }
+
+        .contact-details p:nth-child(1)::before {
+            content: '📧';
+        }
+
+        .contact-details p:nth-child(2)::before {
+            content: '📱';
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #1a237e;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 12px 25px;
+            background: rgba(26, 35, 126, 0.08);
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(26, 35, 126, 0.15);
+            transform: translateX(-5px);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #78909c;
+            font-size: 14px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .content, .header {
+                padding: 40px 30px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .section h3 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .content, .header {
+                padding: 30px 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header-icon {
+                font-size: 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-btn">← Back to Home</a>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">🕉️</div>
+            <h1>About Krishna Contest</h1>
+            <p>Celebrating Devotion, Creativity & Culture</p>
+        </div>
+
+        <div class="content">
+            <p>
+                <strong>Krishna Contest 2026</strong> is a devotional and cultural initiative organized by
+                the <strong>International Society for Krishna Consciousness (ISKCON)</strong>, aimed at promoting 
+                spiritual values, creative expression, and devotional culture across India.
+            </p>
+
+            <p>
+                The contest provides a unique platform for participants to showcase their talents in various 
+                categories including painting, essay writing, devotional singing, and other spiritual activities. 
+                Our mission is to inspire devotion to Lord Krishna while nurturing artistic and literary talents 
+                among participants of all ages.
+            </p>
+
+            <div class="section">
+                <h3>🎯 Our Mission</h3>
+                <p>
+                    To promote devotion, creativity, scriptural knowledge, and cultural values through engaging 
+                    contests that celebrate the divine teachings and pastimes of Lord Krishna. We aim to create 
+                    a spiritual community that values both traditional wisdom and creative expression.
+                </p>
+            </div>
+
+            <div class="section">
+                <h3>🏛️ About the Organizer</h3>
+                <div class="info-card">
+                    <p><strong>International Society for Krishna Consciousness (ISKCON) Tirupati</strong></p>
+                    <p>ISKCON is a registered religious and cultural organization dedicated to spreading the 
+                    teachings of Bhagavad Gita and promoting Krishna consciousness worldwide. With millions 
+                    of followers and centers across the globe, ISKCON continues to inspire spiritual growth 
+                    and cultural enrichment.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📞 Contact Information</h3>
+                <div class="contact-details">
+                    <p>support@iskconcontest.org</p>
+                    <p>+91-9493805059</p>
+                    <p><strong>Registered Address:</strong> Hare Krishna Land, Hare Krishna Road, Vinayaka Nagar, Tirupati - 517501, Andhra Pradesh, India.</p>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                <p>© 2026 Krishna National Contest. All Rights Reserved.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

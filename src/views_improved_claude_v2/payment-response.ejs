@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Processing - Krishna Contest</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .processing-container { background: white; border-radius: 25px; max-width: 450px; width: 100%; text-align: center; padding: 60px 40px; }
+        .spinner { width: 80px; height: 80px; border: 6px solid #e3f2fd; border-top: 6px solid #ffd700; border-radius: 50%; margin: 0 auto 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h1 { color: #1a237e; font-size: 26px; margin-bottom: 15px; }
+        p { color: #546e7a; }
+    </style>
+</head>
+<body>
+    <div class="processing-container">
+        <div class="spinner"></div>
+        <h1>Processing Your Payment</h1>
+        <p>Please wait...</p>
+    </div>
+</body>
+</html>

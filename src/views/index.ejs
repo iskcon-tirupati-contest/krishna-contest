@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Krishna Contest 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 90%, rgba(33, 150, 243, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 0.8; transform: translateY(-20px); }
+        }
+
+        .navbar {
+            background: rgba(21, 32, 66, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 18px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 1px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a.btn-primary {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            color: #1a237e;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .nav-links a.btn-primary:hover {
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 100px 30px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #fff 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .hero p {
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: #e3f2fd;
+            font-weight: 300;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            color: #1a237e;
+            font-weight: 600;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-size: 20px;
+            text-decoration: none;
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 215, 0, 0.7);
+        }
+
+        /* Contest Section */
+        .section {
+            padding: 80px 30px;
+            position: relative;
+            z-index: 1;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 20px;
+            color: #e3f2fd;
+            margin-bottom: 60px;
+            font-style: italic;
+        }
+
+        .contests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .contest-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 40px 35px;
+            border-radius: 25px;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contest-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ffd700, #ffb300, #ffd700);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .contest-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .contest-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            border-color: #ffd700;
+            box-shadow: 0 20px 50px rgba(255, 215, 0, 0.4);
+        }
+
+        .contest-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .contest-card h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .contest-card p {
+            color: #e3f2fd;
+            line-height: 1.7;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* Gold Medals Section */
+        .prizes-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .prizes-title {
+            text-align: center;
+            color: #ffd700;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .medals {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .medal {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .medal:hover {
+            transform: translateY(-10px);
+        }
+
+        .medal-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .gold-1 {
+            background: linear-gradient(145deg, #ffd700, #ffed4e);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .gold-2 {
+            background: linear-gradient(145deg, #c9b037, #ffd700);
+            box-shadow: 0 8px 25px rgba(201, 176, 55, 0.5);
+        }
+
+        .gold-3 {
+            background: linear-gradient(145deg, #b8860b, #daa520);
+            box-shadow: 0 8px 25px rgba(184, 134, 11, 0.4);
+        }
+
+        .medal-label {
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .medal-weight {
+            color: #e3f2fd;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* Participate Button */
+        .participate-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            color: #1a237e;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            text-decoration: none;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 25px;
+        }
+
+        .participate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
+        }
+
+        /* About Section */
+        .about-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 25px;
+            padding: 60px 50px;
+            margin: 60px auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            text-align: center;
+        }
+
+        .about-section h2 {
+            margin-bottom: 25px;
+        }
+
+        .about-section p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #e3f2fd;
+            max-width: 900px;
+            margin: 0 auto 30px;
+        }
+
+        .logo-img1 {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(13, 19, 38, 0.95);
+            padding: 50px 30px 30px;
+            text-align: center;
+            margin-top: 80px;
+            border-top: 2px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer p {
+            margin: 12px 0;
+            color: #b0bec5;
+            font-size: 15px;
+        }
+
+        .footer a {
+            color: #ffd700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .footer a:hover {
+            color: #fff;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .footer-links {
+            margin: 25px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                right: -100%;
+                background: rgba(21, 32, 66, 0.98);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                width: 250px;
+                padding: 30px;
+                border-radius: 0 0 0 20px;
+                box-shadow: -5px 5px 20px rgba(0, 0, 0, 0.3);
+                transition: right 0.4s ease;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section h2 {
+                font-size: 36px;
+            }
+
+            .contests-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .about-section {
+                padding: 40px 30px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .medals {
+                gap: 15px;
+            }
+
+            .medal-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .section h2 {
+                font-size: 28px;
+            }
+
+            .contest-icon {
+                font-size: 50px;
+            }
+
+            .contest-card h3 {
+                font-size: 24px;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <img src="/images/lord krishna.avif" alt="Lord Krishna" class="logo-img">
+                <span>Krishna Contest 2026</span>
+            </div>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/about">About</a>
+                <a href="/contact">Contact</a>
+                <a href="/login">Login</a>
+                <a href="/register" class="btn-primary">Register Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Krishna Contest 2026</h1>
+        <p>Celebrating Devotion, Creativity & Culture</p>
+        <div class="hero-subtitle">Join thousands in this spiritual celebration</div>
+        <a href="#contests" class="btn">Explore Contests ↓</a>
+    </div>
+
+    <div class="section" id="contests">
+        <h2>🏆 Contest Categories & Prizes</h2>
+        <p class="section-subtitle">Win prestigious gold medals and celebrate your devotion!</p>
+        
+        <div class="contests-grid">
+            <!-- Painting Contest -->
+            <div class="contest-card">
+                <span class="contest-icon">🎨</span>
+                <h3>Krishna Painting Contest</h3>
+                <p>Express your devotion through vibrant art and creativity. Share your vision of Lord Krishna's divine leelas.</p>
+                
+                <div class="prizes-section">
+                    <div class="prizes-title">🏅 Gold Medal Prizes</div>
+                    <div class="medals">
+                        <div class="medal">
+                            <div class="medal-icon gold-1">🥇</div>
+                            <div class="medal-label">1st Prize</div>
+                            <div class="medal-weight">12 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-2">🥈</div>
+                            <div class="medal-label">2nd Prize</div>
+                            <div class="medal-weight">8 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-3">🥉</div>
+                            <div class="medal-label">3rd Prize</div>
+                            <div class="medal-weight">4 grams Gold</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="/register" class="participate-btn">Participate Now →</a>
+            </div>
+
+            <!-- Gita Recitation Contest -->
+            <div class="contest-card">
+                <span class="contest-icon">📖</span>
+                <h3>Bhagavad Gita Recitation</h3>
+                <p>Showcase your devotion through the melodious recitation of sacred verses from the Bhagavad Gita.</p>
+                
+                <div class="prizes-section">
+                    <div class="prizes-title">🏅 Gold Medal Prizes</div>
+                    <div class="medals">
+                        <div class="medal">
+                            <div class="medal-icon gold-1">🥇</div>
+                            <div class="medal-label">1st Prize</div>
+                            <div class="medal-weight">12 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-2">🥈</div>
+                            <div class="medal-label">2nd Prize</div>
+                            <div class="medal-weight">8 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-3">🥉</div>
+                            <div class="medal-label">3rd Prize</div>
+                            <div class="medal-weight">4 grams Gold</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="/register" class="participate-btn">Participate Now →</a>
+            </div>
+
+            <!-- Devotional Singing Contest -->
+            <div class="contest-card">
+                <span class="contest-icon">🎵</span>
+                <h3>Devotional Singing</h3>
+                <p>Offer your heartfelt bhajans and kirtans. Let your voice celebrate the glory of Lord Krishna.</p>
+                
+                <div class="prizes-section">
+                    <div class="prizes-title">🏅 Gold Medal Prizes</div>
+                    <div class="medals">
+                        <div class="medal">
+                            <div class="medal-icon gold-1">🥇</div>
+                            <div class="medal-label">1st Prize</div>
+                            <div class="medal-weight">12 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-2">🥈</div>
+                            <div class="medal-label">2nd Prize</div>
+                            <div class="medal-weight">8 grams Gold</div>
+                        </div>
+                        <div class="medal">
+                            <div class="medal-icon gold-3">🥉</div>
+                            <div class="medal-label">3rd Prize</div>
+                            <div class="medal-weight">4 grams Gold</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="/register" class="participate-btn">Participate Now →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="about-section">
+            <h2>About The Organizer</h2>
+            <p>
+                Organized by the <strong>International Society for Krishna Consciousness (ISKCON) Tirupati</strong>, 
+                this national contest aims to promote devotional culture, spiritual education, and creative 
+                expression across India. Join us in celebrating the timeless teachings and divine pastimes 
+                of Lord Krishna.
+            </p>
+            <img src="/images/SP_LOGO.png" alt="Srila Prabhupada" class="logo-img1" onerror="this.style.display='none'">
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>International Society for Krishna Consciousness (ISKCON), Tirupati</strong></p>
+            <p><strong>Registered Address:</strong> Hare Krishna Land, Hare Krishna Road, Vinayaka Nagar, Tirupati - 517501, Andhra Pradesh, India.</p>
+            <p><strong>Email:</strong> <a href="mailto:support@iskconcontest.org">support@iskconcontest.org</a> | <strong>Phone:</strong> +91-9493805059</p>
+            <div class="footer-links">
+                <a href="/about">About</a>
+                <a href="/contact">Contact</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/terms">Terms & Conditions</a>
+                <a href="/refund-policy">Refund Policy</a>
+            </div>
+            <p style="margin-top: 25px; color: #78909c;">© 2026 Krishna Contest. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const navLinks = document.getElementById('navLinks');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (!navLinks.contains(event.target) && !menuToggle.contains(event.target)) {
+                navLinks.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>

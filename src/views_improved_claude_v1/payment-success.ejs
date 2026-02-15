@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Payment Successful - Krishna National Contest</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #4caf50, #66bb6a, #4caf50);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: scaleIn 0.5s ease-out;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-icon::before {
+            content: '✓';
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #2e7d32;
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            color: #546e7a;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .info-box {
+            background: rgba(76, 175, 80, 0.08);
+            border: 2px solid rgba(76, 175, 80, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .info-box p {
+            color: #37474f;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .info-box p::before {
+            content: '✉️';
+            font-size: 20px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(26, 35, 126, 0.2);
+        }
+
+        .home-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(26, 35, 126, 0.3);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+            margin: 30px 0;
+        }
+
+        @media (max-width: 480px) {
+            .success-container {
+                padding: 50px 30px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .success-icon {
+                width: 80px;
+                height: 80px;
+            }
+
+            .success-icon::before {
+                font-size: 38px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="success-container">
+        <div class="success-icon"></div>
+        <h1>Payment Successful!</h1>
+        <p class="message">Your registration has been confirmed successfully.</p>
+        
+        <div class="info-box">
+            <p>You will receive confirmation via email and WhatsApp</p>
+            <p style="color: #66bb6a; font-weight: 600;">Check your inbox for further details</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="message" style="font-size: 14px;">Thank you for participating in Krishna National Contest 2026</p>
+        
+        <a href="/" class="home-btn">Go to Home</a>
+    </div>
+
+</body>
+</html>

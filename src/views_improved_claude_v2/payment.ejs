@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Payment - Krishna Contest 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%); min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar { background: rgba(13, 19, 38, 0.95); padding: 18px 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; text-decoration: none; }
+        .logo-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd700; }
+        .logo-text { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .container { max-width: 700px; width: 100%; background: white; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3); }
+        .header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: white; padding: 40px; text-align: center; }
+        .header-icon { width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; border: 2px solid #ffd700; }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .content { padding: 40px; }
+        .section h3 { color: #1a237e; font-size: 20px; margin-bottom: 15px; }
+        .price-display { background: rgba(255, 215, 0, 0.15); padding: 25px; border-radius: 15px; text-align: center; border: 2px solid rgba(255, 215, 0, 0.3); margin: 20px 0; }
+        .price-display .amount { font-size: 42px; font-weight: 700; color: #1a237e; }
+        .benefits-list { list-style: none; padding: 0; }
+        .benefits-list li { padding: 12px 15px; margin-bottom: 10px; background: rgba(76, 175, 80, 0.05); border-left: 4px solid #4caf50; border-radius: 8px; color: #37474f; }
+        .payment-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3); margin-top: 30px; }
+        .payment-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4); }
+        .footer { background: rgba(13, 19, 38, 0.95); padding: 25px; text-align: center; border-top: 2px solid rgba(255, 215, 0, 0.2); }
+        .footer p { color: #b0bec5; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="logo-container">
+                <img src="/lord_krishna.avif" alt="Krishna" class="logo-img" onerror="this.style.display='none'">
+                <div class="logo-text">Krishna Contest 2026</div>
+            </a>
+        </div>
+    </nav>
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <img src="/lord_krishna.avif" alt="Krishna" class="header-icon" onerror="this.style.display='none'">
+                <h1>Krishna Contest 2026</h1>
+                <p>Complete Your Registration</p>
+            </div>
+            <div class="content">
+                <div class="section">
+                    <h3>💰 Participation Fee</h3>
+                    <div class="price-display">
+                        <div class="amount">₹399</div>
+                        <div style="color: #546e7a;">per contest</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <h3>🎁 What You Get</h3>
+                    <ul class="benefits-list">
+                        <li>✓ Official participation certificate</li>
+                        <li>✓ Chance to win exciting prizes</li>
+                        <li>✓ Spiritual book as a gift</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>💳 Payment Gateway</h3>
+                    <p style="color: #546e7a;">Secure payment integration with HDFC Bank will be enabled shortly.</p>
+                </div>
+                <form action="/payment-initiate" method="POST">
+                    <button type="submit" class="payment-btn">Proceed to Pay ₹399 →</button>
+                </form>
+                <p style="text-align: center; margin-top: 25px; font-size: 13px; color: #78909c;">
+                    By proceeding, you agree to our <a href="/terms" style="color: #2196f3;">Terms</a> and <a href="/refund-policy" style="color: #2196f3;">Refund Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2026 Krishna Contest. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - User 360</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1200px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;margin-bottom:14px}
+    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn.primary{background:#1a3cff;color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    .muted{color:rgba(255,255,255,.7)}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}
+    @media (max-width: 900px){ .sidebar{display:none} .grid2{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Admin Panel</div>
+    <div class="nav">
+      <a href="/admin">Overview</a>
+      <a href="/admin/contests">Contests</a>
+      <a href="/admin/user360" class="active">View User</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/admin/submissions">Submissions</a>
+      <a href="/admin/shipments">Shipments</a>
+      <a href="/admin/users" class="active">Users</a>
+      <a href="/admin/feedback">Feedback</a>
+      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="wrap">
+
+      <div class="card">
+        <div class="row" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <h1 style="margin:0 0 6px 0">User 360</h1>
+            <div class="muted">Complete profile + orders + shipments + submissions + feedback</div>
+          </div>
+          <div>
+            <a class="btn ghost" href="/admin/user360">← Back</a>
+          </div>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+        <form method="POST" action="/admin/user360/<%= user.id %>/update">
+          <div class="grid2">
+            <div>
+              <label class="muted">Name</label>
+              <input name="name" value="<%= user.name || '' %>" />
+            </div>
+            <div>
+              <label class="muted">Email (display only)</label>
+              <input value="<%= user.email || '' %>" disabled />
+            </div>
+
+            <div>
+              <label class="muted">Phone</label>
+              <input name="phone" value="<%= user.phone || '' %>" />
+              <div class="muted" style="font-size:12px;margin-top:6px">Admin override allowed (even if phone_locked)</div>
+            </div>
+
+            <div>
+              <label class="muted">Role</label>
+              <select name="role">
+                <option value="user" <%= (user.role||'user')==='user' ? 'selected' : '' %>>user</option>
+                <option value="admin" <%= (user.role||'user')==='admin' ? 'selected' : '' %>>admin</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="muted">Address</label>
+              <textarea name="address"><%= user.address || '' %></textarea>
+            </div>
+            <div>
+              <label class="muted">City / State / Pincode</label>
+              <div class="grid2">
+                <input name="city" value="<%= user.city || '' %>" placeholder="City"/>
+                <input name="state" value="<%= user.state || '' %>" placeholder="State"/>
+              </div>
+              <div style="margin-top:10px">
+                <input name="pincode" value="<%= user.pincode || '' %>" placeholder="Pincode"/>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn primary" type="submit">Save User</button>
+            <span class="pill">User ID: <%= user.id %></span>
+            <span class="pill">Created: <%= user.created_at %></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px 0">Orders</h2>
+        <div class="muted">Latest 200</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th><th>Contest</th><th>Status</th><th>Amount</th><th>Book</th><th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (orders || []).forEach(o => { %>
+              <tr>
+                <td><%= o.id %></td>
+                <td><%= o.contest_title %></td>
+                <td><span class="pill"><%= o.payment_status %></span></td>
+                <td>₹<%= o.amount %></td>
+                <td><%= o.book_option %></td>
+                <td><%= o.created_at %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px 0">Shipments</h2>
+        <div class="muted">Latest 200 (linked by order)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th><th>Status</th><th>Tracking</th><th>Courier</th><th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (shipments || []).forEach(s => { %>
+              <tr>
+                <td><%= s.order_id %></td>
+                <td><span class="pill"><%= (s.status || 'pending') %></span></td>
+                <td><%= s.tracking_id || '-' %></td>
+                <td><%= s.courier_mode || '-' %></td>
+                <td><%= s.updated_at || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px 0">Submissions</h2>
+        <div class="muted">Latest 200. Download appends UUID + contest title.</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Contest</th><th>File</th><th>Uploaded</th><th>Locked</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (submissions || []).forEach(s => { %>
+              <tr>
+                <td><%= s.contest_title %></td>
+                <td><%= s.original_name %></td>
+                <td><%= s.uploaded_at %></td>
+                <td><span class="pill"><%= s.is_locked ? 'yes' : 'no' %></span></td>
+                <td style="display:flex;gap:8px;flex-wrap:wrap">
+                  <a class="btn ghost" href="/admin/submissions/download?submissionId=<%= s.id %>">Download</a>
+                  <form method="POST" action="/admin/submissions/toggle-lock" style="display:inline">
+                    <input type="hidden" name="submissionId" value="<%= s.id %>"/>
+                    <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+
+        <div style="margin-top:14px" class="muted">
+          Admin upload-on-behalf: UI can be added here. Needs S3 upload integration (see pending note).
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 8px 0">Feedback</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Message</th><th>Status</th><th>Created</th><th>Closed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (feedback || []).forEach(f => { %>
+              <tr>
+                <td><%= f.message %></td>
+                <td><span class="pill"><%= f.status %></span></td>
+                <td><%= f.created_at %></td>
+                <td><%= f.closed_at || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

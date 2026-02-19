@@ -1,278 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Register - Krishna Contest 2026</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <title>Register - Krishna Contest 2026</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+      background:linear-gradient(135deg,#1a237e 0%,#0d47a1 50%,#01579b 100%);
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:20px;position:relative;overflow:hidden
+    }
+    body::before{
+      content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,215,0,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,193,7,0.1) 0%, transparent 50%);
+      animation:float 15s ease-in-out infinite;pointer-events:none
+    }
+    @keyframes float{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.8;transform:scale(1.1)}}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
+    .register-container{
+      background:rgba(255,255,255,.95);backdrop-filter:blur(10px);
+      border-radius:25px;box-shadow:0 15px 50px rgba(0,0,0,.3);
+      width:100%;max-width:480px;padding:50px 40px;position:relative;z-index:1;
+      border:2px solid rgba(255,215,0,.3)
+    }
+    .logo{text-align:center;margin-bottom:28px}
+    .logo-icon{font-size:48px;margin-bottom:15px;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+    .logo h1{font-size:26px;color:#1a237e;margin-bottom:5px}
+    .logo p{font-size:14px;color:#546e7a}
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%);
-            animation: float 15s ease-in-out infinite;
-            pointer-events: none;
-        }
+    .alert{
+      background:rgba(244,67,54,.10);
+      border:1px solid rgba(244,67,54,.35);
+      color:#b42318;
+      padding:12px 14px;border-radius:12px;font-weight:700;
+      margin-bottom:14px;font-size:14px
+    }
 
-        @keyframes float {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-        }
+    form{display:flex;flex-direction:column;gap:16px}
+    .form-group{position:relative}
+    input{
+      width:100%;padding:15px 20px;border:2px solid #e0e0e0;border-radius:12px;
+      font-size:16px;transition:all .3s ease;background:#fff;color:#333
+    }
+    input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.1)}
+    input::placeholder{color:#9e9e9e}
 
-        .register-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 480px;
-            padding: 50px 40px;
-            position: relative;
-            z-index: 1;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-        }
+    .hint{font-size:12px;color:#607d8b;margin-top:6px}
+    .fieldError{font-size:12px;color:#b42318;margin-top:6px;display:none;font-weight:700}
 
-        .logo {
-            text-align: center;
-            margin-bottom: 35px;
-        }
+    button{
+      width:100%;padding:16px;background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
+      color:#1a237e;font-size:18px;font-weight:600;border:none;border-radius:12px;
+      cursor:pointer;transition:all .3s ease;box-shadow:0 6px 20px rgba(255,215,0,.4);margin-top:8px
+    }
+    button:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,215,0,.6)}
+    button:active{transform:translateY(0)}
+.gicon{
+      width:18px;height:18px;display:inline-block;border-radius:3px;
+      background:conic-gradient(#4285F4 0 90deg,#34A853 90deg 180deg,#FBBC05 180deg 270deg,#EA4335 270deg 360deg);
+    }
 
-        .logo-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            animation: pulse 2s ease-in-out infinite;
-        }
+    .btn{
+  display:block;
+  width:100%;
+  padding:14px 16px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:700;
+  text-decoration:none;
+  border:2px solid #e0e0e0;
+  background:#fff;
+  color:#1a237e;
+  transition:all .2s ease;
+}
+.btn:hover{ transform:translateY(-1px); border-color:#ffd700; box-shadow:0 8px 22px rgba(0,0,0,.08); }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
+    .divider{text-align:center;margin:22px 0 14px;position:relative;color:#78909c;font-size:14px}
+    .divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#e0e0e0}
+    .divider::before{left:0}
+    .divider::after{right:0}
 
-        .logo h1 {
-            font-size: 26px;
-            color: #1a237e;
-            margin-bottom: 5px;
-        }
+    .links{text-align:center}
+    .links a{color:#1a237e;text-decoration:none;font-weight:500;transition:color .3s ease;display:inline-block;margin:8px 15px}
+    .links a:hover{color:#ffd700}
 
-        .logo p {
-            font-size: 14px;
-            color: #546e7a;
-        }
+    .back-home{
+      position:absolute;top:20px;left:20px;color:#fff;text-decoration:none;font-weight:500;
+      padding:10px 20px;background:rgba(255,255,255,.1);backdrop-filter:blur(5px);
+      border-radius:25px;transition:all .3s ease;border:1px solid rgba(255,255,255,.2);z-index:10
+    }
+    .back-home:hover{background:rgba(255,215,0,.2);border-color:#ffd700;transform:translateX(-5px)}
 
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+    .info-box{
+      background:rgba(255,215,0,.10);
+      border-left:4px solid #ffd700;
+      padding:12px 15px;margin-top:16px;border-radius:8px;font-size:13px;color:#546e7a
+    }
 
-        .form-group {
-            position: relative;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #fff;
-            color: #333;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
-        }
-
-        input::placeholder {
-            color: #9e9e9e;
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
-            color: #1a237e;
-            font-size: 18px;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-            margin-top: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .divider {
-            text-align: center;
-            margin: 25px 0 20px;
-            position: relative;
-            color: #78909c;
-            font-size: 14px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: #e0e0e0;
-        }
-
-        .divider::before {
-            left: 0;
-        }
-
-        .divider::after {
-            right: 0;
-        }
-
-        .links {
-            text-align: center;
-        }
-
-        .links a {
-            color: #1a237e;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            display: inline-block;
-            margin: 8px 15px;
-        }
-
-        .links a:hover {
-            color: #ffd700;
-        }
-
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 10;
-        }
-
-        .back-home:hover {
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-            transform: translateX(-5px);
-        }
-
-        .info-box {
-            background: rgba(255, 215, 0, 0.1);
-            border-left: 4px solid #ffd700;
-            padding: 12px 15px;
-            margin-top: 20px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #546e7a;
-        }
-
-        @media (max-width: 480px) {
-            .register-container {
-                padding: 40px 30px;
-            }
-
-            .logo h1 {
-                font-size: 22px;
-            }
-
-            input, button {
-                font-size: 15px;
-                padding: 13px 18px;
-            }
-
-            .back-home {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
-        }
-    </style>
+    @media (max-width:480px){
+      .register-container{padding:40px 30px}
+      .logo h1{font-size:22px}
+      input,button{font-size:15px;padding:13px 18px}
+      .back-home{font-size:14px;padding:8px 16px}
+    }
+  </style>
 </head>
 <body>
 
-    <a href="/" class="back-home">← Back to Home</a>
+<a href="/" class="back-home">← Back to Home</a>
 
-    <div class="register-container">
-        <div class="logo">
-            <div class="logo-icon">🕉️</div>
-            <h1>Join the Contest</h1>
-            <p>Register for Krishna Contest 2026</p>
-        </div>
+<div class="register-container">
+  <div class="logo">
+    <div class="logo-icon">🕉️</div>
+    <h1>Join the Contest</h1>
+    <p>Register for Krishna Contest 2026</p>
+  </div>
 
-        <form method="POST" action="/register">
-            <div class="form-group">
-                <input type="text" name="name" placeholder="Full Name" required autocomplete="name" />
-            </div>
-            <div class="form-group">
-                <input type="email" name="email" placeholder="Email Address" required autocomplete="email" />
-            </div>
-            <div class="form-group">
-                <input type="tel" name="phone" placeholder="Phone Number" required autocomplete="tel" />
-            </div>
-            <div class="form-group">
-                <input type="password" name="password" placeholder="Create Password" required autocomplete="new-password" minlength="6" />
-            </div>
-            <button type="submit">Register Now</button>
-        </form>
+  <% if (error) { %>
+  <div class="alert"><%= error %></div>
+<% } %>
 
-        <div class="info-box">
-            📧 You'll receive a confirmation email or whatsapp message after registration
-        </div>
 
-        <div class="divider">or</div>
+<a href="/auth/google/switch" class="btn btn-google" style="text-decoration:none;">
+    <span class="gicon"></span>
+  Continue with Google
+</a>
 
-        <div class="links">
-            <p style="color: #546e7a; margin-bottom: 15px;">Already have an account?</p>
-            <a href="/login">Login Here</a>
-            <span style="color: #e0e0e0;">|</span>
-            <a href="/">Go to Home</a>
-        </div>
+<div style="text-align:center;color:#78909c;margin:10px 0 18px;">or</div>
+
+
+  <form method="POST" action="/register" id="regForm" autocomplete="on" novalidate>
+    <div class="form-group">
+      <input name="name" placeholder="Full Name" value="<%= (old && old.name) || '' %>" autocomplete="name" required />
     </div>
+
+    <div class="form-group">
+      <input name="email" type="email" placeholder="Email Address" value="<%= (old && old.email) || '' %>" autocomplete="email" required />
+    </div>
+
+    <div class="form-group">
+      <input id="phone" name="phone" placeholder="Mobile Number" inputmode="numeric" maxlength="10"
+             value="<%= (old && old.phone) || '' %>" autocomplete="tel" required />
+      <div class="hint">Indian mobile number (10 digits, starts with 6-9)</div>
+      <div id="phoneErr" class="fieldError">Please enter a valid 10-digit Indian mobile number.</div>
+    </div>
+
+    <div class="form-group">
+      <input id="confirmPhone" name="confirmPhone" placeholder="Confirm Mobile Number" inputmode="numeric" maxlength="10"
+             value="<%= (old && old.confirmPhone) || '' %>" autocomplete="tel" required />
+      <div id="confirmErr" class="fieldError">Mobile numbers do not match.</div>
+    </div>
+
+    <div class="form-group">
+      <input type="password" name="password" placeholder="Password (min 8 chars, letter + number)"
+             autocomplete="new-password" required />
+    </div>
+
+    <button type="submit">Register Now</button>
+  </form>
+
+  <div class="info-box">
+    📧 You’ll receive confirmation via Email / WhatsApp after registration.
+  </div>
+
+  <div class="divider">or</div>
+
+  <div class="links">
+    <p style="color:#546e7a;margin-bottom:10px;">Already have an account?</p>
+    <a href="/login">Login Here</a>
+    <span style="color:#e0e0e0;">|</span>
+    <a href="/">Go to Home</a>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const form = document.getElementById("regForm");
+    const phone = document.getElementById("phone");
+    const confirmPhone = document.getElementById("confirmPhone");
+    const phoneErr = document.getElementById("phoneErr");
+    const confirmErr = document.getElementById("confirmErr");
+
+    function norm(v){ return String(v || "").trim(); }
+    function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
+
+    function digitsOnly(el, maxLen){
+      if (!el) return;
+      el.addEventListener("input", () => {
+        el.value = el.value.replace(/\\D/g, "").slice(0, maxLen);
+        phoneErr.style.display = "none";
+        confirmErr.style.display = "none";
+      });
+    }
+
+    digitsOnly(phone, 10);
+    digitsOnly(confirmPhone, 10);
+
+    form.addEventListener("submit", (e) => {
+      const p = norm(phone.value);
+      const cp = norm(confirmPhone.value);
+
+      let ok = true;
+
+      if (!validPhone(p)) {
+        ok = false;
+        phoneErr.style.display = "block";
+        phone.focus();
+      } else if (p !== cp) {
+        ok = false;
+        confirmErr.style.display = "block";
+        confirmPhone.focus();
+      }
+
+      if (!ok) e.preventDefault();
+    });
+  })();
+</script>
 
 </body>
 </html>

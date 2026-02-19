@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile - KNC 20261111</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:980px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    .muted{color:rgba(255,255,255,.7)}
+    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    textarea{min-height:70px;resize:vertical}
+    .sep{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width: 900px){ .sidebar{display:none} .grid2{grid-template-columns:1fr} }
+    .btn{border:none;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+    .btn.primary{background:#1a3cff;color:#fff;width:100%}
+    .btn.primary[disabled]{opacity:.6;cursor:not-allowed}
+    .alert{padding:12px;border-radius:12px;font-weight:800;margin-bottom:12px}
+    .alert.err{background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.35);color:#ffd1d1}
+    .alert.ok{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.35);color:#d4ffd7}
+    .hint{font-size:12px;color:rgba(255,255,255,.65);margin-top:6px}
+    .spinner{
+      display:none;margin-left:10px;width:14px;height:14px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.4);
+      border-top-color:#fff;
+      animation:spin .8s linear infinite;
+      vertical-align:middle;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">ISKCON Contest</div>
+      <div class="nav">
+        <a href="/dashboard" class="<%= activeTab==='dashboard' ? 'active' : '' %>">Dashboard</a>
+        <a href="/dashboard/profile" class="<%= activeTab==='profile' ? 'active' : '' %>">Profile</a>
+        <a href="/dashboard/delivery" class="<%= activeTab==='delivery' ? 'active' : '' %>">Delivery</a>
+        <a href="/dashboard/faqs" class="<%= activeTab==='faqs' ? 'active' : '' %>">FAQs</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <h1 style="margin:0 0 6px 0">Profile</h1>
+          <div class="muted">Name / Email are locked. Phone is locked once saved. Address is your default for auto-fill.</div>
+
+          <div class="sep"></div>
+
+          <% if (error) { %><div class="alert err"><%= error %></div><% } %>
+          <% if (success) { %><div class="alert ok"><%= success %></div><% } %>
+
+          <form method="POST" action="/dashboard/profile" id="profileForm" novalidate>
+            <div class="grid2">
+              <div>
+                <label class="muted">Full Name (locked)</label>
+                <input value="<%= user.name || '' %>" readonly />
+              </div>
+              <div>
+                <label class="muted">Email (locked)</label>
+                <input value="<%= user.email || '' %>" readonly />
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid2">
+              <div>
+                <label class="muted">Mobile Number (WhatsApp contact)</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  value="<%= (old && old.phone) || user.phone || '' %>"
+                  <%= user.phone ? 'readonly' : '' %>
+                  placeholder="10 digit mobile"
+                  inputmode="numeric"
+                  maxlength="10"
+                />
+                <% if (!user.phone) { %>
+                  <div class="hint">Set once carefully. After saving, it will be locked.</div>
+                <% } else { %>
+                  <div class="hint">To change mobile number, please contact support.</div>
+                <% } %>
+              </div>
+
+              <% if (!user.phone) { %>
+              <div>
+                <label class="muted">Confirm Mobile Number</label>
+                <input
+                  id="confirmPhone"
+                  name="confirmPhone"
+                  value="<%= (old && old.confirmPhone) || '' %>"
+                  placeholder="Re-enter mobile number"
+                  inputmode="numeric"
+                  maxlength="10"
+                />
+                <div class="hint">Prevents mistakes.</div>
+              </div>
+              <% } %>
+            </div>
+
+            <div class="sep"></div>
+
+            <div>
+              <label class="muted">Address</label>
+              <textarea name="address" placeholder="House no, Street, Area"><%= (old && old.address) || (addr && addr.address) || '' %></textarea>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid2">
+              <div>
+                <label class="muted">City</label>
+                <input name="city" value="<%= (old && old.city) || (addr && addr.city) || '' %>" />
+              </div>
+
+              <div>
+                <label class="muted">State</label>
+                <select name="state">
+                  <option value="">Select State</option>
+                  <% const states = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"]; %>
+                  <% states.forEach(s => { %>
+                    <option value="<%= s %>" <%= (((old && old.state) || (addr && addr.state) || '') === s) ? 'selected' : '' %>><%= s %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid2">
+              <div>
+                <label class="muted">Pincode</label>
+                <input name="pincode" id="pincode" inputmode="numeric" maxlength="6"
+                       value="<%= (old && old.pincode) || (addr && addr.pincode) || '' %>" />
+                <div class="hint">6-digit Indian pincode</div>
+              </div>
+              <div></div>
+            </div>
+
+            <div class="sep"></div>
+
+            <button class="btn primary" id="saveBtn" type="submit">
+              <span id="btnText">Save</span>
+              <span class="spinner" id="spin"></span>
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+  (function(){
+    const form = document.getElementById("profileForm");
+    const btn = document.getElementById("saveBtn");
+    const spin = document.getElementById("spin");
+    const phone = document.getElementById("phone");
+    const confirmPhone = document.getElementById("confirmPhone");
+    const pin = document.getElementById("pincode");
+
+    function digitsOnly(el, max){
+      if(!el) return;
+      el.addEventListener("input", () => el.value = el.value.replace(/\\D/g,"").slice(0,max));
+    }
+    digitsOnly(phone, 10);
+    digitsOnly(confirmPhone, 10);
+    digitsOnly(pin, 6);
+
+    form.addEventListener("submit", (e) => {
+      if (confirmPhone) {
+        const p = (phone.value || "").trim();
+        const cp = (confirmPhone.value || "").trim();
+        const okPhone = /^[6-9][0-9]{9}$/.test(p);
+        if (!okPhone) { e.preventDefault(); alert("Enter a valid 10-digit Indian mobile number."); return; }
+        if (p !== cp) { e.preventDefault(); alert("Mobile numbers do not match."); return; }
+      }
+
+      btn.disabled = true;
+      spin.style.display = "inline-block";
+      document.getElementById("btnText").innerText = "Saving...";
+    });
+  })();
+</script>
+
+</body>
+</html>

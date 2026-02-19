@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+
 import { pool } from "../config/db";
 import { hashPassword, comparePassword } from "../utils/hash";
 import { generateToken } from "../utils/jwt";
@@ -13,26 +14,8 @@ const normEmail = (v: string) => String(v || "").trim().toLowerCase();
 const normPhone = (v: string) => String(v || "").trim();
 
 function renderAuthError(res: any, view: string, error: string, old?: any) {
+  // your EJS can show: <% if (error) { %> <%= error %> <% } %>
   return res.status(400).render(view, { error, old: old || {} });
-}
-
-function setAuthCookie(res: Response, token: string) {
-  res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/",
-  });
-}
-
-// Decide landing page based on role
-async function redirectByRole(res: Response, userId: string) {
-  const r = await pool.query(`SELECT role FROM users WHERE id=$1`, [userId]);
-  const role = (r.rows[0]?.role || "user").toLowerCase();
-
-  if (role === "admin") return res.redirect("/admin");
-  return res.redirect("/dashboard");
 }
 
 // -------- Register --------
@@ -63,7 +46,11 @@ router.post(
     body("password")
       .isLength({ min: 8, max: 72 })
       .withMessage("Password must be at least 8 characters.")
-      .custom((v) => /[A-Za-z]/.test(v) && /[0-9]/.test(v))
+      .custom((v) => {
+        // Basic strength: at least 1 letter and 1 number (simple + user friendly)
+        if (!/[A-Za-z]/.test(v) || !/[0-9]/.test(v)) return false;
+        return true;
+      })
       .withMessage("Password must contain at least 1 letter and 1 number."),
   ],
   async (req: Request, res: Response) => {
@@ -85,6 +72,7 @@ router.post(
     const password = String(req.body.password);
 
     try {
+      // Check duplicates
       const existingEmail = await pool.query(`SELECT id FROM users WHERE email=$1`, [email]);
       if (existingEmail.rows.length > 0) {
         return renderAuthError(res, "register", "This email is already registered. Please login.", old);
@@ -97,7 +85,6 @@ router.post(
 
       const hashed = await hashPassword(password);
 
-      // role defaults to 'user' in DB (recommended). If not, this still works.
       const created = await pool.query(
         `INSERT INTO users (name, email, phone, password_hash, phone_locked)
          VALUES ($1, $2, $3, $4, true)
@@ -107,9 +94,16 @@ router.post(
 
       const userId = created.rows[0].id;
       const token = generateToken(userId);
-      setAuthCookie(res, token);
 
-      // After register always go to dashboard (normal user flow)
+      // login immediately after registration (better UX)
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        path: "/",
+      });
+
       return res.redirect("/dashboard");
     } catch (e: any) {
       console.error("Register error:", e);
@@ -119,7 +113,7 @@ router.post(
 );
 
 // -------- Login --------
-router.get("/login", (_req: Request, res: Response) => {
+router.get("/login", (req: Request, res: Response) => {
   res.render("login", { error: null, old: {} });
 });
 
@@ -151,6 +145,7 @@ router.post(
       );
 
       if (result.rows.length === 0) {
+        // Do not reveal whether user exists (security)
         return renderAuthError(res, "login", "Invalid email or password.", old);
       }
 
@@ -161,10 +156,17 @@ router.post(
       }
 
       const token = generateToken(user.id);
-      setAuthCookie(res, token);
 
-      // ✅ redirect based on role
-      return redirectByRole(res, user.id);
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+          path: "/",
+
+      });
+
+      return res.redirect("/dashboard");
     } catch (e: any) {
       console.error("Login error:", e);
       return renderAuthError(res, "login", "Something went wrong. Please try again.", old);
@@ -183,6 +185,8 @@ router.get("/logout", (_req, res) => {
   return res.redirect("/login");
 });
 
+
+
 // Google Login start
 router.get(
   "/auth/google",
@@ -193,7 +197,6 @@ router.get(
   })
 );
 
-// Optional explicit switch
 router.get(
   "/auth/google/switch",
   passport.authenticate("google", {
@@ -202,6 +205,8 @@ router.get(
     prompt: "select_account",
   })
 );
+
+
 
 // Google callback
 router.get(
@@ -215,11 +220,20 @@ router.get(
     if (!userId) return res.redirect("/login?error=google");
 
     const token = generateToken(userId);
-    setAuthCookie(res, token);
 
-    // ✅ redirect based on role
-    return redirectByRole(res, String(userId));
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+       path: "/",
+    });
+
+    // OPTIONAL but recommended: if phone missing, show a friendly message on dashboard
+    // (or later create /complete-profile to collect phone)
+    return res.redirect("/dashboard");
   }
 );
+
 
 export default router;

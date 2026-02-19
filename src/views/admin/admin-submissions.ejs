@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Submissions</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1300px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    .muted{color:rgba(255,255,255,.7)}
+    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
+    .btn.primary{background:#1a3cff;color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{display:inline-flex;gap:8px;align-items:center;background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);padding:6px 10px;border-radius:999px}
+    .chip a{color:#fff;text-decoration:none;opacity:.9}
+    @media (max-width:1100px){ .sidebar{display:none} .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions" class="active">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div>
+              <h1 style="margin:0 0 6px 0">Submissions</h1>
+              <div class="muted">Showing <b><%= items.length %></b> (latest 500)</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <a class="btn ghost" href="/admin/submissions">Reset</a>
+              <a class="btn ghost" href="/admin/submissions/export.csv?<%= qs %>">Export CSV</a>
+
+              <button class="btn primary" type="submit" form="filtersForm">Apply</button>
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+          <form id="filtersForm" method="GET" action="/admin/submissions">
+            <div class="grid">
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">Contest</div>
+                <select name="contest_id">
+                  <option value="" <%= !filters.contestId?'selected':'' %>>All</option>
+                  <% contests.forEach(c => { %>
+                    <option value="<%= c.id %>" <%= (filters.contestId===c.id)?'selected':'' %>><%= c.title %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">User name</div>
+                <input name="user_name" value="<%= filters.userName || '' %>" placeholder="e.g. Iskcon" />
+              </div>
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">Email</div>
+                <input name="email" value="<%= filters.email || '' %>" placeholder="e.g. gmail.com" />
+              </div>
+            </div>
+          </form>
+
+          <%
+            const base = (obj) => {
+              const p = new URLSearchParams();
+              Object.keys(obj).forEach(k => { if (obj[k]) p.set(k, obj[k]); });
+              return p.toString();
+            };
+            const f = {
+              contest_id: filters.contestId || '',
+              user_name: filters.userName || '',
+              email: filters.email || ''
+            };
+          %>
+
+          <div class="chips">
+            <% Object.keys(f).forEach(k => { if (f[k]) {
+              const copy = { ...f }; copy[k] = '';
+              const qs = base(copy);
+            %>
+              <span class="chip">
+                <span><%= k %>: <%= f[k] %></span>
+                <a href="/admin/submissions?<%= qs %>">✕</a>
+              </span>
+            <% } }) %>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Uploaded</th>
+                <th>Contest</th>
+                <th>User</th>
+                <th>File</th>
+                <th>Size</th>
+                <th>Lock</th>
+                <th>Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+                function bytesToHuman(b){
+                  const n = Number(b||0);
+                  const gb = n/(1024*1024*1024);
+                  if (gb>=1) return gb.toFixed(2)+" GB";
+                  const mb = n/(1024*1024);
+                  if (mb>=1) return mb.toFixed(2)+" MB";
+                  const kb = n/1024;
+                  if (kb>=1) return kb.toFixed(2)+" KB";
+                  return n+" B";
+                }
+              %>
+              <% items.forEach(s => { %>
+                <tr>
+                  <td><%= s.uploaded_at %></td>
+                  <td><%= s.contest_title %></td>
+                  <td>
+                    <div style="font-weight:900"><%= s.user_name %></div>
+                    <div class="muted" style="font-size:12px"><%= s.email %></div>
+                    <div class="muted" style="font-size:12px">UUID: <%= s.user_id %></div>
+                  </td>
+                  <td><%= s.original_name || '-' %></td>
+                  <td><%= s.file_size ? bytesToHuman(s.file_size) : '-' %></td>
+                  <td>
+                    <form method="POST" action="/admin/submissions/toggle-lock">
+                      <input type="hidden" name="submissionId" value="<%= s.id %>" />
+                      <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
+                    </form>
+                  </td>
+                  <td>
+                    <a class="btn ghost" style="display:inline-block;text-decoration:none"
+                       href="/admin/submissions/download?submissionId=<%= s.id %>">
+                      Download (renamed)
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

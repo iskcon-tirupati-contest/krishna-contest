@@ -1,4 +1,5 @@
+rm -rf dist
 npm run build
-cp -r src/views dist/
 pm2 restart krishna-contest
+pm2 logs krishna-contest --lines 50
 

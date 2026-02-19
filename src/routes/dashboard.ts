@@ -1,13 +1,17 @@
-import express from "express";
+import express, { Response } from "express";
 import { authMiddleware } from "../middleware/auth";
 import { pool } from "../config/db";
 
 import { v4 as uuidv4 } from "uuid";
 import { startMultipart, presignPart, completeMultipart, abortMultipart } from "../utils/s3Multipart";
 import { presignGet } from "../utils/s3Get";
+import { body, validationResult } from "express-validator";
 
 const router = express.Router();
 
+/**
+ * Upload allowlist
+ */
 const ALLOWED_EXT = new Set([
   "pdf", "doc", "docx",
   "mp3", "wav", "aac", "m4a", "ogg",
@@ -212,15 +216,13 @@ router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) 
   } else {
     await pool.query(
       `UPDATE submissions
-SET
-  file_url=$1,
-  s3_key=$2,
-  content_type=$3,
-  original_name=$4,
-  uploaded_at=(NOW() AT TIME ZONE 'Asia/Kolkata'),
-  last_updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
-WHERE order_id=$5
-`,
+       SET file_url=$1,
+           s3_key=$2,
+           content_type=$3,
+           original_name=$4,
+           uploaded_at=(NOW() AT TIME ZONE 'Asia/Kolkata'),
+           last_updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
+       WHERE order_id=$5`,
       [publicUrl, key, contentType || null, originalName || null, orderId]
     );
   }
@@ -234,7 +236,6 @@ router.post("/dashboard/upload/abort", authMiddleware, async (req: any, res) => 
 
   if (!orderId || !key || !uploadId) return res.status(400).json({ error: "Missing fields" });
 
-  // Gate + key ownership (avoid aborting other user's uploads)
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
@@ -253,26 +254,22 @@ router.get("/dashboard/submission/download", authMiddleware, async (req: any, re
   const userId = req.userId;
   const { orderId } = req.query;
 
-
   const q = await pool.query(
-  `SELECT s.s3_key, s.original_name
-   FROM submissions s
-   JOIN orders o ON o.id = s.order_id
-   WHERE s.order_id=$1 AND o.user_id=$2`,
-  [orderId, userId]
-);
-
+    `SELECT s.s3_key, s.original_name
+     FROM submissions s
+     JOIN orders o ON o.id = s.order_id
+     WHERE s.order_id=$1 AND o.user_id=$2`,
+    [orderId, userId]
+  );
 
   if (q.rows.length === 0 || !q.rows[0].s3_key) return res.status(404).send("Not found");
 
   const url = await presignGet(q.rows[0].s3_key, q.rows[0].original_name);
-
   res.redirect(url);
 });
 
 /**
  * Dashboard Home
- * IMPORTANT: include original_name + content_type + uploaded_at + deadline_passed
  */
 router.get("/dashboard", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -334,37 +331,6 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
 });
 
 /**
- * Profile
- */
-router.get("/dashboard/profile", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-
-  const userRes = await pool.query(
-    `SELECT id, name, email, phone, role, created_at
-     FROM users WHERE id = $1`,
-    [userId]
-  );
-
-  res.render("dashboard-profile", {
-    activeTab: "profile",
-    user: userRes.rows[0],
-    success: req.query.success === "1",
-  });
-});
-
-router.post("/dashboard/profile", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const { name } = req.body;
-
-  if (!name || String(name).trim().length < 2) {
-    return res.status(400).send("Name is required.");
-  }
-
-  await pool.query(`UPDATE users SET name = $1 WHERE id = $2`, [String(name).trim(), userId]);
-  res.redirect("/dashboard/profile?success=1");
-});
-
-/**
  * Delivery
  */
 router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
@@ -400,5 +366,8 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
 router.get("/dashboard/faqs", authMiddleware, async (_req: any, res) => {
   res.render("dashboard-faqs", { activeTab: "faqs" });
 });
+
+
+
 
 export default router;

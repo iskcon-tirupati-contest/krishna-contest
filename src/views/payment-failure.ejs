@@ -196,11 +196,14 @@
 
         <p class="message" style="font-size: 15px; font-weight: 500;">Please check your details and try again</p>
         
-        <a href="/payment" class="retry-btn">Retry Payment</a>
+        <a href="/payment?orderId=<%= orderId %>" class="retry-btn">Retry Payment</a>
+
+
+
 
         <div class="divider"></div>
 
-        <a href="/" class="home-link">← Back to Home</a>
+<a href="/dashboard" class="home-link">← Back to Dashboard</a>
     </div>
 
 </body>

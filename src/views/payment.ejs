@@ -253,7 +253,8 @@
             <div class="section">
                 <h3>💰 Participation Fee</h3>
                 <div class="price-display">
-                    <div class="amount">₹399</div>
+                 <div class="amount">₹<%= order.amount %></div>
+
                     <div class="label">per contest</div>
                 </div>
             </div>
@@ -277,10 +278,12 @@
             </div>
 
             <form action="/payment-initiate" method="POST">
+                <input type="hidden" name="orderId" value="<%= order.id %>">
                 <button type="submit" class="payment-btn">
-                    Proceed to Pay ₹399 →
+                    Proceed to Pay ₹<%= order.amount %> →
                 </button>
             </form>
+
 
             <div class="divider"></div>
 

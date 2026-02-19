@@ -1,257 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Login - Krishna Contest 2026</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <title>Login - Krishna Contest 2026</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+      background:linear-gradient(135deg,#1a237e 0%,#0d47a1 50%,#01579b 100%);
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:20px;position:relative;overflow:hidden
+    }
+    body::before{
+      content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,215,0,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,193,7,0.1) 0%, transparent 50%);
+      animation:float 15s ease-in-out infinite;pointer-events:none
+    }
+    @keyframes float{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.8;transform:scale(1.1)}}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
+    .login-container{
+      background:rgba(255,255,255,.95);backdrop-filter:blur(10px);
+      border-radius:25px;box-shadow:0 15px 50px rgba(0,0,0,.3);
+      width:100%;max-width:420px;padding:50px 40px;position:relative;z-index:1;
+      border:2px solid rgba(255,215,0,.3)
+    }
+    .logo{text-align:center;margin-bottom:28px}
+    .logo-icon{font-size:48px;margin-bottom:15px;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+    .logo h1{font-size:26px;color:#1a237e;margin-bottom:5px}
+    .logo p{font-size:14px;color:#546e7a}
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%);
-            animation: float 15s ease-in-out infinite;
-            pointer-events: none;
-        }
+    .alert{
+      background:rgba(244,67,54,.10);
+      border:1px solid rgba(244,67,54,.35);
+      color:#b42318;
+      padding:12px 14px;border-radius:12px;font-weight:700;
+      margin-bottom:14px;font-size:14px
+    }
 
-        @keyframes float {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-        }
+    form{display:flex;flex-direction:column;gap:18px}
+    .form-group{position:relative}
+    input{
+      width:100%;padding:15px 20px;border:2px solid #e0e0e0;border-radius:12px;
+      font-size:16px;transition:all .3s ease;background:#fff;color:#333
+    }
+    input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.1)}
+    input::placeholder{color:#9e9e9e}
 
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 420px;
-            padding: 50px 40px;
-            position: relative;
-            z-index: 1;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-        }
+    .btn{
+      width:100%;padding:16px;border:none;border-radius:12px;cursor:pointer;
+      font-size:16px;font-weight:700;transition:all .3s ease
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
+      color:#1a237e;box-shadow:0 6px 20px rgba(255,215,0,.4)
+    }
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,215,0,.6)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-google{
+      background:#fff;color:#1a237e;border:2px solid #e0e0e0;
+      display:flex;align-items:center;justify-content:center;gap:10px
+    }
+    .btn-google:hover{border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.08)}
+    .gicon{
+      width:18px;height:18px;display:inline-block;border-radius:3px;
+      background:conic-gradient(#4285F4 0 90deg,#34A853 90deg 180deg,#FBBC05 180deg 270deg,#EA4335 270deg 360deg);
+    }
 
-        .logo {
-            text-align: center;
-            margin-bottom: 35px;
-        }
+    .divider{
+      text-align:center;margin:18px 0 12px;position:relative;
+      color:#78909c;font-size:14px
+    }
+    .divider::before,.divider::after{
+      content:'';position:absolute;top:50%;width:40%;height:1px;background:#e0e0e0
+    }
+    .divider::before{left:0}
+    .divider::after{right:0}
 
-        .logo-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            animation: pulse 2s ease-in-out infinite;
-        }
+    .links{text-align:center}
+    .links a{
+      color:#1a237e;text-decoration:none;font-weight:500;transition:color .3s ease;
+      display:inline-block;margin:8px 15px
+    }
+    .links a:hover{color:#ffd700}
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
+    .back-home{
+      position:absolute;top:20px;left:20px;color:#fff;text-decoration:none;font-weight:500;
+      padding:10px 20px;background:rgba(255,255,255,.1);backdrop-filter:blur(5px);
+      border-radius:25px;transition:all .3s ease;border:1px solid rgba(255,255,255,.2);z-index:10
+    }
+    .back-home:hover{background:rgba(255,215,0,.2);border-color:#ffd700;transform:translateX(-5px)}
 
-        .logo h1 {
-            font-size: 26px;
-            color: #1a237e;
-            margin-bottom: 5px;
-        }
-
-        .logo p {
-            font-size: 14px;
-            color: #546e7a;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-group {
-            position: relative;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #fff;
-            color: #333;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
-        }
-
-        input::placeholder {
-            color: #9e9e9e;
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
-            color: #1a237e;
-            font-size: 18px;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-            margin-top: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .divider {
-            text-align: center;
-            margin: 25px 0 20px;
-            position: relative;
-            color: #78909c;
-            font-size: 14px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: #e0e0e0;
-        }
-
-        .divider::before {
-            left: 0;
-        }
-
-        .divider::after {
-            right: 0;
-        }
-
-        .links {
-            text-align: center;
-        }
-
-        .links a {
-            color: #1a237e;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            display: inline-block;
-            margin: 8px 15px;
-        }
-
-        .links a:hover {
-            color: #ffd700;
-        }
-
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 10;
-        }
-
-        .back-home:hover {
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-            transform: translateX(-5px);
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 40px 30px;
-            }
-
-            .logo h1 {
-                font-size: 22px;
-            }
-
-            input, button {
-                font-size: 15px;
-            }
-
-            .back-home {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
-        }
-    </style>
+    @media (max-width:480px){
+      .login-container{padding:40px 30px}
+      .logo h1{font-size:22px}
+      input,.btn{font-size:15px}
+      .back-home{font-size:14px;padding:8px 16px}
+    }
+  </style>
 </head>
 <body>
 
-    <a href="/" class="back-home">← Back to Home</a>
+<a href="/" class="back-home">← Back to Home</a>
 
-    <div class="login-container">
-        <div class="logo">
-            <div class="logo-icon">🕉️</div>
-            <h1>Welcome Back</h1>
-            <p>Login to Krishna Contest</p>
-        </div>
+<div class="login-container">
+  <div class="logo">
+    <div class="logo-icon">🕉️</div>
+    <h1>Welcome Back</h1>
+    <p>Login to Krishna Contest</p>
+  </div>
 
-        <form method="POST" action="/login">
-            <div class="form-group">
-                <input type="email" name="email" placeholder="Email Address" required autocomplete="email" />
-            </div>
-            <div class="form-group">
-                <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
-            </div>
-            <button type="submit">Login</button>
-        </form>
+  <% if (error) { %>
+    <div class="alert"><%= error %></div>
+  <% } %>
 
-        <div class="divider">or</div>
+  <a href="/auth/google" class="btn btn-google" style="text-decoration:none;">
+    <span class="gicon"></span>
+    Continue with Google
+  </a>
 
-        <div class="links">
-            <p style="color: #546e7a; margin-bottom: 15px;">Don't have an account?</p>
-            <a href="/register">Register Now</a>
-            <span style="color: #e0e0e0;">|</span>
-            <a href="/">Go to Home</a>
-        </div>
+<div style="text-align:center;margin-top:10px;">
+  <a href="/auth/google/switch"
+     style="color:#1a237e;text-decoration:none;font-weight:700;font-size:14px;">
+    Use another Google account
+  </a>
+</div>
+
+
+  <div class="divider">or</div>
+
+  <form method="POST" action="/login" autocomplete="on">
+    <div class="form-group">
+      <input
+        name="email"
+        type="email"
+        placeholder="Email"
+        value="<%= (old && old.email) || '' %>"
+        autocomplete="email"
+        required
+      />
     </div>
+
+    <div class="form-group">
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+
+  <div class="links" style="margin-top:18px">
+    <p style="color:#546e7a;margin-bottom:10px;">Don't have an account?</p>
+    <a href="/register">Register Now</a>
+    <span style="color:#e0e0e0;">|</span>
+    <a href="/">Go to Home</a>
+  </div>
+</div>
 
 </body>
 </html>

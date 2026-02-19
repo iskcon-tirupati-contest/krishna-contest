@@ -71,11 +71,29 @@
 </head>
 <body>
 
-    <div class="processing-container">
-        <div class="spinner"></div>
-        <h1>Processing Your Payment</h1>
-        <p>Please wait while we confirm your transaction...</p>
-    </div>
+<div class="processing-container">
+  <div class="spinner"></div>
+  <h1>Processing Your Payment</h1>
+  <p>Please wait while we confirm your transaction...</p>
+
+  <div style="margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+    <a href="/payment/simulate/success?orderId=<%= orderId %>"
+       style="padding:12px 18px;border-radius:10px;background:#1a237e;color:#fff;text-decoration:none;font-weight:700">
+      Simulate Success
+    </a>
+
+    <a href="/payment/simulate/failure?orderId=<%= orderId %>"
+       style="padding:12px 18px;border-radius:10px;background:#b42318;color:#fff;text-decoration:none;font-weight:700">
+      Simulate Failure
+    </a>
+  </div>
+
+  <div style="margin-top:12px;font-size:12px;color:#78909c">
+    (This is temporary until HDFC test kit is enabled)
+  </div>
+</div>
+
+
 
 </body>
 </html>

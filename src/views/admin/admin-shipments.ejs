@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Shipments</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1300px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    .muted{color:rgba(255,255,255,.7)}
+    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
+    .btn.primary{background:#1a3cff;color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    @media (max-width:1100px){ .sidebar{display:none} .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments" class="active">Shipments</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div>
+              <h1 style="margin:0 0 6px 0">Shipments</h1>
+              <div class="muted">Paid book orders only (latest 500)</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <a class="btn ghost" href="/admin/shipments">Reset</a>
+              <button class="btn primary" type="submit" form="filtersForm">Apply</button>
+              <a class="btn ghost" href="/admin/shipments/export.csv?<%= qs %>">Export CSV</a>
+
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+          <form id="filtersForm" method="GET" action="/admin/shipments">
+            <div class="grid">
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">Contest</div>
+                <select name="contest_id">
+                  <option value="" <%= !filters.contestId?'selected':'' %>>All</option>
+                  <% contests.forEach(c => { %>
+                    <option value="<%= c.id %>" <%= (filters.contestId===c.id)?'selected':'' %>><%= c.title %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">User name (type + apply)</div>
+                <input name="user_name" value="<%= filters.userName || '' %>" placeholder="e.g. Iskcon" />
+              </div>
+
+              <div>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">Status</div>
+                <select name="status">
+                  <option value="all" <%= filters.status==='all'?'selected':'' %>>All</option>
+                  <option value="pending" <%= filters.status==='pending'?'selected':'' %>>Pending</option>
+                  <option value="packed" <%= filters.status==='packed'?'selected':'' %>>Packed</option>
+                  <option value="dispatched" <%= filters.status==='dispatched'?'selected':'' %>>Dispatched</option>
+                  <option value="delivered" <%= filters.status==='delivered'?'selected':'' %>>Delivered</option>
+                </select>
+              </div>
+            </div>
+          </form>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>User</th>
+                <th>Contest</th>
+                <th>Address</th>
+                <th>Tracking</th>
+                <th>Status</th>
+                <th>Update</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% items.forEach(it => { %>
+                <tr>
+                  <td class="muted" style="font-size:12px"><%= it.order_id %></td>
+                  <td>
+                    <div style="font-weight:900"><%= it.user_name %></div>
+                    <div class="muted" style="font-size:12px"><%= it.email %> • <%= it.phone || '-' %></div>
+                  </td>
+                  <td><%= it.contest_title %></td>
+                  <td class="muted" style="font-size:12px">
+                    <div><%= it.address || '-' %></div>
+                    <div><%= it.city || '' %> <%= it.state || '' %> <%= it.pincode || '' %></div>
+                  </td>
+                  <td class="muted" style="font-size:12px"><%= it.tracking_id || '-' %></td>
+                  <td><%= (it.status || 'pending') %></td>
+                  <td>
+                    <form method="POST" action="/admin/shipments/update">
+                      <input type="hidden" name="orderId" value="<%= it.order_id %>" />
+                      <input name="tracking_id" placeholder="Tracking ID" value="<%= it.tracking_id || '' %>" />
+                      <div style="height:8px"></div>
+                      <input name="courier_mode" placeholder="Courier" value="<%= it.courier_mode || '' %>" />
+                      <div style="height:8px"></div>
+                      <select name="status">
+                        <option value="pending" <%= (it.status||'pending')==='pending'?'selected':'' %>>pending</option>
+                        <option value="packed" <%= (it.status||'')==='packed'?'selected':'' %>>packed</option>
+                        <option value="dispatched" <%= (it.status||'')==='dispatched'?'selected':'' %>>dispatched</option>
+                        <option value="delivered" <%= (it.status||'')==='delivered'?'selected':'' %>>delivered</option>
+                      </select>
+                      <div style="height:8px"></div>
+                      <button class="btn primary" type="submit">Save</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

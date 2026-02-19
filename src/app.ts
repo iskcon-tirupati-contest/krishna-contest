@@ -5,10 +5,19 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
-import { connectDB } from "./config/db";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+import { connectDB, pool } from "./config/db";
+
 import authRoutes from "./routes/auth";
 import dashboardRoutes from "./routes/dashboard";
 import participationRoutes from "./routes/participation";
+import checkoutRoutes from "./routes/checkout";
+import paymentRoutes from "./routes/payment";
+import profileRoutes from "./routes/profile";
+import adminRoutes from "./routes/admin";
+
 
 dotenv.config();
 
@@ -29,7 +38,6 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
-
 app.use(limiter);
 
 /* Middleware */
@@ -44,69 +52,79 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+/* Google OAuth (no session; we still use JWT cookie) */
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || "",
+    },
+    async (_accessToken, _refreshToken, profile, done) => {
+      try {
+        const googleId = profile.id;
+        const email = (profile.emails && profile.emails[0]?.value
+          ? profile.emails[0].value
+          : ""
+        ).toLowerCase();
+        const name = profile.displayName || "Devotee";
+
+        if (!email) return done(null, false);
+
+        const byGoogle = await pool.query(
+          `SELECT id FROM users WHERE google_id=$1 LIMIT 1`,
+          [googleId]
+        );
+        if (byGoogle.rows.length > 0) return done(null, { id: byGoogle.rows[0].id });
+
+        const byEmail = await pool.query(
+          `SELECT id, google_id FROM users WHERE email=$1 LIMIT 1`,
+          [email]
+        );
+        if (byEmail.rows.length > 0) {
+          const uid = byEmail.rows[0].id;
+          if (!byEmail.rows[0].google_id) {
+            await pool.query(`UPDATE users SET google_id=$1 WHERE id=$2`, [googleId, uid]);
+          }
+          return done(null, { id: uid });
+        }
+
+        const created = await pool.query(
+          `INSERT INTO users (name, email, google_id, phone_locked)
+           VALUES ($1,$2,$3,false)
+           RETURNING id`,
+          [name, email, googleId]
+        );
+
+        return done(null, { id: created.rows[0].id });
+      } catch (e) {
+        console.error("Google OAuth error:", e);
+        return done(e as any, false);
+      }
+    }
+  )
+);
+
+app.use(passport.initialize());
+
 /* Routes */
 app.use("/", authRoutes);
 app.use("/", dashboardRoutes);
 app.use("/", participationRoutes);
-
+app.use(checkoutRoutes);
+app.use(paymentRoutes);
+app.use("/", profileRoutes);
+app.use("/", adminRoutes);
 /* Pages */
-app.get("/", (req, res) => {
-  res.render("index");
-});
-
-app.get("/privacy-policy", (req, res) => {
-  res.render("privacy-policy");
-});
-
-app.get("/terms", (req, res) => {
-  res.render("terms");
-});
-
-app.get("/refund-policy", (req, res) => {
-  res.render("refund-policy");
-});
-
-app.get("/about", (req, res) => {
-  res.render("about");
-});
-
-app.get("/contact", (req, res) => {
-  res.render("contact");
-});
-
-app.get("/payment", (req, res) => {
-  res.render("payment");
-});
-
-app.get("/payment-success", (req, res) => {
-  res.render("payment-success");
-});
-
-app.get("/payment-failure", (req, res) => {
-  res.render("payment-failure");
-});
-
-app.get("/payment-response", (req, res) => {
-  res.render("payment-response");
-});
-
-app.post("/payment-initiate", (req, res) => {
-  res.redirect("/payment-success");
-});
-
-app.post("/payment-response", (req, res) => {
-  console.log("Gateway Response:", req.body);
-  res.redirect("/payment-success");
-});
-
-app.get("/test-png", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/images/SP_LOGO.png"));
-});
-
+app.get("/", (_req, res) => res.render("index"));
+app.get("/privacy-policy", (_req, res) => res.render("privacy-policy"));
+app.get("/terms", (_req, res) => res.render("terms"));
+app.get("/refund-policy", (_req, res) => res.render("refund-policy"));
+app.get("/about", (_req, res) => res.render("about"));
+app.get("/contact", (_req, res) => res.render("contact"));
 
 connectDB();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
-

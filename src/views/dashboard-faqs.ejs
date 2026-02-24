@@ -3,30 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FAQs - KNC 2026</title>
+  <title>FAQs - Wisdom Contest 2026</title>
   <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f6f8fb}
-    .wrap{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0f1b3d;color:#fff;padding:18px;display:flex;flex-direction:column;gap:10px}
-    .brand{font-weight:700;font-size:18px;margin-bottom:10px}
-    .nav{display:block;color:#dbe3ff;text-decoration:none;padding:12px 12px;border-radius:10px}
-    .nav:hover{background:rgba(255,255,255,.08)}
-    .nav.active{background:rgba(255,215,0,.18);color:#ffd700}
-    .nav.danger{color:#ffbdbd}
-    .main{flex:1;padding:24px}
-    .card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:18px;max-width:900px}
-    details{border:1px solid #eef2f6;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff}
-    summary{cursor:pointer;font-weight:800;color:#0f1b3d}
-    .muted{color:#667085}
+    :root{--ink:#0f1b3d;--bg:#f6f3ea;--card:#fff;--muted:#667085;--primary:#1a237e;--gold:#d9a441;--ring:rgba(26,35,126,.22)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink)}
+
+    .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#0b2b66 0%,#081c40 100%);border-bottom:1px solid rgba(255,255,255,.12)}
+    .topbarInner{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;color:#fff}
+    .logoDot{width:38px;height:38px;border-radius:12px;background:radial-gradient(circle at 30% 20%,#ffe7a5 0%,#d9a441 35%,#7a4b00 100%);box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.2);position:relative}
+    .logoDot:after{content:"";position:absolute;inset:9px 13px;border-radius:999px;border:2px solid rgba(255,255,255,.6)}
+    .brandTitle{line-height:1.05}
+    .brandTitle .t1{font-weight:900;font-size:18px}
+    .brandTitle .t2{font-weight:800;font-size:12px;opacity:.86}
+    .bellBtn{border:none;cursor:pointer;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);width:44px;height:44px;border-radius:14px;display:grid;place-items:center}
+
+    .page{max-width:1100px;margin:0 auto;padding:16px 16px 112px}
+    .card{background:var(--card);border:1px solid rgba(15,27,61,.10);border-radius:18px;padding:16px;box-shadow:0 16px 40px rgba(15,27,61,.08);max-width:900px}
+    details{border:1px solid rgba(15,27,61,.10);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
+    summary{cursor:pointer;font-weight:1000;color:var(--ink)}
+    .muted{color:var(--muted)}
+
+    .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:linear-gradient(180deg,#0c2f73 0%,#081c40 100%);border-top:1px solid rgba(255,255,255,.14)}
+    .navInner{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;justify-content:space-between;gap:10px}
+    .navItem{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:rgba(255,255,255,.76);font-weight:900;font-size:12px;padding:10px 10px;border-radius:16px}
+    .navItem.active{color:#fff;background:rgba(217,164,65,.20);border:1px solid rgba(217,164,65,.22)}
+    .navItem svg{width:22px;height:22px;opacity:.9}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <%- include('partials/dashboard-sidebar', { activeTab }) %>
+<header class="topbar">
+  <div class="topbarInner">
+    <div class="brand">
+      <div class="logoDot" aria-hidden="true"></div>
+      <div class="brandTitle">
+        <div class="t1">Wisdom Contest 2026</div>
+        <div class="t2">FAQs</div>
+      </div>
+    </div>
+    <button class="bellBtn" type="button" title="Notifications" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+    </button>
+  </div>
+</header>
 
-  <div class="main">
-    <h2 style="margin:0 0 14px 0;color:#0f1b3d">FAQs</h2>
-    <div class="card">
+<main class="page">
+  <div class="card">
+      <h2 style="margin:0 0 14px 0">FAQs</h2>
       <details open>
         <summary>Is my money refundable?</summary>
         <div class="muted" style="margin-top:8px">
@@ -58,8 +85,28 @@
       <div class="muted" style="margin-top:12px;font-size:13px">
         We will add more FAQs later.
       </div>
-    </div>
   </div>
-</div>
+</main>
+
+<nav class="bottomNav" aria-label="Bottom navigation">
+  <div class="navInner">
+    <a class="navItem <%= (activeTab==='dashboard' || activeTab==='home') ? 'active' : '' %>" href="/dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      Home
+    </a>
+    <a class="navItem <%= activeTab==='profile' ? 'active' : '' %>" href="/dashboard/profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+    <a class="navItem <%= activeTab==='delivery' ? 'active' : '' %>" href="/dashboard/delivery">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 2v5h-5"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="18.5" cy="19" r="1.5"/></svg>
+      Track
+    </a>
+    <a class="navItem <%= activeTab==='faqs' ? 'active' : '' %>" href="/dashboard/faqs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+      FAQs
+    </a>
+  </div>
+</nav>
 </body>
 </html>

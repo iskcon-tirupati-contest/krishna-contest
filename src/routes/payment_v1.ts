@@ -11,6 +11,7 @@ const RZP_KEY_ID = process.env.RZP_KEY_ID || "";
 const RZP_KEY_SECRET = process.env.RZP_KEY_SECRET || "";
 const RZP_WEBHOOK_SECRET = process.env.RZP_WEBHOOK_SECRET || "";
 
+/** Razorpay types */
 type RzpOrder = {
   id: string;
   amount: number;
@@ -27,6 +28,7 @@ type RzpPayment = {
   currency?: string;
 };
 
+/** Helpers */
 function assertRzpEnv() {
   if (!RZP_KEY_ID || !RZP_KEY_SECRET) {
     throw new Error("Missing Razorpay keys. Set RZP_KEY_ID and RZP_KEY_SECRET in .env");
@@ -69,7 +71,6 @@ function rzpRequest<T>(method: "GET" | "POST", path: string, body?: any): Promis
             json?.error?.description ||
             json?.error?.message ||
             `Razorpay API error (${statusCode})`;
-
           return reject(new Error(msg));
         });
       }
@@ -94,13 +95,15 @@ function verifyRazorpaySignature(args: {
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(got));
 }
 
+/** Webhook signature verification */
 function verifyWebhookSignature(rawBody: Buffer, signature: string) {
-  // FAIL-CLOSED: if secret missing, reject webhook
-  if (!RZP_WEBHOOK_SECRET) return false;
+  if (!RZP_WEBHOOK_SECRET) return false; // do not throw (avoid 500 loop)
+  const expected = crypto
+    .createHmac("sha256", RZP_WEBHOOK_SECRET)
+    .update(rawBody)
+    .digest("hex");
 
-  const expected = crypto.createHmac("sha256", RZP_WEBHOOK_SECRET).update(rawBody).digest("hex");
   const got = String(signature || "");
-
   if (expected.length !== got.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(got));
 }
@@ -123,32 +126,48 @@ function parseUuidList(raw: string): string[] {
   return Array.from(new Set(ids));
 }
 
+/** Small DB helper: update session + linked orders together */
+async function markSessionAndOrders(
+  sessionId: string,
+  newStatus: "paid" | "failed"
+) {
+  await pool.query("BEGIN");
+  try {
+    await pool.query(`UPDATE payment_sessions SET status=$2 WHERE id=$1`, [sessionId, newStatus]);
+    await pool.query(
+      `UPDATE orders SET payment_status=$2 WHERE payment_session_id=$1`,
+      [sessionId, newStatus]
+    );
+    await pool.query("COMMIT");
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    throw e;
+  }
+}
+
 /**
- * WEBHOOK (final truth)
- * Requires app.ts: app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }))
+ * WEBHOOK (reliability + audit)
+ * Needs express.raw() in app.ts for this path.
  */
 router.post("/payment/hdfc/webhook", async (req: any, res) => {
   try {
     const sig = String(req.headers["x-razorpay-signature"] || "");
-    const rawBody: Buffer = req.body; // Buffer because of express.raw()
+    const rawBody: Buffer = req.body;
 
-    if (!Buffer.isBuffer(rawBody)) return res.status(400).send("Expected raw body");
-    if (!sig) return res.status(400).send("Missing x-razorpay-signature");
+    if (!Buffer.isBuffer(rawBody)) {
+      // If middleware wrong, respond 200 to avoid retries storm but log it
+      console.error("Webhook: expected raw body Buffer, got:", typeof req.body);
+      return res.status(200).json({ ok: false, misconfigured: true });
+    }
 
     const ok = verifyWebhookSignature(rawBody, sig);
     if (!ok) return res.status(400).send("Invalid webhook signature");
 
-    let event: any;
-    try {
-      event = JSON.parse(rawBody.toString("utf8"));
-    } catch {
-      return res.status(400).send("Invalid JSON");
-    }
-
+    const event = JSON.parse(rawBody.toString("utf8"));
     const eventType = String(event?.event || "");
-    const paymentEntity = event?.payload?.payment?.entity;
 
-    const orderId = String(paymentEntity?.order_id || ""); // Razorpay order id
+    const paymentEntity = event?.payload?.payment?.entity;
+    const orderId = String(paymentEntity?.order_id || "");
     const paymentId = String(paymentEntity?.id || "");
     const status = String(paymentEntity?.status || "");
 
@@ -162,78 +181,81 @@ router.post("/payment/hdfc/webhook", async (req: any, res) => {
       [orderId]
     );
 
-    if (psQ.rows.length === 0) return res.status(200).json({ ok: true, unknown_order: true });
+    if (psQ.rows.length === 0) {
+      // Unknown order id: acknowledge so Razorpay doesn't retry forever
+      return res.status(200).json({ ok: true, unknown_order: true });
+    }
 
-    const sessionId = psQ.rows[0].id;
-    const userId = psQ.rows[0].user_id;
+    const sessionId = psQ.rows[0].id as string;
+    const userId = psQ.rows[0].user_id as string;
+    const sessionStatus = String(psQ.rows[0].status || "");
     const expectedAmountPaise = Math.round(Number(psQ.rows[0].amount || 0) * 100);
 
-    // Always log webhook
+    // Audit log
     await pool.query(
       `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
        VALUES ($1,$2,'payment_webhook',$3,$4::jsonb)`,
       [userId, String(sessionId), eventType, JSON.stringify({ orderId, paymentId, status })]
     );
 
-    // Never downgrade a paid session
-    if (String(psQ.rows[0].status) === "paid") {
-      return res.status(200).json({ ok: true, already_paid: true });
+    // If already paid, never downgrade
+    if (sessionStatus === "paid") {
+      return res.status(200).json({ ok: true, ignored: "already_paid" });
     }
 
-    const isCaptured = eventType === "payment.captured" || status === "captured";
-    const isFailed = eventType === "payment.failed" || status === "failed";
+    // Decide action
+    const wantsPaid = eventType === "payment.captured" || status === "captured";
+    const wantsFailed = eventType === "payment.failed" || status === "failed";
 
-    if (isCaptured) {
-      // Dual inquiry (recommended)
-      const pay = await rzpRequest<RzpPayment>("GET", `/v1/payments/${encodeURIComponent(paymentId)}`);
+    if (wantsPaid) {
+      // Dual inquiry
+      const pay = await rzpRequest<RzpPayment>(
+        "GET",
+        `/v1/payments/${encodeURIComponent(paymentId)}`
+      );
+
       const payStatus = String(pay.status || "");
       const payAmount = Number(pay.amount || 0);
 
+      // Log dual inquiry for audit
       await pool.query(
         `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
-         VALUES ($1,$2,'payment_verify','webhook_dual_inquiry',$3::jsonb)`,
+         VALUES ($1,$2,'payment_verify','webhook_dual_inquiry', $3::jsonb)`,
         [
           userId,
           String(sessionId),
-          JSON.stringify({ razorpay_order_id: orderId, razorpay_payment_id: paymentId, payStatus, payAmount }),
+          JSON.stringify({
+            razorpay_payment_id: paymentId,
+            razorpay_order_id: orderId,
+            status: payStatus,
+            amount: payAmount,
+          }),
         ]
       );
 
       if (payStatus === "captured" && payAmount === expectedAmountPaise) {
-        await pool.query(`UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-        await pool.query(
-          `UPDATE orders SET payment_status='paid'
-           WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-          [sessionId]
-        );
-      } else {
-        await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-        await pool.query(
-          `UPDATE orders SET payment_status='failed'
-           WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-          [sessionId]
-        );
+        await markSessionAndOrders(sessionId, "paid");
       }
+      return res.status(200).json({ ok: true });
     }
 
-    if (isFailed) {
-      await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-      await pool.query(
-        `UPDATE orders SET payment_status='failed'
-         WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-        [sessionId]
-      );
+    if (wantsFailed) {
+      // Only mark failed if not already paid (handled above)
+      await markSessionAndOrders(sessionId, "failed");
+      return res.status(200).json({ ok: true });
     }
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, ignored: "event_not_used" });
   } catch (e) {
     console.error("Webhook error:", e);
-    return res.status(500).send("Webhook error");
+    // Return 200 for safety to avoid repeated retries storms if your server has transient error
+    return res.status(200).json({ ok: false, error: "webhook_error" });
   }
 });
 
 /**
- * CART
+ * CART (review selected contests)
+ * URL: /cart?contestIds=uuid,uuid
  */
 router.get("/cart", authMiddleware, async (req: any, res) => {
   const contestIds = parseUuidList(String(req.query.contestIds || ""));
@@ -249,16 +271,16 @@ router.get("/cart", authMiddleware, async (req: any, res) => {
   const contests = q.rows as any[];
   if (contests.length === 0) return res.status(404).send("Contests not found");
 
+  // ✅ Allow repeat participation: do not filter paid contests.
   const totalAmount = contests.reduce((a, c) => a + Number(c.price || 0), 0);
   return res.render("cart", { contests, totalAmount });
 });
 
 /**
- * CREATE ORDERS (pending) grouped by internal paymentId (KNCxxxx)
+ * CREATE ORDERS (pending) for selected contests, grouped by payment_id
  */
 router.post("/payment/start", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
-
   const contestIds = parseUuidList(String(req.body.contestIds || ""));
   if (contestIds.length === 0) return res.status(400).send("No contests selected");
 
@@ -270,9 +292,11 @@ router.post("/payment/start", authMiddleware, async (req: any, res) => {
   );
   if (c.rows.length === 0) return res.status(404).send("Contests not found");
 
+  const toBuy = c.rows; // ✅ allow repeats
+
   const paymentId = genPaymentId();
 
-  for (const row of c.rows) {
+  for (const row of toBuy) {
     await pool.query(
       `INSERT INTO orders (user_id, contest_id, amount, payment_status, payment_id, created_at)
        VALUES ($1,$2,$3,'pending',$4,(NOW() AT TIME ZONE 'Asia/Kolkata'))`,
@@ -307,9 +331,9 @@ router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
 
   const totalAmount = ordersQ.rows.reduce((a: number, r: any) => a + Number(r.amount || 0), 0);
 
-  // Reuse or create payment_sessions + razorpay order
+  // Reuse session if exists
   const linked = await pool.query(
-    `SELECT ps.id, ps.payment_id AS razorpay_order_id
+    `SELECT ps.id, ps.payment_id AS razorpay_order_id, ps.status, ps.amount
      FROM orders o
      JOIN payment_sessions ps ON ps.id = o.payment_session_id
      WHERE o.user_id=$1 AND o.payment_id=$2 AND o.payment_session_id IS NOT NULL
@@ -326,13 +350,15 @@ router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
     razorpayOrderId = linked.rows[0].razorpay_order_id;
   } else {
     const amountPaise = Math.round(Number(totalAmount) * 100);
-
     const orderResp = await rzpRequest<RzpOrder>("POST", "/v1/orders", {
       amount: amountPaise,
       currency: "INR",
       receipt: paymentId,
       payment_capture: 1,
-      notes: { payment_group: paymentId, user_id: userId },
+      notes: {
+        payment_group: paymentId,
+        user_id: userId,
+      },
     });
 
     razorpayOrderId = orderResp.id;
@@ -343,7 +369,6 @@ router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
        RETURNING id`,
       [userId, razorpayOrderId, totalAmount]
     );
-
     paymentSessionId = ps.rows[0].id;
 
     await pool.query(
@@ -374,8 +399,7 @@ router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
 });
 
 /**
- * CALLBACK (redirect flow)
- * Signature verify + dual inquiry + mark paid + redirect to bulk checkout
+ * CALLBACK (user redirect path)
  */
 router.post("/payment/hdfc/callback", async (req: any, res) => {
   try {
@@ -387,7 +411,11 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
       return res.status(400).send("Invalid callback payload");
     }
 
-    const sigOk = verifyRazorpaySignature({ razorpay_order_id, razorpay_payment_id, razorpay_signature });
+    const sigOk = verifyRazorpaySignature({
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    });
     if (!sigOk) return res.status(400).send("Signature verification failed");
 
     const psQ = await pool.query(
@@ -400,58 +428,66 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
     if (psQ.rows.length === 0) return res.status(404).send("Payment session not found");
 
     const ps = psQ.rows[0];
-    const sessionId = ps.id;
-    const userId = ps.user_id;
+    const sessionId = ps.id as string;
+    const userId = ps.user_id as string;
+    const sessionStatus = String(ps.status || "");
     const expectedAmountPaise = Math.round(Number(ps.amount || 0) * 100);
 
-    // If already paid, redirect (idempotent)
-    if (String(ps.status) === "paid") {
+    // If already paid, just redirect
+    if (sessionStatus === "paid") {
       const grpQ = await pool.query(
         `SELECT payment_id FROM orders WHERE payment_session_id=$1 ORDER BY created_at ASC LIMIT 1`,
         [sessionId]
       );
       const internalPaymentId = grpQ.rows[0]?.payment_id;
-      return res.redirect(
-        internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard"
-      );
+      return internalPaymentId
+        ? res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}`)
+        : res.redirect("/dashboard");
     }
 
-    const pay = await rzpRequest<RzpPayment>("GET", `/v1/payments/${encodeURIComponent(razorpay_payment_id)}`);
-    const status = String(pay.status || "");
-    const amount = Number(pay.amount || 0);
+    // Dual inquiry
+    const pay = await rzpRequest<RzpPayment>(
+      "GET",
+      `/v1/payments/${encodeURIComponent(razorpay_payment_id)}`
+    );
+    const payStatus = String(pay.status || "");
+    const payAmount = Number(pay.amount || 0);
 
+    // Log dual inquiry for audit
     await pool.query(
       `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
-       VALUES ($1,$2,'payment_verify','dual_inquiry',$3::jsonb)`,
-      [userId, String(sessionId), JSON.stringify({ razorpay_payment_id, razorpay_order_id, status, amount })]
+       VALUES ($1,$2,'payment_verify','callback_dual_inquiry', $3::jsonb)`,
+      [
+        userId,
+        String(sessionId),
+        JSON.stringify({
+          razorpay_payment_id,
+          razorpay_order_id,
+          status: payStatus,
+          amount: payAmount,
+        }),
+      ]
     );
 
-    if (status !== "captured" || amount !== expectedAmountPaise) {
-      await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-      await pool.query(
-        `UPDATE orders SET payment_status='failed'
-         WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-        [sessionId]
-      );
+    if (payStatus !== "captured" || payAmount !== expectedAmountPaise) {
+      await markSessionAndOrders(sessionId, "failed");
       return res.render("payment-failure", { orderId: null, paymentId: razorpay_order_id });
     }
 
-    await pool.query(`UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-    await pool.query(
-      `UPDATE orders SET payment_status='paid'
-       WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-      [sessionId]
-    );
+    await markSessionAndOrders(sessionId, "paid");
 
     const grpQ = await pool.query(
-      `SELECT payment_id FROM orders WHERE payment_session_id=$1 ORDER BY created_at ASC LIMIT 1`,
+      `SELECT payment_id
+       FROM orders
+       WHERE payment_session_id=$1
+       ORDER BY created_at ASC
+       LIMIT 1`,
       [sessionId]
     );
-
     const internalPaymentId = grpQ.rows[0]?.payment_id;
-    return res.redirect(
-      internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard"
-    );
+    if (!internalPaymentId) return res.redirect("/dashboard");
+
+    return res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}`);
   } catch (e) {
     console.error("HDFC callback error:", e);
     return res.status(500).send("Payment processing error");

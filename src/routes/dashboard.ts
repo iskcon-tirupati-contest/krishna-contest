@@ -12,10 +12,12 @@ const router = express.Router();
 /**
  * Upload allowlist
  */
+
 const ALLOWED_EXT = new Set([
   "pdf", "doc", "docx",
   "mp3", "wav", "aac", "m4a", "ogg",
-  "mp4", "m4v", "mov", "webm", "mkv"
+  "mp4", "m4v", "mov", "webm", "mkv",
+  "jpg", "jpeg", "png", "webp", "gif"
 ]);
 
 const ALLOWED_MIME = new Set([
@@ -37,6 +39,18 @@ const ALLOWED_MIME = new Set([
   "application/octet-stream"
 ]);
 
+const MAX_ATTEMPTS = 3;
+
+async function getAttemptsUsed(userId: string, orderId: string) {
+  const r = await pool.query(
+    `SELECT COUNT(*)::int AS cnt
+     FROM upload_logs
+     WHERE user_id=$1 AND order_id=$2 AND stage='complete_ok'`,
+    [userId, orderId]
+  );
+  return r.rows[0]?.cnt ?? 0;
+}
+
 function getExt(fileName: string) {
   const parts = (fileName || "").toLowerCase().split(".");
   return parts.length > 1 ? parts.pop()! : "";
@@ -45,8 +59,20 @@ function getExt(fileName: string) {
 function isAllowed(contentType: string, fileName: string) {
   const ct = (contentType || "").toLowerCase().trim();
   const ext = getExt(fileName);
-  if (ALLOWED_MIME.has(ct)) return true;
+  // accept broad mime groups + allowlisted extensions (fallback when mime is empty/wrong)
+  if (isAllowedMime(ct)) return true;
   if (ALLOWED_EXT.has(ext)) return true;
+  return false;
+}
+
+function isAllowedMime(mime: string) {
+  if (!mime) return false;
+  if (mime === "application/pdf") return true;
+  if (mime === "application/msword") return true;
+  if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return true;
+  if (mime.startsWith("audio/")) return true;
+  if (mime.startsWith("video/")) return true;
+  if (mime.startsWith("image/")) return true;
   return false;
 }
 
@@ -130,7 +156,7 @@ router.post("/dashboard/upload/start", authMiddleware, async (req: any, res) => 
 
   if (!isAllowed(String(contentType), String(fileName))) {
     return res.status(400).json({
-      error: `File type not allowed. Allowed: pdf, doc/docx, mp3/wav/aac/m4a/ogg, mp4/m4v/mov/webm/mkv`
+      error: `File type not allowed. Please check Rules.`
     });
   }
 
@@ -140,6 +166,12 @@ router.post("/dashboard/upload/start", authMiddleware, async (req: any, res) => 
     [orderId, userId]
   );
   if (orderRes.rows.length === 0) return res.status(403).json({ error: "Invalid order" });
+
+
+  const attemptsUsed = await getAttemptsUsed(userId, orderId);
+  if (attemptsUsed >= MAX_ATTEMPTS) {
+    return res.status(400).json({ error: "Max 3 submissions allowed for this contest." });
+  }
 
   const ext = getExt(String(fileName)) || "bin";
   const safeExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -185,18 +217,34 @@ router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) 
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
+  // attempts limit (server-side enforcement)
+  const attemptsUsed = await getAttemptsUsed(String(userId), String(orderId));
+  if (attemptsUsed >= MAX_ATTEMPTS) {
+    return res.status(400).json({ error: "Max 3 submissions allowed for this contest." });
+  }
+
+  // basic validation
+  const size = Number(fileSize);
+  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+    return res.status(400).json({ error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
+  }
+
   if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
     return res.status(403).json({ error: "Invalid upload key." });
   }
 
-  // verify order belongs to user
+  if (!isAllowed(String(contentType || ""), String(originalName || ""))) {
+    return res.status(400).json({ error: "File type not allowed. Please check Rules." });
+  }
+
+  // verify paid order belongs to this user
   const orderRes = await pool.query(
     `SELECT id FROM orders WHERE id=$1 AND user_id=$2 AND payment_status='paid'`,
     [orderId, userId]
   );
   if (orderRes.rows.length === 0) return res.status(403).json({ error: "Invalid order" });
 
-  // locked?
+  // check submission locked
   const existing = await pool.query(`SELECT id, is_locked FROM submissions WHERE order_id=$1`, [orderId]);
   if (existing.rows.length > 0 && existing.rows[0].is_locked) {
     return res.status(403).json({ error: "Submission locked" });
@@ -209,26 +257,39 @@ router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) 
 
   if (existing.rows.length === 0) {
     await pool.query(
-      `INSERT INTO submissions (order_id, file_url, s3_key, content_type, original_name, uploaded_at, last_updated_at)
-       VALUES ($1,$2,$3,$4,$5,(NOW() AT TIME ZONE 'Asia/Kolkata'), (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
-      [orderId, publicUrl, key, contentType || null, originalName || null]
+      `INSERT INTO submissions (order_id, file_url, file_size, s3_key, content_type, original_name, uploaded_at, last_updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,(NOW() AT TIME ZONE 'Asia/Kolkata'), (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
+      [orderId, publicUrl, size, key, contentType || null, originalName || null]
     );
   } else {
     await pool.query(
       `UPDATE submissions
        SET file_url=$1,
-           s3_key=$2,
-           content_type=$3,
-           original_name=$4,
+           file_size=$2,
+           s3_key=$3,
+           content_type=$4,
+           original_name=$5,
            uploaded_at=(NOW() AT TIME ZONE 'Asia/Kolkata'),
            last_updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
-       WHERE order_id=$5`,
-      [publicUrl, key, contentType || null, originalName || null, orderId]
+       WHERE order_id=$6`,
+      [publicUrl, size, key, contentType || null, originalName || null, orderId]
     );
   }
 
-  res.json({ ok: true });
+  // record successful attempt
+  await pool.query(
+    `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+     VALUES ($1,$2,'complete_ok','submission saved',$3::jsonb)`,
+    [
+      userId,
+      String(orderId),
+      JSON.stringify({ originalName: originalName || null, fileSize: size, contentType: contentType || null })
+    ]
+  );
+
+  res.json({ ok: true, attemptsUsed: attemptsUsed + 1, attemptsMax: MAX_ATTEMPTS });
 });
+
 
 router.post("/dashboard/upload/abort", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -298,6 +359,11 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
         c.submission_deadline,
 
         CASE
+          WHEN c.submission_deadline IS NULL THEN NULL
+          ELSE EXTRACT(EPOCH FROM (c.submission_deadline - (NOW() AT TIME ZONE 'Asia/Kolkata')))
+        END AS seconds_left,
+
+        CASE
           WHEN c.submission_deadline IS NULL THEN false
           WHEN (NOW() AT TIME ZONE 'Asia/Kolkata') > c.submission_deadline THEN true
           ELSE false
@@ -309,7 +375,10 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
         s.original_name,
         s.uploaded_at,
         s.last_updated_at,
-        s.is_locked
+        s.is_locked,
+
+        (SELECT COUNT(*)::int FROM upload_logs ul
+         WHERE ul.user_id = $1 AND ul.order_id = o.id::text AND ul.stage='complete_ok') AS attempts_used
 
      FROM orders o
      JOIN contests c ON c.id = o.contest_id
@@ -319,8 +388,11 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
-  const purchasedIds = registeredRes.rows.map((r: any) => r.contest_id);
-  const pending = activeContests.rows.filter((c: any) => !purchasedIds.includes(c.id));
+  //  // ✅ Allow repeat participation: do not remove already participated contests from Available
+  //const pending = activeContests.rows;
+
+    // ✅ Allow repeat participation (children etc)
+  const pending = activeContests.rows;
 
   res.render("dashboard-home", {
     activeTab: "dashboard",

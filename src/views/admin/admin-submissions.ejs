@@ -25,6 +25,7 @@
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .chip{display:inline-flex;gap:8px;align-items:center;background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);padding:6px 10px;border-radius:999px}
     .chip a{color:#fff;text-decoration:none;opacity:.9}
+    progress{height:12px;border-radius:999px;overflow:hidden}
     @media (max-width:1100px){ .sidebar{display:none} .grid{grid-template-columns:1fr} }
   </style>
 </head>
@@ -56,7 +57,6 @@
             <div style="display:flex;gap:10px">
               <a class="btn ghost" href="/admin/submissions">Reset</a>
               <a class="btn ghost" href="/admin/submissions/export.csv?<%= qs %>">Export CSV</a>
-
               <button class="btn primary" type="submit" form="filtersForm">Apply</button>
             </div>
           </div>
@@ -101,11 +101,11 @@
           <div class="chips">
             <% Object.keys(f).forEach(k => { if (f[k]) {
               const copy = { ...f }; copy[k] = '';
-              const qs = base(copy);
+              const qss = base(copy);
             %>
               <span class="chip">
                 <span><%= k %>: <%= f[k] %></span>
-                <a href="/admin/submissions?<%= qs %>">✕</a>
+                <a href="/admin/submissions?<%= qss %>">✕</a>
               </span>
             <% } }) %>
           </div>
@@ -116,10 +116,11 @@
                 <th>Uploaded</th>
                 <th>Contest</th>
                 <th>User</th>
+                <th>Book</th>
                 <th>File</th>
                 <th>Size</th>
                 <th>Lock</th>
-                <th>Download</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -135,37 +136,187 @@
                   return n+" B";
                 }
               %>
+
               <% items.forEach(s => { %>
                 <tr>
                   <td><%= s.uploaded_at %></td>
                   <td><%= s.contest_title %></td>
+
                   <td>
                     <div style="font-weight:900"><%= s.user_name %></div>
                     <div class="muted" style="font-size:12px"><%= s.email %></div>
                     <div class="muted" style="font-size:12px">UUID: <%= s.user_id %></div>
                   </td>
+
+                  <td>
+                    <% if ((s.book_option || '').toLowerCase() === 'donation') { %>
+                      Donation
+                    <% } else { %>
+                      <%= s.book_title || 'Book' %>
+                    <% } %>
+                  </td>
+
                   <td><%= s.original_name || '-' %></td>
                   <td><%= s.file_size ? bytesToHuman(s.file_size) : '-' %></td>
+
                   <td>
                     <form method="POST" action="/admin/submissions/toggle-lock">
                       <input type="hidden" name="submissionId" value="<%= s.id %>" />
                       <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
                     </form>
                   </td>
-                  <td>
-                    <a class="btn ghost" style="display:inline-block;text-decoration:none"
-                       href="/admin/submissions/download?submissionId=<%= s.id %>">
-                      Download (renamed)
-                    </a>
+
+                  <td style="min-width:260px">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                      <a class="btn ghost" style="display:inline-block;text-decoration:none"
+                         href="/admin/submissions/download?submissionId=<%= s.id %>">
+                        Download (renamed)
+                      </a>
+
+                      <!-- Upload on behalf -->
+                      <input
+                        type="file"
+                        id="f-<%= s.order_id %>"
+                        style="display:none"
+                        accept=".pdf,.doc,.docx,.mp3,.wav,.aac,.m4a,.ogg,.mp4,.m4v,.mov,.webm,.mkv" />
+
+                      <button
+                        class="btn ghost"
+                        type="button"
+                        onclick="adminPickFile('<%= s.order_id %>', <%= s.is_locked ? 'true' : 'false' %>, <%= s.deadline_passed ? 'true' : 'false' %>)">
+                        Upload
+                      </button>
+                    </div>
+
+                    <div class="muted" style="font-size:12px;margin-top:8px" id="st-<%= s.order_id %>"></div>
+                    <progress id="pg-<%= s.order_id %>" value="0" max="100" style="width:220px;display:none;margin-top:8px"></progress>
                   </td>
                 </tr>
               <% }) %>
             </tbody>
           </table>
 
+          <div class="muted" style="font-size:12px;margin-top:12px">
+            Admin upload-on-behalf respects: paid order + deadline + unlocked submission.
+          </div>
+
         </div>
       </div>
     </main>
   </div>
+
+<script>
+  const MAX_MB = 500;
+  const PART_SIZE = 10 * 1024 * 1024;
+
+  function st(orderId){ return document.getElementById("st-" + orderId); }
+  function pg(orderId){ return document.getElementById("pg-" + orderId); }
+
+  function setMsg(orderId, msg){ st(orderId).textContent = msg; }
+
+  window.adminPickFile = function(orderId, isLocked, deadlinePassed){
+    if (deadlinePassed) { setMsg(orderId, "Deadline passed. Upload blocked."); return; }
+    if (isLocked) { setMsg(orderId, "Submission locked. Unlock first."); return; }
+
+    const input = document.getElementById("f-" + orderId);
+    if (!input) return;
+
+    input.onchange = async () => {
+      if (!input.files || !input.files[0]) return;
+      try {
+        await adminUploadMultipart(orderId, input.files[0]);
+      } catch (e) {
+        setMsg(orderId, (e && e.message) ? e.message : "Upload error");
+        pg(orderId).style.display = "none";
+      } finally {
+        input.value = "";
+      }
+    };
+
+    input.click();
+  }
+
+  async function adminUploadMultipart(orderId, file){
+    if (file.size > MAX_MB * 1024 * 1024) throw new Error(`Max file size is ${MAX_MB}MB`);
+
+    setMsg(orderId, "Starting upload...");
+    pg(orderId).style.display = "block";
+    pg(orderId).value = 0;
+
+    // 1) start
+    const startRes = await fetch("/admin/submissions/upload/start", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        orderId,
+        fileName: file.name,
+        contentType: file.type || "application/octet-stream",
+        fileSize: file.size
+      })
+    });
+    const start = await startRes.json().catch(()=> ({}));
+    if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
+
+    const { key, uploadId, userId } = start;
+
+    const totalParts = Math.ceil(file.size / PART_SIZE);
+    const partNumbers = Array.from({length: totalParts}, (_, i) => i+1);
+
+    // 2) presign
+    setMsg(orderId, "Preparing parts...");
+    const presignRes = await fetch("/admin/submissions/upload/presign-parts", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ orderId, userId, key, uploadId, partNumbers })
+    });
+    const presign = await presignRes.json().catch(()=> ({}));
+    if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
+
+    const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
+    const uploadedParts = [];
+
+    // 3) upload parts
+    for (let partNumber = 1; partNumber <= totalParts; partNumber++){
+      const startByte = (partNumber - 1) * PART_SIZE;
+      const endByte = Math.min(partNumber * PART_SIZE, file.size);
+      const blob = file.slice(startByte, endByte);
+
+      setMsg(orderId, `Uploading part ${partNumber}/${totalParts}...`);
+
+      const putRes = await fetch(urlMap.get(partNumber), { method:"PUT", body: blob });
+      if (!putRes.ok) {
+        await fetch("/admin/submissions/upload/abort", {
+          method:"POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ orderId, userId, key, uploadId })
+        }).catch(()=>{});
+        throw new Error("Upload failed. Please retry (Wi-Fi recommended).");
+      }
+
+      uploadedParts.push({ ETag: putRes.headers.get("ETag"), PartNumber: partNumber });
+      pg(orderId).value = Math.round((partNumber / totalParts) * 100);
+    }
+
+    // 4) complete
+    setMsg(orderId, "Finalizing...");
+    const completeRes = await fetch("/admin/submissions/upload/complete", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        orderId, userId, key, uploadId,
+        parts: uploadedParts,
+        contentType: file.type || "application/octet-stream",
+        originalName: file.name,
+        fileSize: file.size
+      })
+    });
+    const complete = await completeRes.json().catch(()=> ({}));
+    if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
+
+    setMsg(orderId, "✅ Uploaded successfully!");
+    setTimeout(()=> window.location.reload(), 700);
+  }
+</script>
+
 </body>
 </html>

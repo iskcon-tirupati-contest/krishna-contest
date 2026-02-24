@@ -3,6 +3,9 @@ import { pool } from "../config/db";
 import { authMiddleware } from "../middleware/auth";
 import { adminMiddleware } from "../middleware/admin";
 import { presignGet } from "../utils/s3Get";
+import { v4 as uuidv4 } from "uuid";
+import { startMultipart, presignPart, completeMultipart, abortMultipart } from "../utils/s3Multipart";
+
 
 const router = express.Router();
 
@@ -965,4 +968,171 @@ router.post("/admin/feedback/close", authMiddleware, adminMiddleware, async (req
   res.redirect("/admin/feedback");
 });
 
+
+// --------------------
+// ADMIN UPLOAD ON BEHALF (SUBMISSIONS)
+// --------------------
+const ADMIN_ALLOWED_EXT = new Set([
+  "pdf","doc","docx","mp3","wav","aac","m4a","ogg","mp4","m4v","mov","webm","mkv"
+]);
+
+const ADMIN_ALLOWED_MIME = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "audio/mpeg","audio/mp3","audio/wav","audio/x-wav","audio/aac","audio/mp4","audio/m4a","audio/ogg",
+  "application/ogg",
+  "video/mp4","video/m4v","video/x-m4v","video/quicktime","video/webm","video/x-matroska",
+  "application/octet-stream"
+]);
+
+const ADMIN_MAX_BYTES = (Number(process.env.MAX_UPLOAD_MB || 500) * 1024 * 1024);
+
+function getExt(fileName: string) {
+  const parts = (fileName || "").toLowerCase().split(".");
+  return parts.length > 1 ? parts.pop()! : "";
+}
+
+function isAllowed(contentType: string, fileName: string) {
+  const ct = (contentType || "").toLowerCase().trim();
+  const ext = getExt(fileName);
+  if (ADMIN_ALLOWED_MIME.has(ct)) return true;
+  if (ADMIN_ALLOWED_EXT.has(ext)) return true;
+  return false;
+}
+
+async function adminGate(orderId: string) {
+  const q = await pool.query(
+    `
+    SELECT
+      o.id, o.user_id,
+      c.submission_deadline,
+      CASE
+        WHEN c.submission_deadline IS NULL THEN false
+        WHEN (NOW() AT TIME ZONE 'Asia/Kolkata') > c.submission_deadline THEN true
+        ELSE false
+      END AS deadline_passed
+    FROM orders o
+    JOIN contests c ON c.id=o.contest_id
+    WHERE o.id=$1 AND o.payment_status='paid'
+    LIMIT 1
+    `,
+    [orderId]
+  );
+
+  if (!q.rows.length) return { ok:false, code:403, msg:"Invalid / unpaid order." };
+  if (q.rows[0].deadline_passed) return { ok:false, code:403, msg:"Submission deadline has passed." };
+  return { ok:true, userId: q.rows[0].user_id as string };
+}
+
+function keyBelongs(orderId: string, userId: string, key: string) {
+  const prefix = `submissions/2026/user-${userId}/order-${orderId}/`;
+  return typeof key === "string" && key.startsWith(prefix);
+}
+
+router.post("/admin/submissions/upload/start", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const { orderId, fileName, contentType, fileSize } = req.body;
+  if (!orderId || !fileName || !contentType || !fileSize) return res.status(400).json({ error:"Missing fields" });
+
+  const gate = await adminGate(String(orderId));
+  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
+
+  const size = Number(fileSize);
+  if (!Number.isFinite(size) || size <= 0 || size > ADMIN_MAX_BYTES) {
+    return res.status(400).json({ error:`Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
+  }
+  if (!isAllowed(String(contentType), String(fileName))) {
+    return res.status(400).json({ error:"File type not allowed." });
+  }
+
+  const existing = await pool.query(`SELECT id, is_locked FROM submissions WHERE order_id=$1`, [orderId]);
+  if (existing.rows.length > 0 && existing.rows[0].is_locked) {
+    return res.status(403).json({ error:"Submission locked" });
+  }
+
+  const userId = gate.userId!;
+  const ext = getExt(String(fileName)) || "bin";
+  const safeExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const key = `submissions/2026/user-${userId}/order-${orderId}/${uuidv4()}.${safeExt}`;
+
+  const { uploadId } = await startMultipart(key, String(contentType));
+  return res.json({ key, uploadId, userId });
+});
+
+router.post("/admin/submissions/upload/presign-parts", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const { orderId, userId, key, uploadId, partNumbers } = req.body;
+  if (!orderId || !userId || !key || !uploadId || !Array.isArray(partNumbers) || partNumbers.length === 0) {
+    return res.status(400).json({ error:"Missing fields" });
+  }
+
+  const gate = await adminGate(String(orderId));
+  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
+
+  if (String(gate.userId) !== String(userId)) return res.status(403).json({ error:"User mismatch" });
+  if (!keyBelongs(String(orderId), String(userId), String(key))) return res.status(403).json({ error:"Invalid upload key" });
+
+  const urls = await Promise.all(
+    partNumbers.map(async (pn: number) => ({
+      partNumber: pn,
+      url: await presignPart(String(key), String(uploadId), Number(pn))
+    }))
+  );
+
+  return res.json({ urls });
+});
+
+router.post("/admin/submissions/upload/complete", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const { orderId, userId, key, uploadId, parts, contentType, originalName, fileSize } = req.body;
+  if (!orderId || !userId || !key || !uploadId || !Array.isArray(parts) || parts.length === 0) {
+    return res.status(400).json({ error:"Missing fields" });
+  }
+
+  const gate = await adminGate(String(orderId));
+  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
+
+  if (String(gate.userId) !== String(userId)) return res.status(403).json({ error:"User mismatch" });
+  if (!keyBelongs(String(orderId), String(userId), String(key))) return res.status(403).json({ error:"Invalid upload key" });
+
+  const existing = await pool.query(`SELECT id, is_locked FROM submissions WHERE order_id=$1`, [orderId]);
+  if (existing.rows.length > 0 && existing.rows[0].is_locked) {
+    return res.status(403).json({ error:"Submission locked" });
+  }
+
+  await completeMultipart(String(key), String(uploadId), parts);
+
+  const publicUrl = `${process.env.S3_PUBLIC_BASE}/${key}`;
+
+  if (existing.rows.length === 0) {
+    await pool.query(
+      `INSERT INTO submissions (order_id, file_url, s3_key, content_type, original_name, file_size, uploaded_at, last_updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,(NOW() AT TIME ZONE 'Asia/Kolkata'),(NOW() AT TIME ZONE 'Asia/Kolkata'))`,
+      [orderId, publicUrl, key, contentType || null, originalName || null, Number(fileSize) || null]
+    );
+  } else {
+    await pool.query(
+      `UPDATE submissions
+       SET file_url=$1, s3_key=$2, content_type=$3, original_name=$4, file_size=$5,
+           uploaded_at=(NOW() AT TIME ZONE 'Asia/Kolkata'),
+           last_updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
+       WHERE order_id=$6`,
+      [publicUrl, key, contentType || null, originalName || null, Number(fileSize) || null, orderId]
+    );
+  }
+
+  return res.json({ ok:true });
+});
+
+router.post("/admin/submissions/upload/abort", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const { orderId, userId, key, uploadId } = req.body;
+  if (!orderId || !userId || !key || !uploadId) return res.status(400).json({ error:"Missing fields" });
+
+  const gate = await adminGate(String(orderId));
+  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
+
+  if (String(gate.userId) !== String(userId)) return res.status(403).json({ error:"User mismatch" });
+  if (!keyBelongs(String(orderId), String(userId), String(key))) return res.status(403).json({ error:"Invalid upload key" });
+
+  await abortMultipart(String(key), String(uploadId));
+  return res.json({ ok:true });
+});
 export default router;

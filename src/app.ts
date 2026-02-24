@@ -41,6 +41,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 /* Middleware */
+// Razorpay webhooks need the raw body for signature verification
+app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());

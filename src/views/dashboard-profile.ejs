@@ -3,54 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile - KNC 20261111</title>
+  <title>Profile - Wisdom Contest 2026</title>
   <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
-    .layout{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
-    .brand{font-weight:900;margin-bottom:18px}
-    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
-    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
-    .content{flex:1}
-    .wrap{max-width:980px;margin:26px auto;padding:0 18px}
-    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
-    .muted{color:rgba(255,255,255,.7)}
-    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    :root{--ink:#0f1b3d;--bg:#f6f3ea;--card:#fff;--muted:#667085;--primary:#1a237e;--gold:#d9a441;--ring:rgba(26,35,126,.22)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink)}
+
+    .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#0b2b66 0%,#081c40 100%);border-bottom:1px solid rgba(255,255,255,.12)}
+    .topbarInner{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;color:#fff}
+    .logoDot{width:38px;height:38px;border-radius:12px;background:radial-gradient(circle at 30% 20%,#ffe7a5 0%,#d9a441 35%,#7a4b00 100%);box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.2);position:relative}
+    .logoDot:after{content:"";position:absolute;inset:9px 13px;border-radius:999px;border:2px solid rgba(255,255,255,.6)}
+    .brandTitle{line-height:1.05}
+    .brandTitle .t1{font-weight:900;font-size:18px}
+    .brandTitle .t2{font-weight:800;font-size:12px;opacity:.86}
+    .bellBtn{border:none;cursor:pointer;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);width:44px;height:44px;border-radius:14px;display:grid;place-items:center}
+
+    .wrap{max-width:980px;margin:16px auto;padding:0 16px 112px}
+    .card{background:var(--card);border:1px solid rgba(15,27,61,.10);border-radius:20px;padding:18px;box-shadow:0 18px 44px rgba(15,27,61,.08)}
+    .muted{color:var(--muted)}
+    input,textarea,select{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(15,27,61,.16);background:#fff;color:var(--ink)}
     textarea{min-height:70px;resize:vertical}
-    .sep{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
+    .sep{height:1px;background:rgba(15,27,61,.10);margin:14px 0}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media (max-width: 900px){ .sidebar{display:none} .grid2{grid-template-columns:1fr} }
-    .btn{border:none;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
-    .btn.primary{background:#1a3cff;color:#fff;width:100%}
+    @media (max-width: 900px){ .grid2{grid-template-columns:1fr} }
+    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer}
+    .btn.primary{background:var(--primary);color:#fff;width:100%}
     .btn.primary[disabled]{opacity:.6;cursor:not-allowed}
     .alert{padding:12px;border-radius:12px;font-weight:800;margin-bottom:12px}
-    .alert.err{background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.35);color:#ffd1d1}
-    .alert.ok{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.35);color:#d4ffd7}
-    .hint{font-size:12px;color:rgba(255,255,255,.65);margin-top:6px}
+    .alert.err{background:rgba(244,67,54,.10);border:1px solid rgba(244,67,54,.24);color:#b42318}
+    .alert.ok{background:rgba(76,175,80,.10);border:1px solid rgba(76,175,80,.24);color:#027a48}
+    .hint{font-size:12px;color:var(--muted);margin-top:6px}
     .spinner{
       display:none;margin-left:10px;width:14px;height:14px;border-radius:50%;
-      border:2px solid rgba(255,255,255,.4);
-      border-top-color:#fff;
+      border:2px solid rgba(15,27,61,.25);
+      border-top-color:var(--ink);
       animation:spin .8s linear infinite;
       vertical-align:middle;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:linear-gradient(180deg,#0c2f73 0%,#081c40 100%);border-top:1px solid rgba(255,255,255,.14)}
+    .navInner{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;justify-content:space-between;gap:10px}
+    .navItem{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:rgba(255,255,255,.76);font-weight:900;font-size:12px;padding:10px 10px;border-radius:16px}
+    .navItem.active{color:#fff;background:rgba(217,164,65,.20);border:1px solid rgba(217,164,65,.22)}
+    .navItem svg{width:22px;height:22px;opacity:.9}
   </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="brand">ISKCON Contest</div>
-      <div class="nav">
-        <a href="/dashboard" class="<%= activeTab==='dashboard' ? 'active' : '' %>">Dashboard</a>
-        <a href="/dashboard/profile" class="<%= activeTab==='profile' ? 'active' : '' %>">Profile</a>
-        <a href="/dashboard/delivery" class="<%= activeTab==='delivery' ? 'active' : '' %>">Delivery</a>
-        <a href="/dashboard/faqs" class="<%= activeTab==='faqs' ? 'active' : '' %>">FAQs</a>
+  <header class="topbar">
+    <div class="topbarInner">
+      <div class="brand">
+        <div class="logoDot" aria-hidden="true"></div>
+        <div class="brandTitle">
+          <div class="t1">Wisdom Contest 2026</div>
+          <div class="t2">Profile</div>
+        </div>
       </div>
-    </aside>
+      <button class="bellBtn" type="button" title="Notifications" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/>
+          <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-    <main class="content">
-      <div class="wrap">
+  <main class="wrap">
         <div class="card">
           <h1 style="margin:0 0 6px 0">Profile</h1>
           <div class="muted">Name / Email are locked. Phone is locked once saved. Address is your default for auto-fill.</div>
@@ -157,9 +176,28 @@
           </form>
 
         </div>
-      </div>
-    </main>
-  </div>
+  </main>
+
+  <nav class="bottomNav" aria-label="Bottom navigation">
+    <div class="navInner">
+      <a class="navItem <%= (activeTab==='dashboard' || activeTab==='home') ? 'active' : '' %>" href="/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        Home
+      </a>
+      <a class="navItem <%= activeTab==='profile' ? 'active' : '' %>" href="/dashboard/profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <a class="navItem <%= activeTab==='delivery' ? 'active' : '' %>" href="/dashboard/delivery">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 2v5h-5"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="18.5" cy="19" r="1.5"/></svg>
+        Track
+      </a>
+      <a class="navItem <%= activeTab==='faqs' ? 'active' : '' %>" href="/dashboard/faqs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        FAQs
+      </a>
+    </div>
+  </nav>
 
 <script>
   (function(){

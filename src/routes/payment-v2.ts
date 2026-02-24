@@ -95,7 +95,7 @@ function verifyRazorpaySignature(args: {
 }
 
 function verifyWebhookSignature(rawBody: Buffer, signature: string) {
-  // FAIL-CLOSED: if secret missing, reject webhook
+  // Fail CLOSED (production-safe): if secret missing, reject webhook
   if (!RZP_WEBHOOK_SECRET) return false;
 
   const expected = crypto.createHmac("sha256", RZP_WEBHOOK_SECRET).update(rawBody).digest("hex");
@@ -124,7 +124,7 @@ function parseUuidList(raw: string): string[] {
 }
 
 /**
- * WEBHOOK (final truth)
+ * WEBHOOK (recommended for final truth)
  * Requires app.ts: app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }))
  */
 router.post("/payment/hdfc/webhook", async (req: any, res) => {
@@ -168,14 +168,14 @@ router.post("/payment/hdfc/webhook", async (req: any, res) => {
     const userId = psQ.rows[0].user_id;
     const expectedAmountPaise = Math.round(Number(psQ.rows[0].amount || 0) * 100);
 
-    // Always log webhook
+    // Always log webhook (audit proof)
     await pool.query(
       `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
        VALUES ($1,$2,'payment_webhook',$3,$4::jsonb)`,
       [userId, String(sessionId), eventType, JSON.stringify({ orderId, paymentId, status })]
     );
 
-    // Never downgrade a paid session
+    // If already paid, never downgrade later
     if (String(psQ.rows[0].status) === "paid") {
       return res.status(200).json({ ok: true, already_paid: true });
     }
@@ -184,8 +184,12 @@ router.post("/payment/hdfc/webhook", async (req: any, res) => {
     const isFailed = eventType === "payment.failed" || status === "failed";
 
     if (isCaptured) {
-      // Dual inquiry (recommended)
-      const pay = await rzpRequest<RzpPayment>("GET", `/v1/payments/${encodeURIComponent(paymentId)}`);
+      // Dual inquiry (strongly recommended)
+      const pay = await rzpRequest<RzpPayment>(
+        "GET",
+        `/v1/payments/${encodeURIComponent(paymentId)}`
+      );
+
       const payStatus = String(pay.status || "");
       const payAmount = Number(pay.amount || 0);
 
@@ -200,14 +204,19 @@ router.post("/payment/hdfc/webhook", async (req: any, res) => {
       );
 
       if (payStatus === "captured" && payAmount === expectedAmountPaise) {
-        await pool.query(`UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
+        // idempotent updates
+        await pool.query(`UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status <> 'paid'`, [
+          sessionId,
+        ]);
         await pool.query(
           `UPDATE orders SET payment_status='paid'
            WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
           [sessionId]
         );
       } else {
-        await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
+        await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [
+          sessionId,
+        ]);
         await pool.query(
           `UPDATE orders SET payment_status='failed'
            WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
@@ -217,7 +226,10 @@ router.post("/payment/hdfc/webhook", async (req: any, res) => {
     }
 
     if (isFailed) {
-      await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
+      // do NOT overwrite paid
+      await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [
+        sessionId,
+      ]);
       await pool.query(
         `UPDATE orders SET payment_status='failed'
          WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
@@ -249,12 +261,13 @@ router.get("/cart", authMiddleware, async (req: any, res) => {
   const contests = q.rows as any[];
   if (contests.length === 0) return res.status(404).send("Contests not found");
 
+  // ✅ Allow repeat participation
   const totalAmount = contests.reduce((a, c) => a + Number(c.price || 0), 0);
   return res.render("cart", { contests, totalAmount });
 });
 
 /**
- * CREATE ORDERS (pending) grouped by internal paymentId (KNCxxxx)
+ * CREATE ORDERS (pending) grouped by your internal paymentId (KNCxxxx)
  */
 router.post("/payment/start", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -268,6 +281,7 @@ router.post("/payment/start", authMiddleware, async (req: any, res) => {
      WHERE is_active=true AND id = ANY($1::uuid[])`,
     [contestIds]
   );
+
   if (c.rows.length === 0) return res.status(404).send("Contests not found");
 
   const paymentId = genPaymentId();
@@ -374,7 +388,7 @@ router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
 });
 
 /**
- * CALLBACK (redirect flow)
+ * CALLBACK (redirect flow inside embedded checkout)
  * Signature verify + dual inquiry + mark paid + redirect to bulk checkout
  */
 router.post("/payment/hdfc/callback", async (req: any, res) => {
@@ -397,6 +411,7 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
        LIMIT 1`,
       [razorpay_order_id]
     );
+
     if (psQ.rows.length === 0) return res.status(404).send("Payment session not found");
 
     const ps = psQ.rows[0];
@@ -404,16 +419,14 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
     const userId = ps.user_id;
     const expectedAmountPaise = Math.round(Number(ps.amount || 0) * 100);
 
-    // If already paid, redirect (idempotent)
+    // If already paid, just redirect (idempotent)
     if (String(ps.status) === "paid") {
       const grpQ = await pool.query(
         `SELECT payment_id FROM orders WHERE payment_session_id=$1 ORDER BY created_at ASC LIMIT 1`,
         [sessionId]
       );
       const internalPaymentId = grpQ.rows[0]?.payment_id;
-      return res.redirect(
-        internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard"
-      );
+      return res.redirect(internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard");
     }
 
     const pay = await rzpRequest<RzpPayment>("GET", `/v1/payments/${encodeURIComponent(razorpay_payment_id)}`);
@@ -423,25 +436,25 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
     await pool.query(
       `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
        VALUES ($1,$2,'payment_verify','dual_inquiry',$3::jsonb)`,
-      [userId, String(sessionId), JSON.stringify({ razorpay_payment_id, razorpay_order_id, status, amount })]
+      [
+        userId,
+        String(sessionId),
+        JSON.stringify({ razorpay_payment_id, razorpay_order_id, status, amount }),
+      ]
     );
 
     if (status !== "captured" || amount !== expectedAmountPaise) {
       await pool.query(`UPDATE payment_sessions SET status='failed' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-      await pool.query(
-        `UPDATE orders SET payment_status='failed'
-         WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-        [sessionId]
-      );
+      await pool.query(`UPDATE orders SET payment_status='failed' WHERE payment_session_id=$1 AND payment_status <> 'paid'`, [
+        sessionId,
+      ]);
       return res.render("payment-failure", { orderId: null, paymentId: razorpay_order_id });
     }
 
     await pool.query(`UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status <> 'paid'`, [sessionId]);
-    await pool.query(
-      `UPDATE orders SET payment_status='paid'
-       WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
-      [sessionId]
-    );
+    await pool.query(`UPDATE orders SET payment_status='paid' WHERE payment_session_id=$1 AND payment_status <> 'paid'`, [
+      sessionId,
+    ]);
 
     const grpQ = await pool.query(
       `SELECT payment_id FROM orders WHERE payment_session_id=$1 ORDER BY created_at ASC LIMIT 1`,
@@ -449,9 +462,7 @@ router.post("/payment/hdfc/callback", async (req: any, res) => {
     );
 
     const internalPaymentId = grpQ.rows[0]?.payment_id;
-    return res.redirect(
-      internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard"
-    );
+    return res.redirect(internalPaymentId ? `/checkout/bulk?paymentId=${encodeURIComponent(internalPaymentId)}` : "/dashboard");
   } catch (e) {
     console.error("HDFC callback error:", e);
     return res.status(500).send("Payment processing error");

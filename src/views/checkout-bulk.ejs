@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Checkout - Bulk</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:18px}
+    .wrap{max-width:980px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
+    .top{padding:18px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
+    .top h1{font-size:20px;margin-bottom:6px}
+    .top p{opacity:.92;font-size:13px;line-height:1.4}
+    .content{padding:18px}
+    .box{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    label{font-size:12px;color:#334155;font-weight:800;display:block;margin-bottom:6px}
+    input,select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px}
+    .col{flex:1;min-width:220px}
+    .muted{font-size:12px;color:#64748b;margin-top:6px}
+    .err{background:#fee2e2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px;margin-bottom:14px;font-size:13px}
+    .back{display:inline-block;margin:12px 0;color:#1a237e;text-decoration:none;font-weight:900}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(34,197,94,.12);color:#166534;font-size:12px;font-weight:900}
+    .contestRow{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-top:12px}
+    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .contestTitle{font-weight:1000;color:#0f172a}
+    .price{font-weight:1000;color:#1a237e;white-space:nowrap}
+    .btn{
+      width:100%;border:0;border-radius:14px;padding:14px 16px;
+      background:linear-gradient(135deg,#f59e0b,#ea580c);
+      color:#fff;font-weight:1000;font-size:16px;cursor:pointer
+    }
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .radioWrap{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+    .radioCard{
+      flex:1;min-width:260px;border:1px solid #e5e7eb;border-radius:14px;padding:12px;
+      display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer
+    }
+    .radioCard input{width:auto;margin-top:3px}
+    .radioCard b{color:#0f172a}
+    .hide{display:none}
+    .note{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#0f172a;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.4}
+  </style>
+</head>
+<body>
+
+<a class="back" href="/dashboard">← Back to Dashboard</a>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Payment Successful ✅</h1>
+    <p>
+      You are registered for:
+      <% (orders || []).forEach((o) => { %>
+        <span class="pill" style="margin-left:6px"><%= o.contest_title || ("Contest #" + o.contest_id) %></span>
+      <% }) %>
+    </p>
+  </div>
+
+  <div class="content">
+    <% if (error) { %>
+      <div class="err"><%= error %></div>
+    <% } %>
+
+    <div class="note" style="margin-bottom:14px">
+      Next step: choose how you want to receive your gift books. If you select “Donate”, we won’t collect address.
+    </div>
+
+    <form method="POST" action="/checkout/bulk" id="bulkForm">
+      <input type="hidden" name="paymentId" value="<%= paymentId %>">
+
+      <!-- Contact + Name -->
+      <div class="box">
+        <h3 style="margin-bottom:10px;color:#0f172a">Your Details</h3>
+        <div class="row">
+          <div class="col">
+            <label>Full Name</label>
+            <input name="fullName" value="<%= (user && user.name) ? user.name : '' %>" placeholder="Full name" required>
+            <div class="muted">This is for delivery label (editable).</div>
+          </div>
+          <div class="col">
+            <label>Mobile Number</label>
+            <input name="phone" value="<%= (user && user.phone) ? user.phone : '' %>" placeholder="10-digit mobile" required>
+            <div class="muted">Mobile is locked after first save.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Mode -->
+      <div class="box">
+        <h3 style="margin-bottom:10px;color:#0f172a">Book Delivery Choice</h3>
+
+        <div class="radioWrap">
+          <label class="radioCard" for="deliver">
+            <input type="radio" id="deliver" name="deliveryMode" value="deliver" checked>
+            <div>
+              <b>Deliver to my home</b>
+              <div class="muted">We will dispatch within 7–15 business days.</div>
+            </div>
+          </label>
+
+          <label class="radioCard" for="donate">
+            <input type="radio" id="donate" name="deliveryMode" value="donate">
+            <div>
+              <b>I want to donate</b>
+              <div class="muted">You will not receive books. Temple will donate to someone.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Address (only when deliver) -->
+      <div class="box" id="addressBox">
+        <h3 style="margin-bottom:10px;color:#0f172a">Delivery Address</h3>
+        <div class="row">
+          <div class="col" style="min-width:320px">
+            <label>Address</label>
+            <input name="address" value="<%= (user && user.address) ? user.address : '' %>" placeholder="House/Street/Area">
+          </div>
+          <div class="col">
+            <label>City</label>
+            <input name="city" value="<%= (user && user.city) ? user.city : '' %>" placeholder="City">
+          </div>
+          <div class="col">
+            <label>State</label>
+            <input name="state" value="<%= (user && user.state) ? user.state : '' %>" placeholder="State">
+          </div>
+          <div class="col">
+            <label>Pincode</label>
+            <input name="pincode" value="<%= (user && user.pincode) ? user.pincode : '' %>" placeholder="6-digit pincode">
+            <div class="muted">City/State auto-fill via API can be added later.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Books: N rows = N contests (only when deliver) -->
+      <div class="box" id="booksBox">
+        <h3 style="margin-bottom:10px;color:#0f172a">Select Books (1 per contest)</h3>
+
+        <% (orders || []).forEach((o) => { %>
+          <div class="contestRow">
+            <div class="contestHead">
+              <div style="min-width:0">
+                <div class="contestTitle"><%= o.contest_title || ("Contest #" + o.contest_id) %></div>
+                <div class="muted">Order ID: <%= o.id %></div>
+              </div>
+              <div class="price">₹<%= Number(o.amount || 0) %></div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <div class="col">
+                <label>Book</label>
+                <select name="bookTitle">
+                  <option value="">Select book</option>
+                  <% (books || []).forEach((b) => { %>
+                    <option value="<%= b %>"><%= b %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="col">
+                <label>Language</label>
+                <select name="bookLanguage">
+                  <option value="">Select language</option>
+                  <% (languages || []).forEach((l) => { %>
+                    <option value="<%= l %>"><%= l %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+
+        <div class="muted" style="margin-top:10px">
+          After submit, you’ll see confirmation. (We can add a JS confirm+modify step next.)
+        </div>
+      </div>
+
+      <button class="btn" id="submitBtn" type="submit">Submit & Finish ✅</button>
+
+      <div class="muted" style="margin-top:10px;text-align:center">
+        Books will be dispatched within 7–15 business days. Support: +91-xxxxxxxxxx
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const addressBox = document.getElementById('addressBox');
+  const booksBox = document.getElementById('booksBox');
+
+  function toggleByMode(){
+    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    const isDonate = mode === 'donate';
+    addressBox.classList.toggle('hide', isDonate);
+    booksBox.classList.toggle('hide', isDonate);
+  }
+
+  document.querySelectorAll('input[name="deliveryMode"]').forEach(r => r.addEventListener('change', toggleByMode));
+  toggleByMode();
+</script>
+</body>
+</html>

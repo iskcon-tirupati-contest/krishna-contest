@@ -1,209 +1,1694 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - KNC 2026</title>
-  <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f6f8fb}
-    .wrap{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0f1b3d;color:#fff;padding:18px;display:flex;flex-direction:column;gap:10px}
-    .brand{font-weight:700;font-size:18px;margin-bottom:10px}
-    .nav{display:block;color:#dbe3ff;text-decoration:none;padding:12px 12px;border-radius:10px}
-    .nav:hover{background:rgba(255,255,255,.08)}
-    .nav.active{background:rgba(255,215,0,.18);color:#ffd700}
-    .nav.danger{color:#ffbdbd}
+  <title>Dashboard - Wisdom Contest 2026</title>
 
-    .main{flex:1;padding:24px}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-    .card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:18px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
-    h2{margin:0 0 6px 0;color:#0f1b3d}
-    .muted{color:#667085}
-    .badge{display:inline-block;background:#eef2ff;color:#3730a3;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
-    .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-    .btn{border:none;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
-    .btn.primary{background:#1a237e;color:#fff}
-    .btn.primary:hover{opacity:.92}
-    .btn.ghost{background:#f2f4f7}
-    .small{font-size:13px}
-    .dangerText{color:#b42318}
-    .warnText{color:#b54708}
-    .okText{color:#027a48}
-    .fileRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-    progress{width:100%;height:14px;border-radius:10px;overflow:hidden;margin-top:10px;display:none}
-    progress::-webkit-progress-bar{background:#eef2f6}
-    progress::-webkit-progress-value{background:#1a237e}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
-    .pill.closed{background:#fee4e2;color:#b42318}
-    .pill.open{background:#dcfce7;color:#166534}
+  <style>
+  :root{
+  --krishna-950:#050b1a;
+  --krishna-900:#071a3a;
+  --krishna-800:#0b2a63;
+  --krishna-700:#123b86;
+  --krishna-500:#3b82f6;
+  --peacock:#2563eb;
+
+  --gold-500:#f5d37a;
+  --gold-600:#d4af37;
+
+  --paper:#fbfcff;
+  --ink:#0b1220;
+  --muted:#64748b;
+
+  --shadow: 0 12px 24px rgba(5,11,26,.10);
+  --shadow-strong: 0 22px 54px rgba(5,11,26,.18);
+  --ring: 0 0 0 3px rgba(37,99,235,.22);
+
+  --radius-xl: 26px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, sans-serif;
+  background:
+    radial-gradient(ellipse 1100px 720px at 50% -8%, rgba(37,99,235,.16) 0%, transparent 55%),
+    radial-gradient(ellipse 900px 520px at 18% 14%, rgba(212,175,55,.10) 0%, transparent 56%),
+    linear-gradient(180deg, #fbfcff 0%, #f3f6ff 100%);
+  color:var(--ink);
+  min-height:100vh;
+  overscroll-behavior-y: none;
+}
+
+    /* ===== App Shell: mobile width for premium feel ===== */
+    .app{
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ===== Premium Topbar (app-style) ===== */
+.topbar{
+  position:fixed;
+  left:0; right:0; top:0;
+  z-index:120;
+  padding: calc(12px + var(--safe-top)) 14px 12px;
+  background: linear-gradient(180deg,
+    rgba(5,11,26,.96) 0%,
+    rgba(7,26,58,.94) 55%,
+    rgba(7,26,58,.88) 100%
+  );
+  backdrop-filter: blur(22px) saturate(180%);
+  border-bottom: 1px solid rgba(245,211,122,.14);
+  box-shadow: 0 10px 30px rgba(5,11,26,.24);
+}
+    .topbar-inner{
+      max-width: 520px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .logo-badge{
+      width:44px; height:44px;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 100%),
+        linear-gradient(135deg, #f3e6c2 0%, #d4af37 45%, #b8941f 100%);
+      box-shadow:
+        inset 0 1px 2px rgba(255,255,255,.34),
+        0 10px 22px rgba(212,175,55,.32);
+      display:grid; place-items:center;
+      flex:0 0 auto;
+      position:relative;
+    }
+
+    .logo-badge::after{
+      content:'';
+      position:absolute; inset:3px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    .logo-badge span{
+      position:relative; z-index:1;
+      font-weight: 1000;
+      font-size: 20px;
+      color: #071224;
+      text-shadow: 0 1px 2px rgba(255,255,255,.35);
+    }
+
+    .brand-title{
+      color:#fff;
+      font-weight: 950;
+      font-size: 16px;
+      line-height:1.15;
+      letter-spacing:-0.02em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-sub{
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      margin-top: 3px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 320px;
+    }
+
+    /* Desktop nav (keep, but on large screens) */
+    .topnav{
+      display:none;
+      gap:10px;
+      align-items:center;
+    }
+    .topnav a{
+      text-decoration:none;
+      color:rgba(255,255,255,.78);
+      font-weight:900;
+      font-size:13px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      transition: all .2s ease;
+      white-space:nowrap;
+    }
+    .topnav a:hover{
+      background:rgba(255,255,255,.12);
+      transform:translateY(-1px);
+    }
+    .topnav a.active{
+      color:#fff;
+      border-color:rgba(212,175,55,.35);
+      background:rgba(212,175,55,.14);
+      box-shadow: 0 0 0 3px rgba(212,175,55,.12);
+    }
+
+    .top-actions{
+      margin-left:auto;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.06) 100%);
+      display:grid;
+      place-items:center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.14);
+      cursor:pointer;
+      transition: all .18s cubic-bezier(.2,.9,.2,1);
+      text-decoration:none;
+      outline:none;
+    }
+    .icon-btn:active{ transform:scale(.98); }
+    .icon-btn:focus-visible{ box-shadow: 0 6px 18px rgba(0,0,0,.14), var(--ring); }
+
+    .icon-btn svg{
+      width:22px;
+      height:22px;
+      fill:#fff;
+      opacity:.96;
+    }
+
+    /* ===== Container ===== */
+    .container{
+      padding: 14px 14px calc(170px + var(--safe-bottom));
+      margin-top: calc(74px + var(--safe-top));
+    }
+
+    /* ===== Welcome Card ===== */
+    .welcome{
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(253,251,247,.94) 100%);
+      border:1px solid rgba(212,175,55,.16);
+      box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.65) inset;
+      padding: 18px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .welcome::before{
+      content:'';
+      position:absolute;
+      right:-120px;
+      top:-140px;
+      width:320px;
+      height:320px;
+      border-radius:50%;
+      background: radial-gradient(circle, rgba(212,175,55,.14) 0%, transparent 68%);
+      pointer-events:none;
+    }
+    .welcome::after{
+      content:'';
+      position:absolute;
+      left:-120px;
+      bottom:-160px;
+      width:320px;
+      height:320px;
+      border-radius:50%;
+      background: radial-gradient(circle, rgba(99,102,241,.10) 0%, transparent 70%);
+      pointer-events:none;
+    }
+
+    .welcome h2{
+      margin:0 0 8px;
+      font-size: 20px;
+      font-weight: 1000;
+      letter-spacing:-0.03em;
+      background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome p{
+      margin:0 0 14px;
+      color: rgba(26,35,50,.76);
+      font-size: 13.5px;
+      line-height: 1.7;
+      max-width: 720px;
+    }
+    .welcome p b{
+      color: var(--gold-600);
+      font-weight: 800;
+    }
+
+    /* ===== Premium Tabs (bigger touch) ===== */
+    .tabs{
+      display:flex;
+      gap:10px;
+      background: rgba(212,175,55,.09);
+      border:1px solid rgba(212,175,55,.18);
+      padding:6px;
+      border-radius: 18px;
+      width: 100%;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.04);
+    }
+
+    .tab{
+      flex:1;
+      border:0;
+      padding: 12px 12px;
+      border-radius: 14px;
+      font-weight: 950;
+      font-size: 13px;
+      cursor:pointer;
+      background:transparent;
+      color: rgba(26,35,50,.70);
+      transition: all .22s cubic-bezier(.2,.9,.2,1);
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      letter-spacing:-0.01em;
+      outline:none;
+      min-height: 44px;
+    }
+    .tab:active{ transform: scale(.99); }
+    .tab:focus-visible{ box-shadow: var(--ring); }
+
+    .tab.active{
+      background: linear-gradient(135deg, #f3e6c2 0%, #d4af37 100%);
+      color: #071224;
+      box-shadow: 0 10px 24px rgba(212,175,55,.22), inset 0 1px 2px rgba(255,255,255,.45);
+    }
+
+    .count{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 26px;
+      height: 24px;
+      padding:0 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 1000;
+      background: rgba(255,255,255,.82);
+      border:1px solid rgba(10,25,41,.10);
+      color: var(--blue-900);
+      box-shadow: 0 2px 4px rgba(0,0,0,.06);
+    }
+    .tab.active .count{
+      background: rgba(255,255,255,.90);
+      color:#071224;
+      border-color: rgba(0,0,0,.12);
+    }
+
+    /* ===== Grid ===== */
+    .grid{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    /* ===== Contest Card ===== */
+    .card{
+      background: linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(253,251,247,.96) 100%);
+      border: 1px solid rgba(212,175,55,.16);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      cursor:pointer;
+      transition: transform .22s cubic-bezier(.2,.9,.2,1), box-shadow .22s ease, border-color .22s ease;
+      outline:none;
+      will-change: transform;
+    }
+
+    .card::before{
+      content:'';
+      position:absolute;
+      inset:-1px;
+      border-radius: var(--radius-lg);
+      padding:1px;
+      background: linear-gradient(135deg, rgba(212,175,55,.34) 0%, transparent 55%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity:0;
+      transition: opacity .22s ease;
+      pointer-events:none;
+    }
+
+    .card:active{ transform: scale(.99); }
+    .card:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-strong);
+    }
+    .card:hover::before{ opacity: 1; }
+    .card:focus-visible{ box-shadow: var(--shadow-strong), var(--ring); }
+
+    /* ===== Thumbnail ===== */
+    .thumb{
+      height: 168px;
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      border-bottom:1px solid rgba(212,175,55,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(10,25,41,.55);
+      font-weight: 900;
+      font-size: 13px;
+      text-align:center;
+      padding:12px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .thumb::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(7,18,36,.06) 100%);
+      pointer-events:none;
+    }
+
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transform: scale(1.01);
+    }
+
+
+.card.selected{
+  border-color: rgba(59,130,246,.95);
+  box-shadow:
+    0 18px 44px rgba(37,99,235,.22),
+    0 0 0 4px rgba(59,130,246,.28),
+    0 0 0 1px rgba(245,211,122,.22) inset;
+}
+
+.info-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-weight: 1000;
+  font-size: 13px;
+  text-decoration:none;
+  color: rgba(7,26,58,.92);
+  background: rgba(37,99,235,.08);
+  border: 1px solid rgba(37,99,235,.18);
+  transition: transform .18s cubic-bezier(.2,.9,.2,1);
+  outline:none;
+  min-height: 46px;
+}
+.info-link:active{ transform: scale(.99); }
+.info-link:focus-visible{ box-shadow: var(--ring); }
+    .card-body{ padding: 14px; }
+
+    .title{
+      margin:0 0 10px;
+      font-size: 15px;
+      font-weight: 1000;
+      min-height: 18px;
+      line-height: 1.25;
+      letter-spacing:-0.02em;
+      color: #0f172a;
+    }
+
+    /* ===== Benefits pills ===== */
+    .benefits{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin:0 0 12px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      background: linear-gradient(135deg, rgba(212,175,55,.12) 0%, rgba(212,175,55,.08) 100%);
+      border:1px solid rgba(212,175,55,.18);
+      color: var(--gold-600);
+      line-height: 1;
+      box-shadow: 0 2px 4px rgba(0,0,0,.04);
+      letter-spacing:-0.01em;
+      white-space:nowrap;
+    }
+
+
+   .join{
+  width:100%;
+  border:0;
+  padding: 14px 14px;
+  border-radius: 16px;
+  font-weight: 1000;
+  font-size: 14px;
+  background: linear-gradient(135deg, var(--peacock) 0%, var(--krishna-900) 100%);
+  color:#fff;
+  box-shadow: 0 12px 28px rgba(5,11,26,.22), inset 0 1px 2px rgba(255,255,255,.16);
+  cursor:pointer;
+  transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+  letter-spacing:-0.01em;
+  outline:none;
+  min-height: 48px;
+}
+    /* ===== Join button ===== */
+    .join1{
+      width:100%;
+      border:0;
+      padding: 14px 14px;
+      border-radius: 16px;
+      font-weight: 1000;
+      font-size: 14px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #071224 100%);
+      color:#fff;
+      box-shadow: 0 12px 28px rgba(7,18,36,.24), inset 0 1px 2px rgba(255,255,255,.16);
+      cursor:pointer;
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+      letter-spacing:-0.01em;
+      outline:none;
+      min-height: 48px;
+    }
+    .join:active{ transform: scale(.99); }
+    .join:focus-visible{ box-shadow: 0 12px 28px rgba(7,18,36,.24), var(--ring); }
+
+    /* ===== Selection Tick ===== */
+    .tick{
+      position:absolute;
+      top:12px;
+      right:12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f3e6c2 0%, #d4af37 100%);
+      border:2px solid rgba(255,255,255,.45);
+      box-shadow: 0 10px 26px rgba(212,175,55,.40), inset 0 1px 3px rgba(255,255,255,.35);
+      display:none;
+      place-items:center;
+    }
+
+    .tick svg{
+      width:22px;
+      height:22px;
+      fill:#071224;
+      filter: drop-shadow(0 1px 2px rgba(255,255,255,.3));
+    }
+
+    .card.selected{
+      border-color: rgba(212,175,55,.52);
+      box-shadow: 0 16px 36px rgba(212,175,55,.18), 0 0 0 3px rgba(212,175,55,.16);
+    }
+
+    .card.selected .tick{
+      display:grid;
+      animation: tickPop .32s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @keyframes tickPop{
+      0%{transform:scale(.75); opacity:0}
+      60%{transform:scale(1.12)}
+      100%{transform:scale(1); opacity:1}
+    }
+
+    /* ===== Paybar (bottom sticky CTA above nav) ===== */
+    .paybar{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom: calc(76px + var(--safe-bottom));
+      z-index:110;
+      padding: 10px 14px;
+      display:none;
+    }
+
+    .paybar.show{
+      display:block;
+      animation: paySlideUp .28s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @keyframes paySlideUp{
+      from{ transform:translateY(18px); opacity:0; }
+      to{ transform:translateY(0); opacity:1; }
+    }
+
+    .paybar-inner{
+      max-width:520px;
+      margin:0 auto;
+      display:flex;
+      justify-content:center;
+    }
+
+    .paybox{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .paybtn{
+      width:100%;
+      padding: 16px 16px;
+      border-radius: 18px;
+      border:0;
+      background: linear-gradient(135deg,#f59e0b 0%,#ea580c 45%,#dc2626 100%);
+      color:#fff;
+      font-weight: 1000;
+      font-size: 17px;
+      box-shadow: 0 18px 44px rgba(245,158,11,.30), inset 0 2px 4px rgba(255,255,255,.20);
+      cursor:pointer;
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+      letter-spacing:-0.02em;
+      position:relative;
+      overflow:hidden;
+      outline:none;
+      min-height: 54px;
+    }
+    .paybtn:active{ transform: scale(.99); }
+    .paybtn:focus-visible{ box-shadow: 0 18px 44px rgba(245,158,11,.30), var(--ring); }
+
+    .paysub{
+      text-align:center;
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(10,25,41,.70);
+      text-shadow: 0 1px 2px rgba(255,255,255,.85);
+      letter-spacing:-0.01em;
+    }
+
+    .paybar.show.pulse .paybtn{ animation: payPulse .38s cubic-bezier(.4,0,.2,1); }
+    @keyframes payPulse{
+      0%, 100%{ transform:scale(1); }
+      50%{ transform:scale(1.015); }
+    }
+
+    /* ===== Modal / Sheet (Android bottom sheet style) ===== */
+    .modal{
+      position:fixed;
+      inset:0;
+      z-index:300;
+      display:none;
+      background: rgba(7,18,36,.66);
+      backdrop-filter: blur(14px);
+      padding: 14px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal.show{
+      display:flex;
+      animation: modalFade .22s ease;
+    }
+
+    @keyframes modalFade{ from{opacity:0} to{opacity:1} }
+
+    .sheet{
+      width:100%;
+      max-width:520px;
+      max-height: 86vh;
+      background: linear-gradient(135deg, rgba(255,255,255,.99) 0%, rgba(253,251,247,.96) 100%);
+      border-radius: 26px;
+      box-shadow: 0 28px 70px rgba(7,18,36,.30), 0 0 0 1px rgba(212,175,55,.12);
+      overflow:hidden;
+      transform: translateY(18px);
+      animation: sheetSlide .26s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+
+    @keyframes sheetSlide{ to{ transform: translateY(0); } }
+
+    .sheet-top{
+      padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(7,18,36,.97) 0%, rgba(10,25,41,.96) 100%);
+      backdrop-filter: blur(20px);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid rgba(212,175,55,.12);
+    }
+
+    .sheet-top h3{
+      margin:0;
+      font-size: 16px;
+      font-weight: 1000;
+      flex:1;
+      letter-spacing:-0.02em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .close{
+      width:44px;
+      height:44px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), background .18s ease;
+      outline:none;
+    }
+    .close:active{ transform: scale(.98); }
+    .close:focus-visible{ box-shadow: var(--ring); }
+    .close svg{ width:20px; height:20px; fill:#fff; }
+
+    .sheet-body{
+      padding: 14px 16px;
+      max-height: calc(86vh - 150px);
+      overflow:auto;
+    }
+
+    .hero{
+      border-radius: 18px;
+      overflow:hidden;
+      border:1px solid rgba(212,175,55,.16);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      background: linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);
+    }
+
+    .hero img{
+      width:100%;
+      height: 220px;
+      object-fit:cover;
+      display:block;
+    }
+
+    .pillrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin: 0 0 14px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(212,175,55,.12) 0%, rgba(212,175,55,.08) 100%);
+      border:1px solid rgba(212,175,55,.18);
+      font-size: 12px;
+      font-weight: 950;
+      color: var(--gold-600);
+      box-shadow: 0 2px 4px rgba(0,0,0,.04);
+      letter-spacing:-0.01em;
+    }
+
+    .section{ margin:0 0 18px; }
+    .section h4{
+      margin:0 0 8px;
+      font-size: 14px;
+      font-weight: 1000;
+      color: var(--blue-900);
+      letter-spacing:-0.02em;
+    }
+    .section p, .section li{
+      color: rgba(26,35,50,.78);
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .section ul{ margin: 8px 0 0 18px; padding:0; }
+
+    .sheet-bottom{
+      padding: 12px 16px calc(12px + var(--safe-bottom));
+      background: rgba(255,255,255,.70);
+      border-top:1px solid rgba(212,175,55,.12);
+      backdrop-filter: blur(16px);
+      display:flex;
+      gap:10px;
+    }
+
+    .okbtn{
+      flex:1;
+      border:0;
+      padding: 14px 16px;
+      border-radius: 18px;
+      font-weight: 1000;
+      font-size: 15px;
+      cursor:pointer;
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+      background: linear-gradient(135deg,#f59e0b 0%,#ea580c 100%);
+      color:#fff;
+      box-shadow: 0 12px 28px rgba(245,158,11,.26), inset 0 1px 2px rgba(255,255,255,.22);
+      letter-spacing:-0.01em;
+      outline:none;
+      min-height: 52px;
+    }
+    .okbtn:active{ transform: scale(.99); }
+    .okbtn:focus-visible{ box-shadow: 0 12px 28px rgba(245,158,11,.26), var(--ring); }
+
+    /* ===== Bottom Nav (Android-like) ===== */
+    .bottomnav{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      height: calc(72px + var(--safe-bottom));
+      z-index:200;
+      background: linear-gradient(180deg, rgba(7,18,36,.96) 0%, rgba(10,25,41,.96) 100%);
+      backdrop-filter: blur(22px) saturate(180%);
+      box-shadow: 0 -10px 30px rgba(7,18,36,.22), 0 -1px 0 rgba(212,175,55,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      padding: 8px 10px calc(8px + var(--safe-bottom));
+    }
+
+    .navitem{
+      width: 76px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:5px;
+      color: rgba(255,255,255,.68);
+      text-decoration:none;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing:-0.01em;
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), color .18s ease;
+      outline:none;
+      padding: 8px 10px;
+      border-radius: 18px;
+    }
+    .navitem:active{ transform: scale(.98); }
+    .navitem:focus-visible{ box-shadow: var(--ring); }
+
+    .navitem svg{
+      width: 24px;
+      height: 24px;
+      fill: rgba(255,255,255,.72);
+      transition: all .18s ease;
+    }
+
+    .navitem.active{
+      color:#fff;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .navitem.active svg{
+      fill: #d4af37;
+      filter: drop-shadow(0 0 10px rgba(212,175,55,.45));
+    }
+
+    /* ===== My Contests premium styling (keep selectors) ===== */
+    .mineWrap{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .mineCard{
+      background: linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.96) 100%);
+      border: 1px solid rgba(212,175,55,.16);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .mineTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .mineTitle{
+      font-weight:1000;
+      color:var(--blue-900);
+      letter-spacing:-0.02em;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+    .mineDesc{
+      margin-top:6px;
+      color: rgba(26,35,50,.74);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .minePrice{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight:1000;
+      font-size: 13px;
+      background: rgba(212,175,55,.12);
+      border: 1px solid rgba(212,175,55,.18);
+      color: var(--gold-600);
+      white-space:nowrap;
+    }
+
+    .mineRight{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:10px;
+      min-width: 150px;
+    }
+
+    .mineTags{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+    }
+    .mineTag{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-weight: 1000;
+      font-size: 12px;
+      border:1px solid rgba(10,25,41,.10);
+      background: rgba(255,255,255,.82);
+      color: rgba(26,35,50,.84);
+      white-space:nowrap;
+    }
+    .tagSubmitted{
+      border-color: rgba(22,101,52,.22);
+      background: rgba(22,101,52,.10);
+      color:#166534;
+    }
+    .tagNotSubmitted{
+      border-color: rgba(180,35,24,.20);
+      background: rgba(180,35,24,.10);
+      color:#b42318;
+    }
+    .tagAttempts{
+      border-color: rgba(180,83,9,.22);
+      background: rgba(180,83,9,.10);
+      color:#b54708;
+    }
+    .tagTime{
+      border-color: rgba(30,58,138,.18);
+      background: rgba(30,58,138,.08);
+      color:#1e3a8a;
+    }
+    .tagClosed{
+      border-color: rgba(180,35,24,.20);
+      background: rgba(180,35,24,.10);
+      color:#b42318;
+    }
+
+    .mineMeta{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size: 12px;
+      color: rgba(26,35,50,.74);
+      font-weight: 850;
+    }
+    .minePill{
+      padding: 7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(10,25,41,.08);
+      background: rgba(255,255,255,.74);
+    }
+    .pillOpen{
+      border-color: rgba(22,101,52,.2);
+      background: rgba(22,101,52,.10);
+      color:#166534;
+    }
+    .pillClosed{
+      border-color: rgba(180,35,24,.2);
+      background: rgba(180,35,24,.10);
+      color:#b42318;
+    }
+    .mineHr{
+      border:none;
+      border-top:1px solid rgba(10,25,41,.08);
+      margin: 12px 0;
+    }
+    .mineLabel{
+      font-weight:1000;
+      color: var(--blue-900);
+      font-size: 13px;
+    }
+    .mineMuted{
+      color: rgba(26,35,50,.72);
+      font-size: 12px;
+      margin-top: 6px;
+      font-weight: 750;
+    }
+    .mineRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .mineFile{
+      flex: 1 1 240px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(10,25,41,.12);
+      background: rgba(255,255,255,.90);
+      font-weight: 750;
+      outline:none;
+    }
+    .mineFile:focus-visible{ box-shadow: var(--ring); }
+
+    .mineBtn{
+      border:0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 1000;
+      cursor:pointer;
+      background: linear-gradient(135deg,#1e3a8a 0%,#071224 100%);
+      color:#fff;
+      box-shadow: 0 10px 24px rgba(7,18,36,.18);
+      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
+      white-space:nowrap;
+      outline:none;
+      min-height: 46px;
+    }
+    .mineBtn:active{ transform: scale(.99); }
+    .mineBtn:focus-visible{ box-shadow: 0 10px 24px rgba(7,18,36,.18), var(--ring); }
+    .mineBtn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+    .mineLink{
+      text-decoration:none;
+      font-weight: 1000;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border:1px solid rgba(10,25,41,.12);
+      background: rgba(255,255,255,.90);
+      color: var(--blue-900);
+      white-space:nowrap;
+      outline:none;
+      min-height: 46px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .mineLink:focus-visible{ box-shadow: var(--ring); }
+
+    .mineStatus{
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 950;
+    }
+    .statusOk{ color:#166534; }
+    .statusWarn{ color:#b54708; }
+    .statusErr{ color:#b42318; }
+
+    progress.mineProg{
+      width:100%;
+      height: 14px;
+      border-radius: 10px;
+      overflow:hidden;
+      margin-top: 10px;
+      display:none;
+    }
+    progress.mineProg::-webkit-progress-bar{ background:#eef2f6 }
+    progress.mineProg::-webkit-progress-value{ background:#1a237e }
+
+    /* ===== Desktop / Tablet ===== */
+    @media (min-width: 700px){
+      .app{ max-width: 1080px; }
+      .topbar-inner, .paybar-inner{ max-width: 1080px; }
+      .container{ max-width: 1080px; margin:0 auto; padding: 18px 16px 80px; }
+      .grid{ grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .thumb{ height: 170px; }
+      .topnav{ display:flex; }
+      /* optional: hide bottom nav on desktop */
+      .bottomnav{ display:none; }
+      .paybar{ bottom: 18px; }
+      .modal{ align-items:center; }
+      .sheet{ max-height: 90vh; }
+      .hero img{ height: 260px; }
+    }
+
+    @media (min-width: 980px){
+      .grid{ grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar{ width:10px; height:10px; }
+    ::-webkit-scrollbar-track{ background:rgba(212,175,55,.06); }
+    ::-webkit-scrollbar-thumb{ background:rgba(212,175,55,.26); border-radius:6px; }
+    ::-webkit-scrollbar-thumb:hover{ background:rgba(212,175,55,.36); }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+    }
   </style>
 </head>
 
 <body>
-<div class="wrap">
-  <%- include('partials/dashboard-sidebar', { activeTab }) %>
+<%
+  const displayName = (user && (user.name || user.phone)) ? (user.name || user.phone) : 'Devotee';
+  function safeJsonAttr(obj){
+    const s = JSON.stringify(obj ?? []);
+    return s.replace(/</g, "\\u003c").replace(/"/g, "&quot;");
+  }
+  function safeAttr(s){
+    return String(s ?? "").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  }
+%>
 
-  <div class="main">
-    <div class="top">
-      <div>
-        <h2>🙏 Welcome, <%= (user && user.name) ? user.name : 'Devotee' %></h2>
-        <div class="muted">Your registered contests, pending contests, and submissions.</div>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo-badge"><span>🕉</span></div>
+        <div style="min-width:0">
+          <div class="brand-title">Wisdom Contest 2026</div>
+          <div class="brand-sub">Free Book • Certificate • Course • Gold Medal Prizes</div>
+        </div>
       </div>
-      <span class="badge">KNC 2026</span>
+
+      <!-- ✅ Desktop nav (keep routes same) -->
+      <nav class="topnav" aria-label="Desktop Navigation">
+        <a class="active" href="/dashboard">Home</a>
+        <a href="/dashboard/profile">Profile</a>
+        <a href="/dashboard/delivery">Track</a>
+        <a href="/dashboard/faqs">FAQs</a>
+      </nav>
+
+      <div class="top-actions">
+        <a class="icon-btn" href="/logout" title="Logout" aria-label="Logout">
+          <svg viewBox="0 0 24 24"><path d="M10 17v-2h4v-6h-4V7l-5 5 5 5zm-7 4V3h9v2H5v14h7v2H3zm18-9-4-4v3h-5v2h5v3l4-4z"/></svg>
+        </a>
+      </div>
     </div>
+  </header>
 
-    <div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 10px 0;color:#0f1b3d">Current Contests Registered</h3>
+  <main class="container">
+    <section class="welcome">
+      <h2>Welcome, <%= displayName %>!</h2>
+      <p>Tap a contest to join. You'll get a <b>free spiritual book home delivery</b>, <b>participation certificate</b>, and <b>free course</b>. Top 3 in each contest win <b>6g Gold Medal</b>.</p>
 
-      <% if (!registered || registered.length === 0) { %>
-        <div class="muted">You have not registered for any contests yet.</div>
+      <div class="tabs" role="tablist" aria-label="Dashboard Tabs">
+        <button class="tab active" id="tab-available" type="button" role="tab" aria-controls="panel-available" aria-selected="true">
+          Available <span class="count" id="cntAvailable"><%= (pending && pending.length) ? pending.length : 0 %></span>
+        </button>
+
+        <button class="tab" id="tab-mine" type="button" role="tab" aria-controls="panel-mine" aria-selected="false">
+          My Contests <span class="count" id="cntMine"><%= (registered && registered.length) ? registered.length : 0 %></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- AVAILABLE -->
+    <section id="panel-available" role="tabpanel" aria-labelledby="tab-available">
+      <% if (!pending || pending.length === 0) { %>
+        <div style="margin-top:14px;background:linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.95) 100%);border:1px solid rgba(212,175,55,.16);border-radius:20px;box-shadow:var(--shadow);padding:16px;">
+          <div style="font-weight:1000;color:var(--blue-900);font-size:15px;">No contests available right now.</div>
+          <div style="margin-top:8px;color:rgba(26,35,50,.72);font-size:13px;line-height:1.6;">Please check again later.</div>
+        </div>
       <% } else { %>
         <div class="grid">
+          <% pending.forEach((c, index) => { %>
+            <article
+              class="card contest"
+              tabindex="0"
+              data-id="<%= c.id %>"
+              data-title="<%- safeAttr(c.title) %>"
+              data-price="<%= c.price %>"
+              data-deadline="<%- safeAttr(c.submission_deadline ? new Date(c.submission_deadline).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}) : '-') %>"
+              data-img="<%- safeAttr(c.image_url || '') %>"
+              data-prize="<%- safeAttr(c.prize_details || 'Top 3 winners will receive 6g Gold Medal.') %>"
+              data-rules="<%- safeJsonAttr(c.rules || []) %>"
+            >
+              <div class="tick" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9.2 16.6 4.9 12.3l-1.4 1.4 5.7 5.7L20.5 8.1l-1.4-1.4z"/></svg>
+              </div>
+
+              <div class="thumb" data-thumb>
+                <% if (c.image_url) { %>
+                  <img src="<%= c.image_url %>" alt="<%= c.title %>"
+                    onerror="this.closest('[data-thumb]').innerHTML='Image coming soon';">
+                <% } else { %>
+                  Image coming soon
+                <% } %>
+              </div>
+
+              <div class="card-body">
+                <h3 class="title"><%= c.title %></h3>
+
+               <a class="info-link what-btn" href="#" data-open-details="1">✨ What will I get?</a>
+
+<button class="join" type="button">🎯 Join Now - Only ₹<%= c.price %></button>
+
+
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- ✅ MY CONTESTS (REAL) -->
+    <section id="panel-mine" role="tabpanel" aria-labelledby="tab-mine" style="display:none;margin-top:14px">
+      <% if (!registered || registered.length === 0) { %>
+        <div style="margin-top:0;background:linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.95) 100%);border:1px solid rgba(212,175,55,.16);border-radius:20px;box-shadow:var(--shadow);padding:16px;">
+          <div style="font-weight:1000;color:var(--blue-900);font-size:15px;">My Contests</div>
+          <div style="margin-top:8px;color:rgba(26,35,50,.72);font-size:13px;line-height:1.6;">You have not registered for any contests yet.</div>
+        </div>
+      <% } else { %>
+        <div class="mineWrap">
           <% registered.forEach(r => { %>
-            <div class="card contest-card"
+            <div class="mineCard contest-card"
                  data-order-id="<%= r.order_id %>"
                  data-has-submission="<%= r.file_url ? '1' : '0' %>"
-                 data-deadline-passed="<%= r.deadline_passed ? '1' : '0' %>">
+                 data-deadline-passed="<%= r.deadline_passed ? '1' : '0' %>"
+                 data-attempts-used="<%= (r.attempts_used ?? 0) %>"
+                 data-seconds-left="<%= (r.seconds_left ?? '') %>">
 
-              <div class="row">
+              <div class="mineTop">
                 <div>
-                  <div style="font-weight:800;color:#0f1b3d"><%= r.title %></div>
-                  <div class="muted small"><%= r.description || '' %></div>
+                  <div class="mineTitle"><%= r.title %></div>
+                  <div class="mineDesc"><%= r.description || '' %></div>
 
                   <% if (r.submission_deadline) { %>
-                    <div class="muted small">
-                      Deadline (IST): <%= new Date(r.submission_deadline).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %>
+                    <div class="mineMeta">
+                      <span class="minePill">
+                        ⏰ Deadline (IST):
+                        <%= new Date(r.submission_deadline).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %>
+                      </span>
+
                       <% if (r.deadline_passed) { %>
-                        <span class="pill closed" style="margin-left:8px">Closed</span>
+                        <span class="minePill pillClosed">Closed</span>
                       <% } else { %>
-                        <span class="pill open" style="margin-left:8px">Open</span>
+                        <span class="minePill pillOpen">Open</span>
                       <% } %>
                     </div>
                   <% } %>
                 </div>
-                <div class="badge">₹<%= r.price %></div>
-              </div>
 
-              <div style="margin-top:12px">
-                <% if (r.file_url) { %>
-                  <div class="small okText" style="font-weight:800">✅ Submission received</div>
-                  <div class="muted small">
-                    File: <strong><%= r.original_name || 'Uploaded file' %></strong>
-                  </div>
-                  <div class="muted small">
-                    Last submitted (IST):
-                    <%= (r.last_updated_at || r.uploaded_at)
-      ? new Date(r.last_updated_at || r.uploaded_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-      : '-' %>
-                  </div>
-                  <br>
-                  <div style="margin-top:8px">
-                    <a class="btn ghost" style="text-decoration:none;color:#111"
-                       href="/dashboard/submission/download?orderId=<%= r.order_id %>">Download</a>
-                  </div>
-                <% } else { %>
-                  <div class="small muted">No submission uploaded yet.</div>
-                  <div class="small warnText" style="margin-top:6px;font-weight:800">
-                    ⚠️ Not submitted yet. Only submitted entries are eligible for prize evaluation.
-                  </div>
-                <% } %>
-              </div>
+                <div class="mineRight">
+                  <div class="minePrice">₹<%= r.price %></div>
+                  <div class="mineTags">
+                    <% if (r.file_url) { %>
+                      <span class="mineTag tagSubmitted">✅ Submitted</span>
+                    <% } else { %>
+                      <span class="mineTag tagNotSubmitted">⚠️ Not submitted</span>
+                    <% } %>
 
-              <hr style="border:none;border-top:1px solid #eef2f6;margin:14px 0"/>
+                    <span class="mineTag tagAttempts">
+                      Attempts: <%= (r.attempts_used ?? 0) %>/3
+                    </span>
 
-              <div class="small" style="font-weight:800;color:#0f1b3d">Upload / Update Submission</div>
-              <div class="muted small">Allowed: audio/video/pdf/doc/docx (Max 500MB)</div>
-
-              <% if (r.deadline_passed) { %>
-                <div class="small dangerText" style="margin-top:8px;font-weight:900">
-                  🚫 Submissions closed (deadline passed).
+                    <% if (r.deadline_passed) { %>
+                      <span class="mineTag tagClosed">Closed</span>
+                    <% } else if (r.seconds_left !== null && r.seconds_left !== undefined) { %>
+                      <span class="mineTag tagTime timeleft" data-seconds-left="<%= r.seconds_left %>">--</span>
+                    <% } else { %>
+                      <span class="mineTag tagTime">No deadline</span>
+                    <% } %>
+                  </div>
                 </div>
+              </div>
+
+              <div class="mineHr"></div>
+
+              <% if (r.file_url) { %>
+                <div class="mineStatus statusOk">✅ Submission received</div>
+                <div class="mineMuted">
+                  File: <b><%= r.original_name || 'Uploaded file' %></b>
+                </div>
+                <div class="mineMuted">
+                  Last submitted (IST):
+                  <%= (r.last_updated_at || r.uploaded_at)
+                    ? new Date(r.last_updated_at || r.uploaded_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                    : '-' %>
+                </div>
+                <div class="mineRow" style="margin-top:12px">
+                  <a class="mineLink" href="/dashboard/submission/download?orderId=<%= r.order_id %>">Download</a>
+                </div>
+              <% } else { %>
+                <div class="mineStatus statusWarn">⚠️ No submission uploaded yet.</div>
+                <div class="mineMuted">Only submitted entries are eligible for prize evaluation.</div>
               <% } %>
 
-              <div class="fileRow">
-                <input type="file" class="file"
-                  <%= r.deadline_passed ? 'disabled' : '' %>
-                  accept=".pdf,.doc,.docx,.mp3,.wav,.aac,.m4a,.ogg,.mp4,.m4v,.mov,.webm,.mkv" />
+              <div class="mineHr"></div>
 
-                <button type="button" class="btn primary upload-btn"
+              <div class="mineLabel">Upload / Update Submission</div>
+              <div class="mineMuted">Max 500MB • Up to 3 attempts • Check “Rules” for allowed formats</div>
+
+              <% if (r.deadline_passed) { %>
+                <div class="mineStatus statusErr" style="margin-top:10px">🚫 Submissions closed (deadline passed).</div>
+              <% } %>
+
+              <div class="mineRow">
+                <input type="file" class="mineFile file"
+                  <%= r.deadline_passed ? 'disabled' : '' %>
+                  accept="audio/*,video/*,image/*,.pdf,.doc,.docx" />
+
+                <button type="button" class="mineBtn upload-btn"
                   <%= r.deadline_passed ? 'disabled' : '' %>
                   data-order-id="<%= r.order_id %>">
                   <%= r.file_url ? 'Resubmit' : 'Upload' %>
                 </button>
 
-                <a href="#" class="btn ghost rules-btn" style="text-decoration:none;color:#111">Rules</a>
-                <div id="rulesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;max-width:520px;width:92%;padding:18px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-weight:900;color:#0f1b3d">Submission Rules</div>
-      <button id="rulesClose" class="btn ghost">Close</button>
-    </div>
-    <div class="small" style="margin-top:10px;line-height:1.5;color:#111">
-      • Max size: 500MB<br/>
-      • Allowed: audio/video/pdf/doc/docx<br/>
-      • Resubmitting will replace your previous submission for evaluation<br/>
-      • Use stable internet (Wi-Fi recommended for video)<br/>
-      • Submit before deadline shown in IST
-    </div>
-  </div>
-</div>
-
+                <a class="mineLink rules-btn" href="#" data-open-rules="1">Rules</a>
               </div>
 
-              <div class="muted small status" style="margin-top:8px"></div>
-              <progress class="prog" value="0" max="100"></progress>
+              <div class="mineStatus status mineStatus" style="margin-top:10px"></div>
+              <progress class="mineProg prog" value="0" max="100"></progress>
             </div>
           <% }) %>
         </div>
       <% } %>
+    </section>
+  </main>
+
+  <!-- Paybar -->
+  <div id="paybar" class="paybar">
+    <div class="paybar-inner">
+      <div class="paybox">
+        <button id="paybtn" class="paybtn" type="button">Pay Now ₹0</button>
+        <div class="paysub" id="paySub">✨ Includes Free Book Home Delivery + Certificate + Course</div>
+      </div>
     </div>
-
-    <div class="card">
-      <h3 style="margin:0 0 10px 0;color:#0f1b3d">Pending Contests</h3>
-      <% if (!pending || pending.length === 0) { %>
-        <div class="muted">No pending contests right now.</div>
-      <% } else { %>
-        <div class="grid">
-          <% pending.forEach(c => { %>
-            <div class="card">
-              <div style="font-weight:800;color:#0f1b3d"><%= c.title %></div>
-              <div class="muted small"><%= c.description || '' %></div>
-              <div style="margin:10px 0" class="badge">₹<%= c.price %></div>
-
-              <form method="POST" action="/participate/<%= c.id %>">
-                <button class="btn primary" type="submit" style="width:100%">Register Now</button>
-              </form>
-            </div>
-          <% }) %>
-        </div>
-      <% } %>
-    </div>
-
   </div>
+
+  <!-- Modal (contest details) -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Contest Details">
+      <div class="sheet-top">
+        <h3 id="mTitle">Contest</h3>
+        <button class="close" id="mClose" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg>
+        </button>
+      </div>
+
+      <div class="sheet-body">
+        <div class="hero">
+          <img id="mImg" src="" alt="">
+        </div>
+
+        <div class="pillrow">
+          <span class="pill" id="mPrice">₹0</span>
+          <span class="pill" id="mDeadline">Deadline: -</span>
+        </div>
+
+        <div class="section">
+          <h4>🏆 Prize Details</h4>
+          <p id="mPrize"></p>
+        </div>
+
+        <div class="section">
+          <h4>🎁 What You Get FREE on Registration</h4>
+          <ul>
+            <li>📚 <strong>One Free Spiritual Book</strong> delivered to your home</li>
+            <li>📜 <strong>Participation Certificate</strong></li>
+            <li>🧘 <strong>Free Work-Life Balance Course</strong></li>
+            <li>🥇 <strong>Chance to win 6g Gold Medal</strong> (Top 3)</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h4>📋 Contest Rules</h4>
+          <ul id="mRules"></ul>
+        </div>
+      </div>
+
+      <div class="sheet-bottom">
+        <button class="okbtn" id="mOk" type="button">✅ Got It, Let's Register!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Rules modal (single, safe ids) -->
+  <div id="rulesModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Submission Rules">
+      <div class="sheet-top">
+        <h3>Submission Rules</h3>
+        <button class="close" id="rulesClose" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div style="font-weight:1000;color:var(--blue-900);margin-bottom:10px">Please follow:</div>
+        <div style="color:rgba(26,35,50,.78);font-size:13.5px;line-height:1.75">
+          • Max size: 500MB<br/>
+          • Allowed: audio (any), video (any), images (jpg/png/webp/gif), PDF, DOC, DOCX<br/>
+          • Max attempts: 3 submissions per contest (per registration/order)<br/>
+          • Resubmitting will replace your previous submission for evaluation<br/>
+          • Use stable internet (Wi-Fi recommended for video)<br/>
+          • Submit before deadline shown in IST
+        </div>
+      </div>
+      <div class="sheet-bottom">
+        <button class="okbtn" id="rulesOk" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="bottomnav" aria-label="Bottom Navigation">
+    <a class="navitem active" href="/dashboard">
+      <svg viewBox="0 0 24 24"><path d="M12 3 3 10v11h7v-7h4v7h7V10l-9-7z"/></svg>
+      Home
+    </a>
+    <a class="navitem" href="/dashboard/profile">
+      <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5z"/></svg>
+      Profile
+    </a>
+    <a class="navitem" href="/dashboard/delivery">
+      <svg viewBox="0 0 24 24"><path d="M3 7h11v10H3V7zm13 3h3l2 3v4h-5V10zm-2-3h2v2h-2V7zm-9 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm14 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+      Track
+    </a>
+    <a class="navitem" href="/dashboard/faqs">
+      <svg viewBox="0 0 24 24"><path d="M11 18h2v2h-2v-2zm1-16C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 2 2c-1.1 0-2 .9-2 2v1h2v-1c1.7 0 3-1.3 3-3a4 4 0 0 0-4-4z"/></svg>
+      FAQs
+    </a>
+  </nav>
 </div>
 
 <script>
-document.querySelectorAll(".rules-btn").forEach(b=>{
-  b.addEventListener("click",(e)=>{
-    e.preventDefault();
-    document.getElementById("rulesModal").style.display="flex";
+/* Tabs */
+const tabAvailable = document.getElementById('tab-available');
+const tabMine = document.getElementById('tab-mine');
+const panelAvailable = document.getElementById('panel-available');
+const panelMine = document.getElementById('panel-mine');
+const cntMine = document.getElementById('cntMine');
+
+tabAvailable?.addEventListener('click', () => {
+  tabAvailable.classList.add('active');
+  tabMine.classList.remove('active');
+  panelAvailable.style.display = 'block';
+  panelMine.style.display = 'none';
+  tabAvailable.setAttribute("aria-selected","true");
+  tabMine.setAttribute("aria-selected","false");
+});
+tabMine?.addEventListener('click', () => {
+  tabMine.classList.add('active');
+  tabAvailable.classList.remove('active');
+  panelAvailable.style.display = 'none';
+  panelMine.style.display = 'block';
+  tabMine.setAttribute("aria-selected","true");
+  tabAvailable.setAttribute("aria-selected","false");
+});
+
+/* Cart + paybar (available tab selection only) */
+const paybar = document.getElementById('paybar');
+const paybtn = document.getElementById('paybtn');
+const selected = new Map();
+
+function setPaybar(show){
+  if (!paybar) return;
+  paybar.classList.toggle('show', !!show);
+}
+function updatePay(){
+  let total = 0;
+  for (const p of selected.values()) total += Number(p||0);
+
+  const count = selected.size;
+  if (cntMine) cntMine.textContent = String(<%= (registered && registered.length) ? registered.length : 0 %>);
+
+  if (total > 0){
+    setPaybar(true);
+    paybtn.textContent = `🔥 ${count} Selected • Pay ₹${total}`;
+  } else {
+    setPaybar(false);
+    paybtn.textContent = `Pay Now ₹0`;
+  }
+}
+
+/* Modal (contest details) */
+const modal = document.getElementById('modal');
+const mTitle = document.getElementById('mTitle');
+const mImg = document.getElementById('mImg');
+const mPrize = document.getElementById('mPrize');
+const mRules = document.getElementById('mRules');
+const mDeadline = document.getElementById('mDeadline');
+const mPrice = document.getElementById('mPrice');
+const mClose = document.getElementById('mClose');
+const mOk = document.getElementById('mOk');
+
+let activeCard = null;
+
+function openModal(card){
+  activeCard = card;
+
+  const title = card.dataset.title || '';
+  const price = Number(card.dataset.price || 0);
+  const deadline = card.dataset.deadline || '-';
+  const prize = card.dataset.prize || 'Top 3 winners will receive 6g Gold Medal each.';
+  const img = card.dataset.img || '';
+
+  let rules = [];
+  try { rules = JSON.parse(card.dataset.rules || "[]"); } catch(e){ rules=[]; }
+
+  mTitle.textContent = title;
+  mPrice.textContent = `₹${price}`;
+  mDeadline.textContent = `⏰ Deadline: ${deadline}`;
+  mPrize.textContent = prize;
+
+  if (img) {
+    mImg.src = img;
+    mImg.style.display = 'block';
+  } else {
+    mImg.removeAttribute('src');
+    mImg.style.display = 'none';
+  }
+
+  mRules.innerHTML = "";
+  if (Array.isArray(rules) && rules.length > 0){
+    rules.forEach(r => {
+      const li = document.createElement('li');
+      li.textContent = String(r);
+      mRules.appendChild(li);
+    });
+  } else {
+    const li = document.createElement('li');
+    li.textContent = 'Contest rules will be updated soon.';
+    mRules.appendChild(li);
+  }
+
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(){
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  activeCard = null;
+}
+
+function pulsePaybar(){
+  if (!paybar) return;
+  paybar.classList.add('pulse');
+  setTimeout(() => paybar.classList.remove('pulse'), 420);
+}
+
+function selectCard(card){
+  const id = card.dataset.id;
+  const price = Number(card.dataset.price || 0);
+  card.classList.add('selected');
+  selected.set(id, price);
+  updatePay();
+  pulsePaybar();
+}
+
+function deselectCard(card){
+  const id = card.dataset.id;
+  card.classList.remove('selected');
+  selected.delete(id);
+  updatePay();
+  pulsePaybar();
+}
+
+document.querySelectorAll('.contest').forEach(card => {
+  const joinBtn = card.querySelector('.join');
+const whatBtn = card.querySelector("[data-open-details='1']");
+whatBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  openModal(card);
+});
+
+function handleSelect(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (card.classList.contains('selected')){
+    deselectCard(card);
+  } else {
+    selectCard(card);
+  }
+}
+
+card.addEventListener('click', handleSelect);
+joinBtn?.addEventListener('click', handleSelect);
+
+
+  // keyboard accessibility (optional)
+  card.addEventListener('keydown', (e) => {
+    if (e.key === "Enter" || e.key === " "){
+      handleTap(e);
+    }
   });
 });
-document.getElementById("rulesClose").addEventListener("click",()=>{
-  document.getElementById("rulesModal").style.display="none";
-});
-document.getElementById("rulesModal").addEventListener("click",(e)=>{
-  if (e.target.id === "rulesModal") document.getElementById("rulesModal").style.display="none";
+
+mClose?.addEventListener('click', closeModal);
+modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+mOk?.addEventListener('click', closeModal);
+
+/* Pay click */
+paybtn?.addEventListener('click', () => {
+  const ids = Array.from(selected.keys()).join(',');
+  if (!ids) return alert("Please select at least one contest");
+  window.location.href = `/cart?contestIds=${encodeURIComponent(ids)}`;
 });
 
+/* ✅ Rules modal */
+const rulesModal = document.getElementById("rulesModal");
+const rulesClose = document.getElementById("rulesClose");
+const rulesOk = document.getElementById("rulesOk");
 
+function openRules(){
+  rulesModal.classList.add("show");
+  rulesModal.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+function closeRules(){
+  rulesModal.classList.remove("show");
+  rulesModal.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+}
+
+document.querySelectorAll("[data-open-rules='1']").forEach(btn=>{
+  btn.addEventListener("click",(e)=>{ e.preventDefault(); openRules(); });
+});
+rulesClose?.addEventListener("click", closeRules);
+rulesOk?.addEventListener("click", closeRules);
+rulesModal?.addEventListener("click",(e)=>{ if(e.target === rulesModal) closeRules(); });
+
+/* ✅ Multipart upload (your older working logic) */
 (() => {
+
+  const UPLOAD_MAX_MB = 500;
+  const MAX_ATTEMPTS = 3;
+  const allowedExt = new Set(["pdf","doc","docx","mp3","wav","aac","m4a","ogg","mp4","m4v","mov","webm","mkv","jpg","jpeg","png","webp","gif"]);
+
+  function extOf(name){
+    const m = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+    return m ? m[1] : "";
+  }
+
+  function validateFile(file){
+    if (!file) return { ok:false, msg:"Please choose a file first." };
+    if (file.size > UPLOAD_MAX_MB * 1024 * 1024) {
+      return { ok:false, msg:`Max file size is ${UPLOAD_MAX_MB}MB.` };
+    }
+    const mime = String(file.type || "").toLowerCase();
+    const ext = extOf(file.name);
+
+    const okMime =
+      mime.startsWith("audio/") ||
+      mime.startsWith("video/") ||
+      mime.startsWith("image/") ||
+      mime === "application/pdf" ||
+      mime === "application/msword" ||
+      mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    const okExt = allowedExt.has(ext);
+
+    if (!(okMime || okExt)){
+      return { ok:false, msg:"This file type is not allowed. Please check Rules." };
+    }
+    return { ok:true };
+  }
+
+  function formatLeft(seconds){
+    const s = Math.max(0, Math.floor(Number(seconds || 0)));
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    if (s <= 0) return "Closed";
+    if (d > 0) return `${d}d ${h}h left`;
+    return `${h}h left`;
+  }
+
+  function initTimeLeft(){
+    const nodes = document.querySelectorAll(".timeleft[data-seconds-left]");
+    nodes.forEach(n => {
+      const sec = Number(n.getAttribute("data-seconds-left") || "0");
+      n.textContent = formatLeft(sec);
+    });
+
+    // refresh every minute (good enough)
+    setInterval(() => {
+      nodes.forEach(n => {
+        const old = Number(n.getAttribute("data-seconds-left") || "0");
+        const next = old - 60;
+        n.setAttribute("data-seconds-left", String(next));
+        n.textContent = formatLeft(next);
+        if (next <= 0){
+          n.classList.add("tagClosed");
+          n.classList.remove("tagTime");
+        }
+      });
+    }, 60000);
+  }
+
+  function initAttemptLocks(){
+    document.querySelectorAll(".contest-card").forEach(card => {
+      const used = Number(card.getAttribute("data-attempts-used") || "0");
+      const deadlinePassed = card.getAttribute("data-deadline-passed") === "1";
+      if (deadlinePassed) return;
+
+      if (used >= MAX_ATTEMPTS){
+        const file = card.querySelector(".file");
+        const btn = card.querySelector(".upload-btn");
+        const status = card.querySelector(".status");
+        if (file) file.disabled = true;
+        if (btn) btn.disabled = true;
+        if (status) setErr(status, "🚫 Attempts over (max 3 submissions).");
+      }
+    });
+  }
+
   const MAX_MB = 500;
   const PART_SIZE = 10 * 1024 * 1024; // 10MB parts
 
-  function setError(el, msg) { el.textContent = msg; el.classList.add("dangerText"); }
-  function setInfo(el, msg) { el.textContent = msg; el.classList.remove("dangerText"); }
+  function setErr(el, msg) { el.textContent = msg; el.classList.add("statusErr"); el.classList.remove("statusOk","statusWarn"); }
+  function setOk(el, msg) { el.textContent = msg; el.classList.add("statusOk"); el.classList.remove("statusErr","statusWarn"); }
+  function setInfo(el, msg) { el.textContent = msg; el.classList.add("statusWarn"); el.classList.remove("statusErr","statusOk"); }
 
   async function logFailure(orderId, stage, message, meta) {
     try {
@@ -262,7 +1747,6 @@ document.getElementById("rulesModal").addEventListener("click",(e)=>{
       if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
     } catch (e) {
       await logFailure(orderId, "presign", e.message || "presign failed", { key });
-      // try abort best-effort
       await fetch("/dashboard/upload/abort", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
@@ -325,9 +1809,12 @@ document.getElementById("rulesModal").addEventListener("click",(e)=>{
       throw e;
     }
 
-    setInfo(ui.status, "✅ Uploaded successfully!");
+    setOk(ui.status, "✅ Uploaded successfully!");
     setTimeout(() => window.location.reload(), 700);
   }
+
+  initTimeLeft();
+  initAttemptLocks();
 
   document.querySelectorAll(".upload-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -339,8 +1826,18 @@ document.getElementById("rulesModal").addEventListener("click",(e)=>{
 
       if (btn.disabled) return;
 
-      if (!fileInput.files || !fileInput.files[0]) {
-        setError(status, "Please choose a file first.");
+      const file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+      const v = validateFile(file);
+      if (!v.ok){
+        alert(v.msg);
+        setErr(status, v.msg);
+        return;
+      }
+
+      const attemptsUsed = Number(card.getAttribute("data-attempts-used") || "0");
+      if (attemptsUsed >= MAX_ATTEMPTS){
+        alert("Max 3 submissions allowed for this contest.");
+        setErr(status, "🚫 Attempts over (max 3 submissions).");
         return;
       }
 
@@ -352,9 +1849,9 @@ document.getElementById("rulesModal").addEventListener("click",(e)=>{
 
       try {
         btn.disabled = true;
-        await uploadMultipart(orderId, fileInput.files[0], { status, prog });
+        await uploadMultipart(orderId, file, { status, prog });
       } catch (e) {
-        setError(status, e.message || "Upload error");
+        setErr(status, e.message || "Upload error");
         prog.style.display = "none";
       } finally {
         btn.disabled = false;

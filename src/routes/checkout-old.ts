@@ -2,50 +2,10 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth";
 import { pool } from "../config/db";
-import https from "https";
 
 const router = express.Router();
 const BOOKS = ["Bhagavad Gita", "Krishna Book", "Ramayana", "Mahabharata"];
 const LANGUAGES = ["English", "Tamil", "Telugu", "Kannada", "Hindi"];
-
-const RZP_KEY_ID = process.env.RZP_KEY_ID || "";
-const RZP_KEY_SECRET = process.env.RZP_KEY_SECRET || "";
-
-function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const auth = Buffer.from(`${RZP_KEY_ID}:${RZP_KEY_SECRET}`).toString("base64");
-
-    const req = https.request(
-      {
-        hostname: "api.razorpay.com",
-        path,
-        method,
-        headers: {
-          Authorization: `Basic ${auth}`,
-          "Content-Type": "application/json",
-        },
-      },
-      (res) => {
-        let data = "";
-        res.on("data", (c) => (data += c));
-        res.on("end", () => {
-          const status = res.statusCode || 0;
-          let json: any = null;
-          try {
-            json = data ? JSON.parse(data) : null;
-          } catch {
-            // keep raw
-          }
-          if (status >= 200 && status < 300) return resolve(json);
-          return reject(new Error(`RZP ${method} ${path} failed: ${status} ${data?.slice(0, 200)}`));
-        });
-      }
-    );
-
-    req.on("error", reject);
-    req.end();
-  });
-}
 
 // --------------------
 // SINGLE checkout (keep your existing flow)
@@ -82,7 +42,7 @@ router.get("/checkout", authMiddleware, async (req: any, res) => {
 });
 
 // --------------------
-// BULK checkout (ADD dual inquiry here)
+// BULK checkout (FIXED)
 // --------------------
 router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -99,160 +59,26 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   );
   if (ordersQ.rows.length === 0) return res.status(404).send("Orders not found");
 
-  // Use first row to reach payment session (all in same group should share it)
-  const paymentSessionId = ordersQ.rows[0].payment_session_id;
-  let gatewayOrderId: string | null = null;
-  let gatewayPaymentId: string | null = null;
-  let gatewayStatus: string | null = null;
-  let verifiedOk = false;
-  let verifyError: string | null = null;
+  const anyUnpaid = ordersQ.rows.some((o: any) => o.payment_status !== "paid");
+  if (anyUnpaid) return res.redirect(`/payment?paymentId=${encodeURIComponent(paymentId)}`);
 
-  // Load user
   const userQ = await pool.query(
     `SELECT name, email, phone, phone_locked, address, city, state, pincode
      FROM users WHERE id=$1`,
     [userId]
   );
 
-  // --- Mandatory: Status API dual inquiry on response page ---
-  if (paymentSessionId && RZP_KEY_ID && RZP_KEY_SECRET) {
-    try {
-      const psQ = await pool.query(
-        `SELECT id, payment_id, amount, status
-         FROM payment_sessions
-         WHERE id=$1 AND user_id=$2`,
-        [paymentSessionId, userId]
-      );
-
-      if (psQ.rows.length > 0) {
-        gatewayOrderId = psQ.rows[0].payment_id; // razorpay_order_id
-        if (gatewayOrderId) {
-          const apiResp = await rzpRequest("GET", `/v1/orders/${gatewayOrderId}/payments`);
-          const items = Array.isArray(apiResp?.items) ? apiResp.items : [];
-
-          const captured = items.find((p: any) => String(p?.status || "").toLowerCase() === "captured");
-          const authorized = items.find((p: any) => String(p?.status || "").toLowerCase() === "authorized");
-
-          if (captured) {
-            gatewayPaymentId = captured.id || null;
-            gatewayStatus = "captured";
-            verifiedOk = true;
-          } else if (authorized) {
-            gatewayPaymentId = authorized.id || null;
-            gatewayStatus = "authorized";
-          } else if (items.length > 0) {
-            gatewayPaymentId = items[0]?.id || null;
-            gatewayStatus = String(items[0]?.status || "unknown");
-          } else {
-            gatewayStatus = "no_payments_found";
-          }
-
-          // Log request/response
-          await pool.query(
-            `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
-             VALUES ($1,$2,$3)`,
-            [
-              paymentSessionId,
-              "checkout_bulk_status_api",
-              {
-                request: { path: `/v1/orders/${gatewayOrderId}/payments` },
-                response: apiResp,
-                derived: { gatewayStatus, gatewayPaymentId },
-                at: new Date().toISOString(),
-              },
-            ]
-          );
-
-          // If captured, ensure DB is consistent (idempotent updates)
-          if (verifiedOk) {
-            await pool.query("BEGIN");
-            try {
-
-              await pool.query(
-                `UPDATE payment_sessions
-                 SET status='paid'
-                 WHERE id=$1 AND status <> 'paid'`,
-                [paymentSessionId]
-              );
-
-              await pool.query(
-                `UPDATE orders
-                 SET payment_status='paid'
-                 WHERE user_id=$1 AND payment_id=$2`,
-                [userId, paymentId]
-              );
-
-              await pool.query("COMMIT");
-            } catch (e) {
-              await pool.query("ROLLBACK");
-              throw e;
-            }
-          }
-        }
-      }
-    } catch (e: any) {
-      verifyError = e?.message || "Status verification failed";
-      // Log failure (still useful for audit)
-      if (paymentSessionId) {
-        await pool.query(
-          `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
-           VALUES ($1,$2,$3)`,
-          [
-            paymentSessionId,
-            "checkout_bulk_status_api_error",
-            { error: verifyError, at: new Date().toISOString() },
-          ]
-        );
-      }
-    }
-  } else {
-    verifyError = "Gateway keys missing on server (RZP_KEY_ID / RZP_KEY_SECRET).";
-  }
-
-  // Reload orders (in case we updated statuses)
-  const ordersQ2 = await pool.query(
-    `SELECT o.*, c.title AS contest_title
-     FROM orders o
-     JOIN contests c ON c.id=o.contest_id
-     WHERE o.user_id=$1 AND o.payment_id=$2
-     ORDER BY o.created_at ASC`,
-    [userId, paymentId]
-  );
-
-  // If still not paid, redirect back to payment (or show “verification pending”)
-  const anyUnpaid = ordersQ2.rows.some((o: any) => o.payment_status !== "paid");
-  if (anyUnpaid) {
-    // For audit: better to SHOW page with verification message than redirect loop.
-    // But your existing flow redirects; keeping it safe:
-    return res.render("checkout-bulk", {
-      paymentId,
-      orders: ordersQ2.rows,
-      user: userQ.rows[0],
-      books: BOOKS,
-      languages: LANGUAGES,
-      error: verifyError || "Payment verification is pending. Please refresh after a moment.",
-      gatewayOrderId,
-      gatewayPaymentId,
-      gatewayStatus,
-      verifiedOk,
-    });
-  }
-
   return res.render("checkout-bulk", {
     paymentId,
-    orders: ordersQ2.rows,
+    orders: ordersQ.rows,
     user: userQ.rows[0],
     books: BOOKS,
-    languages: LANGUAGES,
+    languages: LANGUAGES, // ✅ FIX
     error: null,
-    gatewayOrderId,
-    gatewayPaymentId,
-    gatewayStatus,
-    verifiedOk,
   });
 });
 
-// ✅ KEEP ONLY THIS POST (unchanged)
+// ✅ KEEP ONLY THIS POST (delete your older duplicate POST /checkout/bulk)
 router.post("/checkout/bulk", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
   const paymentId = String(req.body.paymentId || "");
@@ -286,12 +112,6 @@ router.post("/checkout/bulk", authMiddleware, async (req: any, res) => {
       books: BOOKS,
       languages: LANGUAGES, // ✅ FIX (so page can render even on error)
       error: msg,
-	// ✅ add safe defaults so EJS never breaks
-    gatewayOrderId: null,
-    gatewayPaymentId: null,
-    gatewayStatus: null,
-    verifiedOk: false,
-
     });
 
   // 1) delivery choice
@@ -336,7 +156,7 @@ router.post("/checkout/bulk", authMiddleware, async (req: any, res) => {
       await pool.query(`DELETE FROM shipments WHERE id=$1`, [shipmentId]);
     }
 
-    return res.render("payment-success",  { deliveryMode: "donate" });
+    return res.render("payment-success");
   }
 
   // 4) DELIVER: validate address + book rows
@@ -411,9 +231,7 @@ router.post("/checkout/bulk", authMiddleware, async (req: any, res) => {
     [address, city, state, pincode, userId]
   );
 
-  return res.render("payment-success",  { deliveryMode: "deliver" });
-
-
+  return res.render("payment-success");
 });
 
 export default router;

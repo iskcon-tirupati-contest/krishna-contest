@@ -48,38 +48,14 @@
 
 <div class="wrap">
   <div class="top">
-  <% const _isPaid = (typeof verifiedOk !== 'undefined' && verifiedOk) && !error; %>
-  <% if (_isPaid) { %>
-    <h1>Payment Confirmed ✅</h1>
+    <h1>Payment Successful ✅</h1>
     <p>
-      Payment is confirmed for:
+      You are registered for:
       <% (orders || []).forEach((o) => { %>
         <span class="pill" style="margin-left:6px"><%= o.contest_title || ("Contest #" + o.contest_id) %></span>
       <% }) %>
     </p>
-    <p style="margin-top:10px; font-size:13px; line-height:1.5; opacity:.95">
-      <b>Gateway Order ID:</b> <%= gatewayOrderId || "-" %><br/>
-      <b>Gateway Payment Status:</b> <%= gatewayStatus || "-" %>
-      <% if (gatewayPaymentId) { %> (<%= gatewayPaymentId %>) <% } %><br/>
-      <b>Total Amount:</b> ₹<%= (orders || []).reduce((s,o)=> s + Number(o.amount||0), 0) %><br/>
-      <b>Reference:</b> <%= paymentId %>
-    </p>
-  <% } else { %>
-    <h1>Payment Not Completed ⚠️</h1>
-    <p style="opacity:.92;font-size:13px;line-height:1.4">
-      We could not confirm your payment yet (it may be cancelled/failed, or still processing).
-      Please retry payment.
-    </p>
-    <p style="margin-top:10px; font-size:13px; line-height:1.5; opacity:.95">
-      <b>Gateway Order ID:</b> <%= gatewayOrderId || "-" %><br/>
-      <b>Last Known Status:</b> <%= gatewayStatus || (error ? "error" : "-") %><br/>
-      <b>Reference:</b> <%= paymentId %>
-    </p>
-    <a href="/payment/embedded?paymentId=<%= encodeURIComponent(paymentId) %>" style="display:inline-block;margin-top:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:10px 14px;border-radius:12px;font-weight:1000;text-decoration:none">
-      Retry Payment →
-    </a>
-  <% } %>
-</div>
+  </div>
 
   <div class="content">
     <% if (error) { %>

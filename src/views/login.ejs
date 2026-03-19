@@ -20,7 +20,6 @@
       animation:float 15s ease-in-out infinite;pointer-events:none
     }
     @keyframes float{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.8;transform:scale(1.1)}}
-
     .login-container{
       background:rgba(255,255,255,.95);backdrop-filter:blur(10px);
       border-radius:25px;box-shadow:0 15px 50px rgba(0,0,0,.3);
@@ -28,19 +27,22 @@
       border:2px solid rgba(255,215,0,.3)
     }
     .logo{text-align:center;margin-bottom:28px}
-    .logo-icon{font-size:48px;margin-bottom:15px;animation:pulse 2s ease-in-out infinite}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
     .logo h1{font-size:26px;color:#1a237e;margin-bottom:5px}
     .logo p{font-size:14px;color:#546e7a}
-
     .alert{
       background:rgba(244,67,54,.10);
       border:1px solid rgba(244,67,54,.35);
       color:#b42318;
       padding:12px 14px;border-radius:12px;font-weight:700;
-      margin-bottom:14px;font-size:14px
+      margin-bottom:14px;font-size:14px;display:none
     }
-
+    .ok{
+      background:rgba(16,185,129,.10);
+      border:1px solid rgba(16,185,129,.35);
+      color:#065f46;
+      padding:12px 14px;border-radius:12px;font-weight:700;
+      margin-bottom:14px;font-size:14px;display:none
+    }
     form{display:flex;flex-direction:column;gap:18px}
     .form-group{position:relative}
     input{
@@ -48,52 +50,25 @@
       font-size:16px;transition:all .3s ease;background:#fff;color:#333
     }
     input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.1)}
-    input::placeholder{color:#9e9e9e}
-
     .btn{
       width:100%;padding:16px;border:none;border-radius:12px;cursor:pointer;
-      font-size:16px;font-weight:700;transition:all .3s ease
-    }
-    .btn-primary{
+      font-size:16px;font-weight:700;transition:all .3s ease;
       background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
       color:#1a237e;box-shadow:0 6px 20px rgba(255,215,0,.4)
     }
-    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,215,0,.6)}
-    .btn-primary:active{transform:translateY(0)}
-    .btn-google{
-      background:#fff;color:#1a237e;border:2px solid #e0e0e0;
-      display:flex;align-items:center;justify-content:center;gap:10px
-    }
-    .btn-google:hover{border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.08)}
-    .gicon{
-      width:18px;height:18px;display:inline-block;border-radius:3px;
-      background:conic-gradient(#4285F4 0 90deg,#34A853 90deg 180deg,#FBBC05 180deg 270deg,#EA4335 270deg 360deg);
-    }
-
-    .divider{
-      text-align:center;margin:18px 0 12px;position:relative;
-      color:#78909c;font-size:14px
-    }
-    .divider::before,.divider::after{
-      content:'';position:absolute;top:50%;width:40%;height:1px;background:#e0e0e0
-    }
-    .divider::before{left:0}
-    .divider::after{right:0}
-
-    .links{text-align:center}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,215,0,.6)}
+    .btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+    .links{text-align:center;margin-top:18px}
     .links a{
-      color:#1a237e;text-decoration:none;font-weight:500;transition:color .3s ease;
+      color:#1a237e;text-decoration:none;font-weight:500;
       display:inline-block;margin:8px 15px
     }
-    .links a:hover{color:#ffd700}
-
     .back-home{
       position:absolute;top:20px;left:20px;color:#fff;text-decoration:none;font-weight:500;
       padding:10px 20px;background:rgba(255,255,255,.1);backdrop-filter:blur(5px);
-      border-radius:25px;transition:all .3s ease;border:1px solid rgba(255,255,255,.2);z-index:10
+      border-radius:25px;border:1px solid rgba(255,255,255,.2);z-index:10
     }
-    .back-home:hover{background:rgba(255,215,0,.2);border-color:#ffd700;transform:translateX(-5px)}
-
+    .otp-wrap{display:none}
     @media (max-width:480px){
       .login-container{padding:40px 30px}
       .logo h1{font-size:22px}
@@ -108,66 +83,146 @@
 
 <div class="login-container">
   <div class="logo">
-    <div class="logo-icon">
-
- <img src="/images/logo.png" alt="" class="logo-img" height="80">
-
-    </div>
+    <div><img src="/images/logo.png" alt="" class="logo-img" height="80"></div>
     <h1>Welcome Back</h1>
-    <p>Login to BhakthiVedanta Wisdom Contest</p>
+    <p>Login using your mobile number</p>
   </div>
 
-  <% if (error) { %>
-    <div class="alert"><%= error %></div>
-  <% } %>
+  <div id="errBox" class="alert"></div>
+  <div id="okBox" class="ok"></div>
 
-  <a href="/auth/google" class="btn btn-google" style="text-decoration:none;">
-    <span class="gicon"></span>
-    Continue with Google
-  </a>
-
-<div style="text-align:center;margin-top:10px;">
-  <a href="/auth/google/switch"
-     style="color:#1a237e;text-decoration:none;font-weight:700;font-size:14px;">
-    Use another Google account
-  </a>
-</div>
-
-
-  <div class="divider">or</div>
-
-  <form method="POST" action="/login" autocomplete="on">
+  <form id="loginForm" autocomplete="off" novalidate>
     <div class="form-group">
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        value="<%= (old && old.email) || '' %>"
-        autocomplete="email"
-        required
-      />
+      <input id="phone" name="phone" placeholder="Mobile Number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
     </div>
 
-    <div class="form-group">
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        autocomplete="current-password"
-        required
-      />
+    <div id="otpWrap" class="otp-wrap">
+      <div class="form-group">
+        <input id="otp" name="otp" placeholder="Enter OTP" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="button" id="sendOtpBtn" class="btn">Send OTP</button>
+    <button type="button" id="verifyOtpBtn" class="btn" style="display:none;">Verify OTP & Login</button>
   </form>
 
-  <div class="links" style="margin-top:18px">
+  <div class="links">
     <p style="color:#546e7a;margin-bottom:10px;">Don't have an account?</p>
     <a href="/register">Register Now</a>
     <span style="color:#e0e0e0;">|</span>
     <a href="/">Go to Home</a>
   </div>
 </div>
+
+<script>
+(function () {
+  const phoneEl = document.getElementById("phone");
+  const otpEl = document.getElementById("otp");
+  const otpWrap = document.getElementById("otpWrap");
+  const sendOtpBtn = document.getElementById("sendOtpBtn");
+  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+  const errBox = document.getElementById("errBox");
+  const okBox = document.getElementById("okBox");
+
+  function showError(msg) {
+    errBox.textContent = msg || "Something went wrong";
+    errBox.style.display = "block";
+    okBox.style.display = "none";
+  }
+
+  function showOk(msg) {
+    okBox.textContent = msg || "";
+    okBox.style.display = "block";
+    errBox.style.display = "none";
+  }
+
+  function clearMsg() {
+    errBox.style.display = "none";
+    okBox.style.display = "none";
+  }
+
+  function norm(v){ return String(v || "").trim(); }
+  function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
+
+  phoneEl.addEventListener("input", () => {
+    phoneEl.value = phoneEl.value.replace(/\D/g, "").slice(0, 10);
+    clearMsg();
+  });
+
+  otpEl.addEventListener("input", () => {
+    otpEl.value = otpEl.value.replace(/\D/g, "").slice(0, 6);
+    clearMsg();
+  });
+
+  sendOtpBtn.addEventListener("click", async () => {
+    clearMsg();
+
+    const phone = norm(phoneEl.value);
+    if (!validPhone(phone)) {
+      return showError("Please enter a valid 10-digit Indian mobile number.");
+    }
+
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.textContent = "Sending...";
+
+    try {
+      const r = await fetch("/login/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) {
+        throw new Error(data.message || "Failed to send OTP");
+      }
+
+      otpWrap.style.display = "block";
+      verifyOtpBtn.style.display = "block";
+      showOk(data.message || "OTP sent successfully.");
+      otpEl.focus();
+    } catch (e) {
+      showError(e.message || "Failed to send OTP");
+    } finally {
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = "Send OTP";
+    }
+  });
+
+  verifyOtpBtn.addEventListener("click", async () => {
+    clearMsg();
+
+    const phone = norm(phoneEl.value);
+    const otp = norm(otpEl.value);
+
+    if (!validPhone(phone)) return showError("Please enter a valid mobile number.");
+    if (!/^\d{4,10}$/.test(otp)) return showError("Please enter a valid OTP.");
+
+    verifyOtpBtn.disabled = true;
+    verifyOtpBtn.textContent = "Verifying...";
+
+    try {
+      const r = await fetch("/login/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, otp })
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) {
+        throw new Error(data.message || "OTP verification failed");
+      }
+
+      window.location.href = data.redirect || "/dashboard";
+    } catch (e) {
+      showError(e.message || "OTP verification failed");
+    } finally {
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.textContent = "Verify OTP & Login";
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

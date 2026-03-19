@@ -17,8 +17,8 @@ import checkoutRoutes from "./routes/checkout";
 import paymentRoutes from "./routes/payment";
 import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
-
-
+import whatsappRoutes from "./routes/whatsapp";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
@@ -117,6 +117,16 @@ app.use(checkoutRoutes);
 app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
+
+app.use(
+  "/api/whatsapp",
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+  whatsappRoutes
+);
 /* Pages */
 app.get("/", (_req, res) => res.render("index"));
 app.get("/privacy-policy", (_req, res) => res.render("privacy-policy"));
@@ -126,6 +136,10 @@ app.get("/about", (_req, res) => res.render("about"));
 app.get("/contact", (_req, res) => res.render("contact"));
 
 connectDB();
+
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);

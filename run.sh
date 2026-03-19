@@ -2,6 +2,7 @@ rm -rf dist
 npm run build
 pm2 restart krishna-contest
 pm2 logs krishna-contest --lines 50
+pm2 save 
 
 # Fix static permissions for nginx after build
 chmod o+rx /home/ubuntu

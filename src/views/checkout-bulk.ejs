@@ -48,7 +48,12 @@
 
 <div class="wrap">
   <div class="top">
-  <% const _isPaid = (typeof verifiedOk !== 'undefined' && verifiedOk) && !error; %>
+
+  <%
+  const _isPaid = (orders || []).length > 0 &&
+                  (orders || []).every(o => String(o.payment_status || '') === 'paid');
+  %>
+
   <% if (_isPaid) { %>
     <h1>Payment Confirmed ✅</h1>
     <p>

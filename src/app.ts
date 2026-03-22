@@ -17,7 +17,6 @@ import checkoutRoutes from "./routes/checkout";
 import paymentRoutes from "./routes/payment";
 import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
-import whatsappRoutes from "./routes/whatsapp";
 import cors from "cors";
 dotenv.config();
 
@@ -136,15 +135,6 @@ app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
 
-app.use(
-  "/api/whatsapp",
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-  whatsappRoutes
-);
 /* Pages */
 
 //app.get("/", (_req, res) => res.render("index"));

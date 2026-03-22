@@ -2,134 +2,139 @@
 <html lang="en">
 <head>
   <title>Register - BhakthiVedanta Wisdom Contest 2026</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    *{box-sizing:border-box}
     body{
-      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-      background:linear-gradient(135deg,#1a237e 0%,#0d47a1 50%,#01579b 100%);
-      min-height:100vh;display:flex;align-items:center;justify-content:center;
-      padding:20px;position:relative;overflow:hidden
+      margin:0;
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:linear-gradient(135deg,#0d1b4d,#1e3a8a);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
     }
-    body::before{
-      content:'';position:fixed;top:0;left:0;width:100%;height:100%;
-      background-image:
-        radial-gradient(circle at 20% 50%, rgba(255,215,0,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255,193,7,0.1) 0%, transparent 50%);
-      animation:float 15s ease-in-out infinite;pointer-events:none
+    .card{
+      width:100%;
+      max-width:430px;
+      background:#fff;
+      border-radius:22px;
+      box-shadow:0 18px 45px rgba(0,0,0,.18);
+      padding:28px;
     }
-    @keyframes float{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.8;transform:scale(1.1)}}
-    .register-container{
-      background:rgba(255,255,255,.95);backdrop-filter:blur(10px);
-      border-radius:25px;box-shadow:0 15px 50px rgba(0,0,0,.3);
-      width:100%;max-width:480px;padding:50px 40px;position:relative;z-index:1;
-      border:2px solid rgba(255,215,0,.3)
+    h1{
+      margin:0 0 8px;
+      font-size:28px;
+      color:#0f172a;
+      text-align:center;
     }
-    .logo{text-align:center;margin-bottom:28px}
-    .logo h1{font-size:26px;color:#1a237e;margin-bottom:5px}
-    .logo p{font-size:14px;color:#546e7a}
-    .alert{
-      background:rgba(244,67,54,.10);
-      border:1px solid rgba(244,67,54,.35);
-      color:#b42318;
-      padding:12px 14px;border-radius:12px;font-weight:700;
-      margin-bottom:14px;font-size:14px;display:none
+    .sub{
+      text-align:center;
+      color:#64748b;
+      margin-bottom:24px;
+      font-size:14px;
     }
-    .ok{
-      background:rgba(16,185,129,.10);
-      border:1px solid rgba(16,185,129,.35);
-      color:#065f46;
-      padding:12px 14px;border-radius:12px;font-weight:700;
-      margin-bottom:14px;font-size:14px;display:none
-    }
-    form{display:flex;flex-direction:column;gap:16px}
-    .form-group{position:relative}
+    .form-group{margin-bottom:14px}
     input{
-      width:100%;padding:15px 20px;border:2px solid #e0e0e0;border-radius:12px;
-      font-size:16px;transition:all .3s ease;background:#fff;color:#333
+      width:100%;
+      padding:14px 16px;
+      border:1px solid #dbe2ea;
+      border-radius:14px;
+      font-size:15px;
+      outline:none;
     }
-    input:focus{outline:none;border-color:#ffd700;box-shadow:0 0 0 4px rgba(255,215,0,.1)}
-    .hint{font-size:12px;color:#607d8b;margin-top:6px}
-    .fieldError{font-size:12px;color:#b42318;margin-top:6px;display:none;font-weight:700}
+    input:focus{
+      border-color:#1d4ed8;
+      box-shadow:0 0 0 3px rgba(29,78,216,.10);
+    }
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color:#64748b;
+    }
     button{
-      width:100%;padding:16px;background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
-      color:#1a237e;font-size:18px;font-weight:600;border:none;border-radius:12px;
-      cursor:pointer;transition:all .3s ease;box-shadow:0 6px 20px rgba(255,215,0,.4);margin-top:8px
+      width:100%;
+      border:0;
+      border-radius:14px;
+      padding:14px 16px;
+      background:#1d4ed8;
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
     }
-    button:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,215,0,.6)}
-    button:disabled{opacity:.65;cursor:not-allowed;transform:none}
-    .links{text-align:center;margin-top:18px}
-    .links a{color:#1a237e;text-decoration:none;font-weight:500;display:inline-block;margin:8px 15px}
-    .back-home{
-      position:absolute;top:20px;left:20px;color:#fff;text-decoration:none;font-weight:500;
-      padding:10px 20px;background:rgba(255,255,255,.1);backdrop-filter:blur(5px);
-      border-radius:25px;border:1px solid rgba(255,255,255,.2);z-index:10
+    button:disabled{opacity:.7;cursor:not-allowed}
+    .alert,.ok{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:14px;
     }
-    .otp-wrap{display:none}
-    .small{font-size:13px;color:#607d8b;margin-top:8px}
-    @media (max-width:480px){
-      .register-container{padding:40px 30px}
-      .logo h1{font-size:22px}
-      input,button{font-size:15px;padding:13px 18px}
-      .back-home{font-size:14px;padding:8px 16px}
+    .alert{background:#fee2e2;color:#991b1b}
+    .ok{background:#dcfce7;color:#166534}
+    .links{
+      margin-top:18px;
+      text-align:center;
+      font-size:14px;
+    }
+    .links a{
+      color:#1d4ed8;
+      text-decoration:none;
+      font-weight:600;
     }
   </style>
 </head>
 <body>
-<a href="/" class="back-home">← Back to Home</a>
-
-<div class="register-container">
-  <div class="logo">
-    <div><img src="/images/logo.png" alt="" class="logo-img" height="80"></div>
+  <div class="card">
     <h1>Create Account</h1>
-    <p>Register using your mobile number</p>
-  </div>
+    <div class="sub">Register with your name, mobile number, and password.</div>
 
-  <div id="errBox" class="alert"></div>
-  <div id="okBox" class="ok"></div>
+    <div id="errBox" class="alert"></div>
+    <div id="okBox" class="ok"></div>
 
-  <form id="regForm" autocomplete="off" novalidate>
-    <div class="form-group">
-      <input id="name" name="name" placeholder="Full Name" autocomplete="name" required />
-    </div>
-
-    <div class="form-group">
-      <input id="phone" name="phone" placeholder="Mobile Number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
-      <div class="hint">10 digit Indian mobile number. OTP will be sent on WhatsApp.</div>
-      <div id="phoneErr" class="fieldError">Please enter a valid 10-digit Indian mobile number.</div>
-    </div>
-
-    <div id="otpWrap" class="otp-wrap">
+    <form id="regForm" autocomplete="off" novalidate>
       <div class="form-group">
-        <input id="otp" name="otp" placeholder="Enter OTP" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+        <input id="name" name="name" placeholder="Full Name" autocomplete="name" required />
       </div>
-      <div class="small">Enter the OTP received on your WhatsApp number.</div>
+
+      <div class="form-group">
+        <input id="phone" name="phone" placeholder="Mobile Number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
+        <div class="hint">Enter your 10-digit Indian mobile number.</div>
+      </div>
+
+      <div class="form-group">
+        <input id="password" name="password" type="password" placeholder="Password" autocomplete="new-password" required />
+        <div class="hint">Minimum 6 characters.</div>
+      </div>
+
+      <div class="form-group">
+        <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm Password" autocomplete="new-password" required />
+      </div>
+
+      <button type="submit" id="registerBtn">Register</button>
+    </form>
+
+    <div class="links">
+      Already have an account?
+      <a href="/login">Login Here</a>
+      &nbsp;|&nbsp;
+      <a href="/">Go to Home</a>
     </div>
-
-    <button type="button" id="sendOtpBtn">Send OTP</button>
-    <button type="button" id="verifyOtpBtn" style="display:none;">Verify OTP & Register</button>
-  </form>
-
-  <div class="links">
-    <p style="color:#546e7a;margin-bottom:10px;">Already have an account?</p>
-    <a href="/login">Login Here</a>
-    <span style="color:#e0e0e0;">|</span>
-    <a href="/">Go to Home</a>
   </div>
-</div>
 
 <script>
 (function () {
   const nameEl = document.getElementById("name");
   const phoneEl = document.getElementById("phone");
-  const otpEl = document.getElementById("otp");
-  const otpWrap = document.getElementById("otpWrap");
-  const sendOtpBtn = document.getElementById("sendOtpBtn");
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+  const passwordEl = document.getElementById("password");
+  const confirmPasswordEl = document.getElementById("confirmPassword");
+  const regForm = document.getElementById("regForm");
+  const registerBtn = document.getElementById("registerBtn");
   const errBox = document.getElementById("errBox");
   const okBox = document.getElementById("okBox");
-  const phoneErr = document.getElementById("phoneErr");
 
   function showError(msg) {
     errBox.textContent = msg || "Something went wrong";
@@ -146,7 +151,6 @@
   function clearMsg() {
     errBox.style.display = "none";
     okBox.style.display = "none";
-    phoneErr.style.display = "none";
   }
 
   function norm(v){ return String(v || "").trim(); }
@@ -157,86 +161,42 @@
     clearMsg();
   });
 
-  otpEl.addEventListener("input", () => {
-    otpEl.value = otpEl.value.replace(/\D/g, "").slice(0, 6);
-    clearMsg();
-  });
-
-  sendOtpBtn.addEventListener("click", async () => {
+  regForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
     clearMsg();
 
     const name = norm(nameEl.value);
     const phone = norm(phoneEl.value);
-
-    if (name.length < 2) {
-      return showError("Please enter your full name.");
-    }
-
-    if (!validPhone(phone)) {
-      phoneErr.style.display = "block";
-      phoneEl.focus();
-      return;
-    }
-
-    sendOtpBtn.disabled = true;
-    sendOtpBtn.textContent = "Sending...";
-
-    try {
-      const r = await fetch("/register/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone })
-      });
-
-      const data = await r.json();
-      if (!r.ok || !data.ok) {
-        throw new Error(data.message || "Failed to send OTP");
-      }
-
-      otpWrap.style.display = "block";
-      verifyOtpBtn.style.display = "block";
-      showOk(data.message || "OTP sent successfully.");
-      otpEl.focus();
-    } catch (e) {
-      showError(e.message || "Failed to send OTP");
-    } finally {
-      sendOtpBtn.disabled = false;
-      sendOtpBtn.textContent = "Send OTP";
-    }
-  });
-
-  verifyOtpBtn.addEventListener("click", async () => {
-    clearMsg();
-
-    const name = norm(nameEl.value);
-    const phone = norm(phoneEl.value);
-    const otp = norm(otpEl.value);
+    const password = String(passwordEl.value || "");
+    const confirmPassword = String(confirmPasswordEl.value || "");
 
     if (name.length < 2) return showError("Please enter your full name.");
-    if (!validPhone(phone)) return showError("Please enter a valid mobile number.");
-    if (!/^\d{4,10}$/.test(otp)) return showError("Please enter a valid OTP.");
+    if (!validPhone(phone)) return showError("Please enter a valid 10-digit Indian mobile number.");
+    if (password.length < 6) return showError("Password must be at least 6 characters.");
+    if (password !== confirmPassword) return showError("Passwords do not match.");
 
-    verifyOtpBtn.disabled = true;
-    verifyOtpBtn.textContent = "Verifying...";
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Registering...";
 
     try {
-      const r = await fetch("/register/verify-otp", {
+      const r = await fetch("/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, otp })
+        body: JSON.stringify({ name, phone, password, confirmPassword })
       });
 
       const data = await r.json();
       if (!r.ok || !data.ok) {
-        throw new Error(data.message || "OTP verification failed");
+        throw new Error(data.message || "Registration failed");
       }
 
+      showOk("Registration successful.");
       window.location.href = data.redirect || "/dashboard";
     } catch (e) {
-      showError(e.message || "OTP verification failed");
+      showError(e.message || "Registration failed");
     } finally {
-      verifyOtpBtn.disabled = false;
-      verifyOtpBtn.textContent = "Verify OTP & Register";
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Register";
     }
   });
 })();

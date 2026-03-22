@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Track Delivery - Krishna Wisdom Contest 2026</title>
+  <title>Help - Krishna Wisdom Contest 2026</title>
   <style>
     :root{
       --bg:#f6f7fb;--card:#fff;--ink:#132238;--muted:#64748b;--line:#e7ecf3;
@@ -13,6 +13,7 @@
     *{box-sizing:border-box} html,body{margin:0;padding:0}
     body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:var(--safe-bottom)}
     a{text-decoration:none;color:inherit}
+    input,textarea,button,select{font:inherit}
     .app{max-width:560px;margin:0 auto;min-height:100vh}
     .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding-top:max(10px, env(safe-area-inset-top))}
     .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 14px}
@@ -26,9 +27,17 @@
     .hero{margin-bottom:14px}
     .hero h1{margin:0 0 6px;font-size:21px;color:#111827}
     .hero p{margin:0;font-size:13px;color:#475569;line-height:1.6}
-    .grid{display:grid;gap:12px}
-    .badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;background:#eef2ff;color:#243b8b;border:1px solid #d8e2ff}
+    .sectionTitle{font-size:18px;font-weight:900;color:#111827;margin:0 0 10px}
+    .faq{border:1px solid #e7edf6;border-radius:16px;padding:14px;margin-bottom:10px;background:#fbfdff}
+    .faq q{font-weight:900;display:block;margin-bottom:8px;color:#0f172a}
     .muted{color:var(--muted);font-size:13px;line-height:1.6}
+    label{display:block;font-size:12px;color:#64748b;font-weight:800;margin-bottom:6px}
+    textarea,input,select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid rgba(15,23,42,.14);background:#fff;color:#132238}
+    textarea{min-height:90px;resize:vertical}
+    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer}
+    .btn.primary{background:var(--primary);color:#fff;width:100%}
+    .ticket{border:1px solid #e7edf6;border-radius:16px;padding:12px;background:#fbfdff;margin-top:10px}
+    .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;background:#f8fafc;border:1px solid #e2e8f0;color:#334155}
     .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px, 100%);background:#fff;border-top:1px solid #e6edf6;box-shadow:0 -10px 24px rgba(15,23,42,.08);padding-bottom:max(10px, env(safe-area-inset-bottom));z-index:98}
     .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 0}
     .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#64748b;font-size:10px;font-weight:800;border-radius:14px;text-align:center}
@@ -52,27 +61,83 @@
 
   <main class="page">
     <section class="hero">
-      <h1>Track Delivery</h1>
-      <p>Track your gift book shipment if you selected home delivery during checkout.</p>
+      <h1>Help & Support</h1>
+      <p>Find answers to common questions or submit a support request for payment or general issues.</p>
     </section>
 
-    <% if (!shipments || shipments.length === 0) { %>
-      <div class="card">
-        <div class="muted">No book deliveries found yet. Either you selected donation or tracking is not generated yet.</div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="sectionTitle">Common Questions</div>
+
+      <div class="faq">
+        <q>My payment is pending. What should I do?</q>
+        <div class="muted">Open Profile → My Payments and use Resume Payment. If money was deducted but status is still pending, submit a support ticket with the payment reference.</div>
       </div>
-    <% } else { %>
-      <div class="grid">
-        <% shipments.forEach(s => { %>
-          <div class="card">
-            <div style="font-weight:1000;margin-bottom:10px"><%= s.title %></div>
-            <div style="margin-bottom:10px"><span class="badge"><%= s.status || 'Processing' %></span></div>
-            <div class="muted">Courier: <%= s.courier_mode || 'TBD' %></div>
-            <div class="muted">Tracking ID: <%= s.tracking_id || 'Not generated yet' %></div>
-            <div class="muted">Last update: <%= s.updated_at ? new Date(s.updated_at).toDateString() : '-' %></div>
+
+      <div class="faq">
+        <q>My payment failed, but the amount was deducted.</q>
+        <div class="muted">Check Profile → My Payments and raise a complaint using the grouped payment reference. Our team will verify it against the gateway records.</div>
+      </div>
+
+      <div class="faq">
+        <q>How do I upload my essay?</q>
+        <div class="muted">Go to My Contests, open your purchased contest, and upload PDF, DOC, or DOCX. Maximum 3 attempts are allowed.</div>
+      </div>
+
+      <div class="faq">
+        <q>Can I change my mobile number after saving?</q>
+        <div class="muted">Mobile number is locked after saving to maintain payment and participant record integrity.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px;">
+      <div class="sectionTitle">Submit a Support Request</div>
+      <form method="POST" action="/dashboard/help/ticket">
+        <label>Category</label>
+        <select name="category">
+          <option value="general">General</option>
+          <option value="payment">Payment</option>
+          <option value="contest">Contest</option>
+          <option value="delivery">Delivery</option>
+          <option value="technical">Technical</option>
+        </select>
+
+        <div style="height:12px"></div>
+
+        <label>Transaction / Payment Reference (optional)</label>
+        <input name="transactionRef" placeholder="Enter internal payment reference if any" />
+
+        <div style="height:12px"></div>
+
+        <label>Message</label>
+        <textarea name="message" placeholder="Describe your issue clearly" required></textarea>
+
+        <div style="height:14px"></div>
+        <button class="btn primary" type="submit">Submit Ticket</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle">My Recent Support Tickets</div>
+      <% if (!tickets || !tickets.length) { %>
+        <div class="muted">No support tickets submitted yet.</div>
+      <% } else { %>
+        <% tickets.forEach((t) => { %>
+          <div class="ticket">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+              <div>
+                <div style="font-weight:900;"><%= t.category || 'general' %></div>
+                <div class="muted"><%= t.message %></div>
+                <% if (t.transaction_ref) { %>
+                  <div class="muted">Ref: <%= t.transaction_ref %></div>
+                <% } %>
+                <div class="muted"><%= t.created_at ? new Date(t.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '-' %></div>
+              </div>
+              <span class="pill"><%= t.status || 'open' %></span>
+            </div>
           </div>
         <% }) %>
-      </div>
-    <% } %>
+      <% } %>
+    </div>
   </main>
 
   <nav class="bottomNav">
@@ -86,10 +151,10 @@
       <a class="navBtn" href="/dashboard/profile">
         <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span>
       </a>
-      <a class="navBtn active" href="/dashboard/delivery">
+      <a class="navBtn" href="/dashboard/delivery">
         <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span>
       </a>
-      <a class="navBtn" href="/dashboard/help">
+      <a class="navBtn active" href="/dashboard/help">
         <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span>
       </a>
     </div>

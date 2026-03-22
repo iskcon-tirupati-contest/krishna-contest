@@ -34,11 +34,29 @@ app.use(
   })
 );
 
-const limiter = rateLimit({
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === "production" ? 600 : 2000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "We’re receiving too many requests from this network right now. Please wait a moment and try again.",
+  skip: (req) => {
+    return req.path.startsWith("/images") || req.path.startsWith("/public");
+  },
 });
-app.use(limiter);
+
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 30 : 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many attempts detected. Please wait a few minutes and try again.",
+});
+
+app.use(generalLimiter);
+app.use("/login",sensitiveLimiter);
+app.use("/register",sensitiveLimiter);
+app.use("/dashboard/help/ticket",sensitiveLimiter);
 
 /* Middleware */
 // Razorpay webhooks need the raw body for signature verification
@@ -128,7 +146,33 @@ app.use(
   whatsappRoutes
 );
 /* Pages */
-app.get("/", (_req, res) => res.render("index"));
+
+//app.get("/", (_req, res) => res.render("index"));
+
+app.get("/", async (_req, res) => {
+  const contestsRes = await pool.query(`
+    SELECT
+      id,
+      title,
+      description,
+      price,
+      registration_deadline,
+      submission_deadline,
+      winner_declaration_date,
+      image_url,
+      prize_details,
+      rules,
+      age_categories,
+      participant_benefits
+    FROM contests
+    WHERE is_active = true
+    ORDER BY title ASC
+  `);
+
+  res.render("index", {
+    contests: contestsRes.rows
+  });
+});
 app.get("/privacy-policy", (_req, res) => res.render("privacy-policy"));
 app.get("/terms", (_req, res) => res.render("terms"));
 app.get("/refund-policy", (_req, res) => res.render("refund-policy"));

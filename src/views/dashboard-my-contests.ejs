@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Contests - Krishna Wisdom Contest 2026</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;--card:#fff;--ink:#132238;--muted:#64748b;--line:#e7ecf3;
+      --primary:#1a237e;--primary2:#283593;--green:#15803d;--red:#b91c1c;--amber:#a16207;
+      --shadow:0 10px 26px rgba(15,23,42,.07);--safe-bottom:calc(86px + env(safe-area-inset-bottom));
+    }
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:var(--safe-bottom)}
+    a{text-decoration:none;color:inherit}
+    .app{max-width:560px;margin:0 auto;min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding-top:max(10px, env(safe-area-inset-top))}
+    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:40px;height:40px;border-radius:14px;overflow:hidden;background:#fff1;border:1px solid rgba(255,255,255,.18)}
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .brandTitle{font-size:16px;font-weight:900;line-height:1.15}
+    .logoutBtn{
+      display:inline-flex;align-items:center;justify-content:center;min-width:78px;height:42px;padding:0 14px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.14);color:#fff;font-weight:800
+    }
+    .page{padding:14px 12px 22px}
+    .hero{background:#fff;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+    .hero h1{margin:0 0 6px;font-size:21px;color:#111827}
+    .hero p{margin:0;font-size:13px;color:#475569;line-height:1.6}
+    .sectionTitle{font-size:18px;font-weight:900;color:#111827;margin:0 0 10px;padding:0 2px}
+    .cards{display:grid;gap:12px}
+    .mineCard{background:#fff;border:1px solid #e7edf6;border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+    .mineTop{padding:14px;border-bottom:1px solid #edf2f7;background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%)}
+    .mineTitle{margin:0;font-size:17px;font-weight:900;color:#0f172a}
+    .mineDesc{margin:7px 0 0;color:#5b6778;font-size:13px;line-height:1.6}
+    .mineMeta{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .minePill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;background:#f8fafc;border:1px solid #e5edf6;color:#334155}
+    .pillOpen{background:#ecfdf3;color:#166534;border-color:#bbf7d0}
+    .pillClosed{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .mineBody{padding:14px;display:grid;gap:12px}
+    .box{border:1px solid #e9eef5;border-radius:18px;padding:14px;background:#fbfdff}
+    .boxTitle{margin:0 0 8px;font-size:15px;font-weight:900;color:#111827}
+    .muted{color:#64748b;font-size:12px;line-height:1.65}
+    .timeleft{display:inline-flex;margin-top:10px;padding:8px 11px;border-radius:999px;font-size:11px;font-weight:900}
+    .tagTime{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+    .tagClosed{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+    .uploadRow{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .file{width:100%;border:1px solid #dbe4ef;border-radius:12px;background:#fff;padding:12px;font-size:13px}
+    .uploadBtn{border:0;border-radius:12px;padding:12px 14px;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;font-weight:900;cursor:pointer}
+    .uploadBtn:disabled{opacity:.65;cursor:not-allowed}
+    .downloadBtn{display:inline-flex;justify-content:center;align-items:center;width:100%;border:1px solid #dbe4ef;border-radius:12px;padding:11px 13px;font-weight:800;background:#fff;color:#1e293b;margin-top:10px}
+    .prog{width:100%;display:none;margin-top:6px;height:12px}
+    .status{font-size:12px;font-weight:800;min-height:18px;margin-top:4px}
+    .statusErr{color:var(--red)} .statusOk{color:var(--green)} .statusWarn{color:var(--amber)}
+    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px, 100%);background:#fff;border-top:1px solid #e6edf6;box-shadow:0 -10px 24px rgba(15,23,42,.08);padding-bottom:max(10px, env(safe-area-inset-bottom));z-index:98}
+
+    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 0}
+.navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#64748b;font-size:10px;font-weight:800;border-radius:14px;text-align:center}
+.navBtn svg{width:20px;height:20px;fill:currentColor}
+
+
+    .navBtn.active{color:var(--primary);background:#eef2ff}
+    .empty{background:#fff;border:1px dashed #d8e1ec;color:#64748b;border-radius:18px;padding:22px 16px;text-align:center}
+  </style>
+</head>
+<body>
+<%
+  function formatDateOnly(d){
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('en-GB', { timeZone:'Asia/Kolkata' });
+  }
+  function formatDateTime(d){
+    if (!d) return '-';
+    return new Date(d).toLocaleString('en-IN', { timeZone:'Asia/Kolkata' });
+  }
+%>
+<div class="app">
+  <header class="topbar">
+    <div class="topbarInner">
+      <div class="brand">
+        <div class="logo"><img src="/images/icon.png" alt="" onerror="this.style.display='none'"></div>
+        <div class="brandTitle">Krishna Wisdom Contest 2026</div>
+      </div>
+<a class="iconBtn" href="/logout" title="Logout" aria-label="Logout">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg>
+</a>
+
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h1>My Contests</h1>
+      <p>Upload or replace your essay before the deadline. Maximum 3 attempts are allowed.</p>
+    </section>
+
+    <h2 class="sectionTitle">Purchased Contests</h2>
+
+    <% if (!registered || !registered.length) { %>
+      <div class="empty">You have not joined any contest yet.</div>
+    <% } else { %>
+      <div class="cards">
+        <% registered.forEach((r) => { %>
+          <div
+            class="mineCard contest-card"
+            data-order-id="<%= r.order_id %>"
+            data-has-submission="<%= r.file_url ? '1' : '0' %>"
+            data-attempts-used="<%= Number(r.attempts_used || 0) %>"
+            data-deadline-passed="<%= r.deadline_passed ? '1' : '0' %>"
+          >
+            <div class="mineTop">
+              <h3 class="mineTitle"><%= r.title %></h3>
+              <p class="mineDesc"><%= r.description || 'Contest description will be updated soon.' %></p>
+
+              <div class="mineMeta">
+                <span class="minePill">Age: <%= r.age_category === 'above-25' ? 'Above 25 years' : '0 to 25 years' %></span>
+
+                <% if (r.submission_deadline) { %>
+                  <span class="minePill">⏰ <%= formatDateTime(r.submission_deadline) %></span>
+                <% } %>
+
+                <% if (r.deadline_passed) { %>
+                  <span class="minePill pillClosed">Closed</span>
+                <% } else { %>
+                  <span class="minePill pillOpen">Open</span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="mineBody">
+              <div class="box">
+                <h4 class="boxTitle">Current Submission</h4>
+
+                <% if (r.file_url) { %>
+                  <div class="muted">
+                    <div><b>File:</b> <%= r.original_name || 'Uploaded submission' %></div>
+                    <div><b>Uploaded:</b> <%= formatDateTime(r.uploaded_at || r.last_updated_at) %></div>
+                    <div><b>Attempts Used:</b> <%= Number(r.attempts_used || 0) %> / 3</div>
+                  </div>
+                  <a class="downloadBtn" href="/dashboard/submission/download?orderId=<%= encodeURIComponent(r.order_id) %>">Download Current Submission</a>
+                <% } else { %>
+                  <div class="muted">
+                    No submission uploaded yet.<br/>
+                    <b>Attempts Used:</b> <%= Number(r.attempts_used || 0) %> / 3
+                  </div>
+                <% } %>
+
+                <% if (r.submission_deadline) { %>
+                  <div class="timeleft <%= r.deadline_passed ? 'tagClosed' : 'tagTime' %>" data-seconds-left="<%= Number(r.seconds_left || 0) %>">
+                    <%= r.deadline_passed ? 'Closed' : 'Time Left' %>
+                  </div>
+                <% } %>
+              </div>
+
+              <div class="box">
+                <h4 class="boxTitle">Upload / Replace Essay</h4>
+                <div class="muted">
+                  • Allowed: PDF, DOC, DOCX<br/>
+                  • Max file size: 500MB<br/>
+                  • Max attempts: 3
+                </div>
+
+                <% if (r.deadline_passed) { %>
+                  <div class="status statusErr" style="margin-top:12px;">Submission deadline has passed.</div>
+                <% } else { %>
+                  <div class="uploadRow">
+                    <input class="file" type="file" accept=".pdf,.doc,.docx" />
+                    <button class="uploadBtn upload-btn" type="button" data-order-id="<%= r.order_id %>">
+                      <%= r.file_url ? 'Replace Submission' : 'Upload Submission' %>
+                    </button>
+                    <progress class="prog" max="100" value="0"></progress>
+                    <div class="status"></div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+
+  <nav class="bottomNav">
+    <div class="bottomNavInner">
+      <a class="navBtn" href="/dashboard">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span>
+      </a>
+      <a class="navBtn active" href="/dashboard/my-contests">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span>
+      </a>
+      <a class="navBtn" href="/dashboard/profile">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span>
+      </a>
+      <a class="navBtn" href="/dashboard/delivery">
+        <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span>
+      </a>
+
+<a class="navBtn" href="/dashboard/help">
+          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span>
+        </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+(function(){
+  const MAX_ATTEMPTS = 3;
+  const allowedExt = new Set(["pdf","doc","docx"]);
+  const MAX_MB = 500;
+  const PART_SIZE = 10 * 1024 * 1024;
+
+  function extOf(name){
+    const m = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+    return m ? m[1] : "";
+  }
+
+  function validateFile(file){
+    if (!file) return { ok:false, msg:"Please choose a file first." };
+    if (file.size > MAX_MB * 1024 * 1024) return { ok:false, msg:`Max file size is ${MAX_MB}MB.` };
+
+    const mime = String(file.type || "").toLowerCase();
+    const ext = extOf(file.name);
+    const okMime =
+      mime === "application/pdf" ||
+      mime === "application/msword" ||
+      mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    if (!(okMime || allowedExt.has(ext))) return { ok:false, msg:"Only PDF, DOC, and DOCX files are allowed." };
+    return { ok:true };
+  }
+
+  function formatLeft(seconds){
+    const s = Math.max(0, Math.floor(Number(seconds || 0)));
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    if (s <= 0) return "Closed";
+    if (d > 0) return `${d}d ${h}h left`;
+    return `${h}h left`;
+  }
+
+  function setErr(el, msg){ if(!el) return; el.textContent = msg; el.className = "status statusErr"; }
+  function setOk(el, msg){ if(!el) return; el.textContent = msg; el.className = "status statusOk"; }
+  function setInfo(el, msg){ if(!el) return; el.textContent = msg; el.className = "status statusWarn"; }
+
+  function initTimeLeft(){
+    const nodes = document.querySelectorAll(".timeleft[data-seconds-left]");
+    nodes.forEach(n => {
+      const sec = Number(n.getAttribute("data-seconds-left") || "0");
+      n.textContent = formatLeft(sec);
+    });
+
+    setInterval(() => {
+      nodes.forEach(n => {
+        const old = Number(n.getAttribute("data-seconds-left") || "0");
+        const next = old - 60;
+        n.setAttribute("data-seconds-left", String(next));
+        n.textContent = formatLeft(next);
+        if (next <= 0){
+          n.classList.add("tagClosed");
+          n.classList.remove("tagTime");
+        }
+      });
+    }, 60000);
+  }
+
+  function initAttemptLocks(){
+    document.querySelectorAll(".contest-card").forEach(card => {
+      const used = Number(card.getAttribute("data-attempts-used") || "0");
+      const deadlinePassed = card.getAttribute("data-deadline-passed") === "1";
+      if (deadlinePassed) return;
+      if (used >= MAX_ATTEMPTS){
+        const file = card.querySelector(".file");
+        const btn = card.querySelector(".upload-btn");
+        const status = card.querySelector(".status");
+        if (file) file.disabled = true;
+        if (btn) btn.disabled = true;
+        if (status) setErr(status, "Attempts over (max 3 submissions).");
+      }
+    });
+  }
+
+  async function logFailure(orderId, stage, message, meta) {
+    try {
+      await fetch("/dashboard/upload/log", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ orderId, stage, message, meta })
+      });
+    } catch (_) {}
+  }
+
+  async function uploadMultipart(orderId, file, ui) {
+    setInfo(ui.status, "Starting upload...");
+    ui.prog.style.display = "block";
+    ui.prog.value = 0;
+
+    let start;
+    try {
+      const startRes = await fetch("/dashboard/upload/start", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          orderId,
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          fileSize: file.size
+        })
+      });
+      start = await startRes.json().catch(() => ({}));
+      if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
+    } catch (e) {
+      await logFailure(orderId, "start", e.message || "start failed", { fileName: file.name });
+      throw e;
+    }
+
+    const { key, uploadId } = start;
+    const totalParts = Math.ceil(file.size / PART_SIZE);
+    const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
+
+    let presign;
+    try {
+      setInfo(ui.status, "Preparing parts...");
+      const presignRes = await fetch("/dashboard/upload/presign-parts", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ orderId, key, uploadId, partNumbers })
+      });
+      presign = await presignRes.json().catch(() => ({}));
+      if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
+    } catch (e) {
+      await logFailure(orderId, "presign", e.message || "presign failed", { key });
+      throw e;
+    }
+
+    const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
+    const uploadedParts = [];
+
+    for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
+      const startByte = (partNumber - 1) * PART_SIZE;
+      const endByte = Math.min(partNumber * PART_SIZE, file.size);
+      const blob = file.slice(startByte, endByte);
+
+      setInfo(ui.status, `Uploading part ${partNumber}/${totalParts}...`);
+      const putRes = await fetch(urlMap.get(partNumber), { method: "PUT", body: blob });
+      if (!putRes.ok) throw new Error(`Part ${partNumber} failed`);
+
+      const etag = putRes.headers.get("ETag");
+      uploadedParts.push({ ETag: etag, PartNumber: partNumber });
+      ui.prog.value = Math.round((partNumber / totalParts) * 100);
+    }
+
+    const completeRes = await fetch("/dashboard/upload/complete", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        orderId,
+        key,
+        uploadId,
+        parts: uploadedParts,
+        contentType: file.type || "application/octet-stream",
+        originalName: file.name,
+        fileSize: file.size
+      })
+    });
+
+    const complete = await completeRes.json().catch(() => ({}));
+    if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
+
+    setOk(ui.status, "Uploaded successfully!");
+    setTimeout(() => window.location.reload(), 700);
+  }
+
+  initTimeLeft();
+  initAttemptLocks();
+
+  document.querySelectorAll(".upload-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const card = btn.closest(".contest-card");
+      const fileInput = card.querySelector(".file");
+      const status = card.querySelector(".status");
+      const prog = card.querySelector(".prog");
+      const orderId = btn.dataset.orderId;
+
+      const file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+      const v = validateFile(file);
+      if (!v.ok){ alert(v.msg); setErr(status, v.msg); return; }
+
+      const attemptsUsed = Number(card.getAttribute("data-attempts-used") || "0");
+      if (attemptsUsed >= MAX_ATTEMPTS){ alert("Max 3 submissions allowed."); setErr(status, "Attempts over."); return; }
+
+      const hasSubmission = card.dataset.hasSubmission === "1";
+      if (hasSubmission) {
+        const ok = confirm("This will replace your previous submission for evaluation. Continue?");
+        if (!ok) return;
+      }
+
+      try {
+        btn.disabled = true;
+        await uploadMultipart(orderId, file, { status, prog });
+      } catch (e) {
+        setErr(status, e.message || "Upload error");
+        prog.style.display = "none";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

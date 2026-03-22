@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart Review</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:16px}
+    .wrap{max-width:760px;margin:0 auto;background:#fff;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
+    .top{padding:18px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
+    .top h1{margin:0 0 6px;font-size:22px}
+    .top p{margin:0;opacity:.92;font-size:13px}
+    .content{padding:18px}
+    .back{display:inline-block;margin-bottom:12px;color:#1a237e;text-decoration:none;font-weight:900}
+    .empty{border:1px dashed #d8e1ec;border-radius:18px;padding:22px 16px;text-align:center;color:#64748b;background:#fbfcfe}
+    .item{display:grid;grid-template-columns:72px 1fr auto;gap:12px;border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin-bottom:12px;align-items:center}
+    .thumb{width:72px;height:72px;border-radius:14px;object-fit:cover;background:#eef2f7}
+    .title{font-weight:900;color:#0f172a;line-height:1.35}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#243b8b;font-size:12px;font-weight:900;margin-top:8px}
+    .price{font-weight:1000;color:#1a237e;white-space:nowrap}
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+    .qtyRow{display:flex;align-items:center;gap:8px}
+    .qtyBtn,.deleteBtn{width:34px;height:34px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-weight:1000;font-size:18px;color:#1e293b}
+    .qtyNum{min-width:24px;text-align:center;font-weight:900}
+    .sum{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-top:1px solid #e5e7eb;margin-top:12px}
+    .btn{width:100%;border:0;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;font-weight:1000;font-size:16px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <a class="back" href="/dashboard">← Back to Dashboard</a>
+
+  <div class="wrap">
+    <div class="top">
+      <h1>Cart Review</h1>
+      <p>Review selected contests before filling address and book details.</p>
+    </div>
+
+    <div class="content">
+      <div id="cartList"></div>
+
+      <div id="cartSummary" style="display:none;">
+        <div class="sum">
+          <div style="font-weight:900;color:#0f172a">Total Amount</div>
+          <div id="totalAmount" style="font-weight:1000;color:#1a237e">₹0</div>
+        </div>
+
+        <form method="POST" action="/cart-review/start">
+          <button class="btn" type="submit">Continue to Address & Book Details</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  async function fetchJson(url, options) {
+    const r = await fetch(url, options);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) throw new Error(data.message || 'Request failed');
+    return data;
+  }
+
+  const cartList = document.getElementById("cartList");
+  const cartSummary = document.getElementById("cartSummary");
+  const totalAmountEl = document.getElementById("totalAmount");
+
+  async function loadCart(){
+    const data = await fetchJson('/api/cart/items');
+    return Array.isArray(data.items) ? data.items : [];
+  }
+
+  async function updateItem(cartItemId, action){
+    await fetchJson('/api/cart/update', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ cartItemId, action })
+    });
+  }
+
+  async function render(){
+    let cart = [];
+    try {
+      cart = await loadCart();
+    } catch (e) {
+      cartList.innerHTML = `<div class="empty">${e.message || 'Failed to load cart.'}</div>`;
+      cartSummary.style.display = "none";
+      return;
+    }
+
+    cartList.innerHTML = "";
+
+    if (!cart.length) {
+      cartList.innerHTML = `<div class="empty">Your cart is empty.</div>`;
+      cartSummary.style.display = "none";
+      return;
+    }
+
+    let total = 0;
+
+    cart.forEach((item) => {
+      total += Number(item.price || 0) * Number(item.quantity || 0);
+
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <img class="thumb" src="${item.image_url || 'https://placehold.co/200x200?text=Contest'}" alt="${item.title || 'Contest'}" onerror="this.src='https://placehold.co/200x200?text=Contest'">
+        <div>
+          <div class="title">${item.title || 'Contest'}</div>
+          <div class="pill">Age Category: ${item.age_category === 'above-25' ? 'Above 25 years' : '0 to 25 years'}</div>
+        </div>
+        <div class="right">
+          <div class="price">₹${Number(item.price || 0)}</div>
+          <div class="qtyRow">
+            <button class="qtyBtn" data-action="minus" data-id="${item.id}" type="button">−</button>
+            <div class="qtyNum">${Number(item.quantity || 0)}</div>
+            <button class="qtyBtn" data-action="plus" data-id="${item.id}" type="button">+</button>
+            <button class="deleteBtn" data-action="delete" data-id="${item.id}" type="button">🗑</button>
+          </div>
+        </div>
+      `;
+      cartList.appendChild(el);
+    });
+
+    totalAmountEl.textContent = `₹${total}`;
+    cartSummary.style.display = "block";
+
+    cartList.querySelectorAll("[data-action]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const action = btn.getAttribute("data-action");
+        const cartItemId = btn.getAttribute("data-id");
+        try {
+          await updateItem(cartItemId, action);
+          await render();
+        } catch (e) {
+          alert(e.message || 'Failed to update cart');
+        }
+      });
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

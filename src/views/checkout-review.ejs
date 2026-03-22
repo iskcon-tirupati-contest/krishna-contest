@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout Review</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:18px}
+    .wrap{max-width:980px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
+    .top{padding:18px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
+    .top h1{font-size:20px;margin-bottom:6px}
+    .top p{opacity:.92;font-size:13px;line-height:1.4}
+    .content{padding:18px}
+    .back{display:inline-block;margin:12px 0;color:#1a237e;text-decoration:none;font-weight:900}
+    .err{background:#fee2e2;color:#991b1b;padding:12px 14px;border-radius:12px;margin-bottom:14px}
+    .box{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:220px}
+    label{font-size:12px;color:#334155;font-weight:800;display:block;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px}
+    textarea{min-height:96px;resize:vertical}
+    .contestRow{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-top:12px}
+    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .contestTitle{font-weight:1000;color:#0f172a}
+    .price{font-weight:1000;color:#1a237e;white-space:nowrap}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#243b8b;font-size:12px;font-weight:900;margin-top:8px}
+    .radioWrap{display:flex;gap:14px;flex-wrap:wrap}
+    .radioCard{flex:1;min-width:260px;border:1px solid #e5e7eb;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer}
+    .radioCard input{width:auto;margin-top:3px}
+    .hide{display:none}
+    .btn{width:100%;border:0;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;font-weight:1000;font-size:16px;cursor:pointer}
+  </style>
+</head>
+<body>
+<a class="back" href="/cart-review">← Back to Cart</a>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Checkout Review</h1>
+    <p>Choose delivery mode and book/language details before payment.</p>
+  </div>
+
+  <div class="content">
+    <% if (error) { %>
+      <div class="err"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/checkout/review">
+      <input type="hidden" name="paymentId" value="<%= paymentId %>">
+
+      <div class="box">
+        <div class="radioWrap">
+          <label class="radioCard">
+            <input type="radio" name="deliveryMode" value="deliver" <%= deliveryMode !== 'donate' ? 'checked' : '' %>>
+            <div>
+              <b>Home Delivery</b>
+              <div>Collect address and choose books/languages for dispatch.</div>
+            </div>
+          </label>
+
+          <label class="radioCard">
+            <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode === 'donate' ? 'checked' : '' %>>
+            <div>
+              <b>Donation</b>
+              <div>Temple will donate the books. No address or book options needed.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="box" id="addressBox">
+        <div class="row">
+          <div class="col">
+            <label>Full Name</label>
+            <input name="fullName" value="<%= user?.name || '' %>" required>
+          </div>
+          <div class="col">
+            <label>Phone</label>
+            <input name="phone" value="<%= user?.phone || '' %>" required>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div class="col" style="min-width:100%">
+            <label>Address</label>
+            <textarea name="address"><%= shipment?.address || user?.address || '' %></textarea>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div class="col">
+            <label>City</label>
+            <input name="city" value="<%= shipment?.city || user?.city || '' %>">
+          </div>
+          <div class="col">
+            <label>State</label>
+            <input name="state" value="<%= shipment?.state || user?.state || '' %>">
+          </div>
+          <div class="col">
+            <label>Pincode</label>
+            <input name="pincode" value="<%= shipment?.pincode || user?.pincode || '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="box" id="booksBox">
+        <% (orders || []).forEach((o) => { %>
+          <div class="contestRow">
+            <div class="contestHead">
+              <div style="min-width:0">
+                <div class="contestTitle"><%= o.contest_title %></div>
+                <span class="pill">Age Category: <%= o.age_category === 'above-25' ? 'Above 25 years' : '0 to 25 years' %></span>
+              </div>
+              <div class="price">₹<%= Number(o.amount || 0) %></div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <div class="col">
+                <label>Book</label>
+                <select name="bookTitle">
+                  <option value="">Select book</option>
+                  <% (books || []).forEach((b) => { %>
+                    <option value="<%= b %>" <%= (o.saved_book_title === b || o.book_title === b) ? 'selected' : '' %>><%= b %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="col">
+                <label>Language</label>
+                <select name="bookLanguage">
+                  <option value="">Select language</option>
+                  <% (languages || []).forEach((l) => { %>
+                    <option value="<%= l %>" <%= (o.saved_book_language === l) ? 'selected' : '' %>><%= l %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <button class="btn" type="submit">Save Details & Continue to Payment</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const addressBox = document.getElementById('addressBox');
+  const booksBox = document.getElementById('booksBox');
+
+  function toggleByMode(){
+    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    const isDonate = mode === 'donate';
+    addressBox.classList.toggle('hide', isDonate);
+    booksBox.classList.toggle('hide', isDonate);
+  }
+
+  document.querySelectorAll('input[name="deliveryMode"]').forEach(r => r.addEventListener('change', toggleByMode));
+  toggleByMode();
+</script>
+</body>
+</html>

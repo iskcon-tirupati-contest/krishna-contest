@@ -1,36 +1,65 @@
 // src/routes/profile.ts
-
 import express, { Response } from "express";
 import { body, validationResult } from "express-validator";
 import { authMiddleware } from "../middleware/auth";
 import { pool } from "../config/db";
+import { hashPassword } from "../utils/hash";
 
 const router = express.Router();
 
 const norm = (v: any) => String(v ?? "").trim();
-const isValidIndianMobile = (v: string) => /^[6-9]\d{9}$/.test(norm(v));
 const isValidPincode = (v: string) => /^[1-9]\d{5}$/.test(norm(v));
+const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(norm(v).toLowerCase());
 
 function renderProfile(res: Response, data: any) {
   return res.render("dashboard-profile", data);
 }
 
+async function getGroupedPayments(userId: string) {
+  const q = await pool.query(
+    `SELECT
+        o.payment_id AS internal_payment_id,
+        MIN(o.created_at) AS created_at,
+        COALESCE(SUM(o.amount), 0)::int AS total_amount,
+        STRING_AGG(c.title, ' • ' ORDER BY c.title) AS contest_titles,
+        COUNT(*)::int AS item_count,
+        COALESCE(MAX(ps.status), MAX(o.payment_status), 'pending') AS status
+     FROM orders o
+     JOIN contests c ON c.id = o.contest_id
+     LEFT JOIN payment_sessions ps ON ps.id = o.payment_session_id
+     WHERE o.user_id=$1
+       AND o.payment_id IS NOT NULL
+     GROUP BY o.payment_id
+     ORDER BY MIN(o.created_at) DESC`,
+    [userId]
+  );
+  return q.rows;
+}
+
+async function getUserById(userId: string) {
+  const u = await pool.query(
+    `SELECT id, name, email, phone, phone_locked, role, address, city, state, pincode
+     FROM users
+     WHERE id=$1
+     LIMIT 1`,
+    [userId]
+  );
+  return u.rows[0] || null;
+}
+
 // GET profile
 router.get("/dashboard/profile", authMiddleware, async (req: any, res: Response) => {
   const userId = req.userId;
+  const tab = String(req.query.tab || "profile").trim();
 
-  const u = await pool.query(
-    `SELECT id, name, email, phone, phone_locked, role, address, city, state, pincode
-     FROM users WHERE id=$1`,
-    [userId]
-  );
+  const user = await getUserById(userId);
+  if (!user) return res.status(404).send("User not found");
 
-  if (u.rows.length === 0) return res.status(404).send("User not found");
-
-  const user = u.rows[0];
+  const payments = await getGroupedPayments(userId);
 
   return renderProfile(res, {
     activeTab: "profile",
+    profileTab: tab === "payments" ? "payments" : "profile",
     user,
     addr: {
       address: user.address || "",
@@ -38,6 +67,7 @@ router.get("/dashboard/profile", authMiddleware, async (req: any, res: Response)
       state: user.state || "",
       pincode: user.pincode || "",
     },
+    payments,
     error: null,
     success: null,
     old: {},
@@ -49,20 +79,25 @@ router.post(
   "/dashboard/profile",
   authMiddleware,
   [
-    // phone can be set only if empty currently
-    body("phone")
+    body("email")
       .optional({ checkFalsy: true })
-      .custom((v) => isValidIndianMobile(v))
-      .withMessage("Please enter a valid 10-digit Indian mobile number (starts with 6-9)."),
-
-    body("confirmPhone")
+      .custom((v) => isValidEmail(v))
+      .withMessage("Please enter a valid email address."),
+    body("address")
       .optional({ checkFalsy: true })
-      .custom((v, { req }) => norm(v) === norm(req.body.phone))
-      .withMessage("Mobile numbers do not match."),
-
-    body("address").optional({ checkFalsy: true }).trim().isLength({ max: 500 }).withMessage("Address is too long."),
-    body("city").optional({ checkFalsy: true }).trim().isLength({ max: 100 }).withMessage("City is too long."),
-    body("state").optional({ checkFalsy: true }).trim().isLength({ max: 100 }).withMessage("State is too long."),
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage("Address is too long."),
+    body("city")
+      .optional({ checkFalsy: true })
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage("City is too long."),
+    body("state")
+      .optional({ checkFalsy: true })
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage("State is too long."),
     body("pincode")
       .optional({ checkFalsy: true })
       .custom((v) => isValidPincode(v))
@@ -70,40 +105,38 @@ router.post(
   ],
   async (req: any, res: Response) => {
     const userId = req.userId;
-
-    const u = await pool.query(
-      `SELECT id, name, email, phone, phone_locked, role, address, city, state, pincode
-       FROM users WHERE id=$1`,
-      [userId]
-    );
-    if (u.rows.length === 0) return res.status(404).send("User not found");
-
-    const user = u.rows[0];
+    const user = await getUserById(userId);
+    if (!user) return res.status(404).send("User not found");
 
     const errors = validationResult(req);
 
     const old = {
-      phone: req.body?.phone,
-      confirmPhone: req.body?.confirmPhone,
+      email: req.body?.email,
       address: req.body?.address,
       city: req.body?.city,
       state: req.body?.state,
       pincode: req.body?.pincode,
     };
 
-    const phoneStr = norm(req.body.phone);
+    const emailStr = norm(req.body.email).toLowerCase();
     const addressStr = norm(req.body.address);
     const cityStr = norm(req.body.city);
     const stateStr = norm(req.body.state);
     const pinStr = norm(req.body.pincode);
-
-    const addr = { address: addressStr, city: cityStr, state: stateStr, pincode: pinStr };
+    const payments = await getGroupedPayments(userId);
 
     if (!errors.isEmpty()) {
       return renderProfile(res, {
         activeTab: "profile",
+        profileTab: "profile",
         user,
-        addr,
+        addr: {
+          address: addressStr,
+          city: cityStr,
+          state: stateStr,
+          pincode: pinStr,
+        },
+        payments,
         error: errors.array()[0].msg,
         success: null,
         old,
@@ -111,74 +144,215 @@ router.post(
     }
 
     try {
-      // PHONE RULE:
-      const existingPhone = norm(user.phone);
+      if (emailStr) {
+        const clash = await pool.query(
+          `SELECT id FROM users WHERE LOWER(email)=LOWER($1) AND id<>$2 LIMIT 1`,
+          [emailStr, userId]
+        );
 
-      if (phoneStr) {
-        if (existingPhone && existingPhone !== phoneStr) {
+        if (clash.rows.length > 0) {
           return renderProfile(res, {
             activeTab: "profile",
+            profileTab: "profile",
             user,
-            addr,
-            error: "Mobile number cannot be changed once saved. Please contact support via WhatsApp.",
+            addr: {
+              address: addressStr,
+              city: cityStr,
+              state: stateStr,
+              pincode: pinStr,
+            },
+            payments,
+            error: "This email address is already used by another account.",
             success: null,
             old,
           });
         }
-
-        if (!existingPhone) {
-          const clash = await pool.query(`SELECT id FROM users WHERE phone=$1 LIMIT 1`, [phoneStr]);
-          if (clash.rows.length > 0) {
-            return renderProfile(res, {
-              activeTab: "profile",
-              user,
-              addr,
-              error: "This mobile number is already registered. Please login with that account.",
-              success: null,
-              old,
-            });
-          }
-
-          await pool.query(`UPDATE users SET phone=$1, phone_locked=true WHERE id=$2`, [phoneStr, userId]);
-        }
       }
 
-      // Save default address anytime
       await pool.query(
         `UPDATE users
-         SET address=$1, city=$2, state=$3, pincode=$4
-         WHERE id=$5`,
-        [addressStr || null, cityStr || null, stateStr || null, pinStr || null, userId]
+         SET email=$1, address=$2, city=$3, state=$4, pincode=$5
+         WHERE id=$6`,
+        [emailStr || null, addressStr || null, cityStr || null, stateStr || null, pinStr || null, userId]
       );
 
-      const updated = await pool.query(
-        `SELECT id, name, email, phone, phone_locked, role, address, city, state, pincode
-         FROM users WHERE id=$1`,
-        [userId]
-      );
+      const updatedUser = await getUserById(userId);
 
       return renderProfile(res, {
         activeTab: "profile",
-        user: updated.rows[0],
+        profileTab: "profile",
+        user: updatedUser,
         addr: {
-          address: updated.rows[0].address || "",
-          city: updated.rows[0].city || "",
-          state: updated.rows[0].state || "",
-          pincode: updated.rows[0].pincode || "",
+          address: updatedUser.address || "",
+          city: updatedUser.city || "",
+          state: updatedUser.state || "",
+          pincode: updatedUser.pincode || "",
         },
+        payments: await getGroupedPayments(userId),
         error: null,
-        success: "Saved successfully.",
+        success: "Profile details saved successfully.",
         old: {},
       });
     } catch (e) {
       console.error("Profile update error:", e);
       return renderProfile(res, {
         activeTab: "profile",
+        profileTab: "profile",
         user,
-        addr,
+        addr: {
+          address: addressStr,
+          city: cityStr,
+          state: stateStr,
+          pincode: pinStr,
+        },
+        payments,
         error: "Something went wrong. Please try again.",
         success: null,
         old,
+      });
+    }
+  }
+);
+
+// AJAX password set/reset for logged-in user
+router.post("/dashboard/profile/password", authMiddleware, async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+    const newPassword = String(req.body.newPassword || "").trim();
+    const confirmNewPassword = String(req.body.confirmNewPassword || "").trim();
+
+    if (!newPassword || !confirmNewPassword) {
+      return res.status(400).json({
+        ok: false,
+        message: "Please enter and confirm your new password.",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        ok: false,
+        message: "New password must be at least 6 characters.",
+      });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({
+        ok: false,
+        message: "New passwords do not match.",
+      });
+    }
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        ok: false,
+        message: "User not found.",
+      });
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+
+    await pool.query(
+      `UPDATE users SET password_hash=$1 WHERE id=$2`,
+      [passwordHash, userId]
+    );
+
+    return res.json({
+      ok: true,
+      message: "Password reset successfully.",
+    });
+  } catch (e) {
+    console.error("Password reset error:", e);
+    return res.status(500).json({
+      ok: false,
+      message: "Unable to reset password right now. Please try again.",
+    });
+  }
+});
+
+// Raise complaint from My Payments / Help
+router.post(
+  "/dashboard/help/ticket",
+  authMiddleware,
+  [
+    body("message").trim().isLength({ min: 5, max: 2000 }).withMessage("Please enter a valid message."),
+    body("category").optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
+    body("transactionRef").optional({ checkFalsy: true }).trim().isLength({ max: 255 }),
+  ],
+  async (req: any, res: Response) => {
+    const userId = req.userId;
+    const message = norm(req.body.message);
+    const category = norm(req.body.category) || "general";
+    const transactionRef = norm(req.body.transactionRef) || null;
+
+    const u = await pool.query(
+      `SELECT id, name, email, phone, address, city, state, pincode
+       FROM users WHERE id=$1 LIMIT 1`,
+      [userId]
+    );
+    if (u.rows.length === 0) return res.status(404).send("User not found");
+
+    const user = u.rows[0];
+    const errors = validationResult(req);
+    const payments = await getGroupedPayments(userId);
+
+    if (!errors.isEmpty()) {
+      return renderProfile(res, {
+        activeTab: "profile",
+        profileTab: "payments",
+        user,
+        addr: {
+          address: user.address || "",
+          city: user.city || "",
+          state: user.state || "",
+          pincode: user.pincode || "",
+        },
+        payments,
+        error: errors.array()[0].msg,
+        success: null,
+        old: {},
+      });
+    }
+
+    try {
+      await pool.query(
+        `INSERT INTO feedback_tickets
+         (user_id, message, phone, category, source, transaction_ref)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [userId, message, user.phone || null, category, "dashboard", transactionRef]
+      );
+
+      return renderProfile(res, {
+        activeTab: "profile",
+        profileTab: "payments",
+        user,
+        addr: {
+          address: user.address || "",
+          city: user.city || "",
+          state: user.state || "",
+          pincode: user.pincode || "",
+        },
+        payments,
+        error: null,
+        success: "Your complaint has been submitted successfully.",
+        old: {},
+      });
+    } catch (e) {
+      console.error("Feedback ticket create error:", e);
+      return renderProfile(res, {
+        activeTab: "profile",
+        profileTab: "payments",
+        user,
+        addr: {
+          address: user.address || "",
+          city: user.city || "",
+          state: user.state || "",
+          pincode: user.pincode || "",
+        },
+        payments,
+        error: "Unable to submit your complaint right now.",
+        success: null,
+        old: {},
       });
     }
   }

@@ -3,1865 +3,919 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - BhakthiVedanta Wisdom Contest 2026</title>
-
+  <title>Dashboard - Krishna Wisdom Contest 2026</title>
   <style>
-  :root{
-  --krishna-950:#050b1a;
-  --krishna-900:#071a3a;
-  --krishna-800:#0b2a63;
-  --krishna-700:#123b86;
-  --krishna-500:#3b82f6;
-  --peacock:#2563eb;
-
-  --gold-500:#f5d37a;
-  --gold-600:#d4af37;
-
-  --paper:#fbfcff;
-  --ink:#0b1220;
-  --muted:#64748b;
-
-  --shadow: 0 12px 24px rgba(5,11,26,.10);
-  --shadow-strong: 0 22px 54px rgba(5,11,26,.18);
-  --ring: 0 0 0 3px rgba(37,99,235,.22);
-
-  --radius-xl: 26px;
-  --radius-lg: 20px;
-  --radius-md: 16px;
-
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
-}
-
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html{scroll-behavior:smooth}
-
-body{
-  margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, sans-serif;
-  background:
-    radial-gradient(ellipse 1100px 720px at 50% -8%, rgba(37,99,235,.16) 0%, transparent 55%),
-    radial-gradient(ellipse 900px 520px at 18% 14%, rgba(212,175,55,.10) 0%, transparent 56%),
-    linear-gradient(180deg, #fbfcff 0%, #f3f6ff 100%);
-  color:var(--ink);
-  min-height:100vh;
-  overscroll-behavior-y: none;
-}
-
-    /* ===== App Shell: mobile width for premium feel ===== */
-    .app{
-      max-width: 520px;
-      margin: 0 auto;
-      min-height: 100vh;
-      position: relative;
+    :root{
+      --bg:#f6f7fb;
+      --card:#fff;
+      --ink:#132238;
+      --muted:#64748b;
+      --line:#e7ecf3;
+      --primary:#1a237e;
+      --primary2:#283593;
+      --shadow:0 10px 26px rgba(15,23,42,.07);
+      --safe-bottom:calc(86px + env(safe-area-inset-bottom));
     }
 
-    /* ===== Premium Topbar (app-style) ===== */
-.topbar{
-  position:fixed;
-  left:0; right:0; top:0;
-  z-index:120;
-  padding: calc(12px + var(--safe-top)) 14px 12px;
-  background: linear-gradient(180deg,
-    rgba(5,11,26,.96) 0%,
-    rgba(7,26,58,.94) 55%,
-    rgba(7,26,58,.88) 100%
-  );
-  backdrop-filter: blur(22px) saturate(180%);
-  border-bottom: 1px solid rgba(245,211,122,.14);
-  box-shadow: 0 10px 30px rgba(5,11,26,.24);
-}
-    .topbar-inner{
-      max-width: 520px;
-      margin:0 auto;
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      padding-bottom:var(--safe-bottom);
+    }
+
+    a{text-decoration:none;color:inherit}
+    .app{max-width:560px;margin:0 auto;min-height:100vh}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:90;
+      padding-top:max(10px, env(safe-area-inset-top));
+      background:linear-gradient(135deg, #1f2ca7 0%, #2f3fc7 55%, #2737b6 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(26,35,126,.20);
+    }
+
+    .topbarInner{
+      min-height:84px;
+      padding:10px 14px 12px;
       display:flex;
       align-items:center;
+      justify-content:space-between;
       gap:12px;
     }
 
     .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
+      flex:1;
       min-width:0;
-      flex:1;
+      display:flex;
+      align-items:center;
     }
 
-    .logo-badge{
-      width:44px; height:44px;
-      border-radius: 16px;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 100%),
-        linear-gradient(135deg, #f3e6c2 0%, #d4af37 45%, #b8941f 100%);
-      box-shadow:
-        inset 0 1px 2px rgba(255,255,255,.34),
-        0 10px 22px rgba(212,175,55,.32);
-      display:grid; place-items:center;
+    .logo{
+      width:clamp(150px, 42vw, 180px);
+      height:clamp(46px, 12vw, 56px);
       flex:0 0 auto;
-      position:relative;
-    }
-
-    .logo-badge::after{
-      content:'';
-      position:absolute; inset:3px;
-      border-radius: 13px;
-      background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 70%);
-      pointer-events:none;
-    }
-
-    .logo-badge span{
-      position:relative; z-index:1;
-      font-weight: 1000;
-      font-size: 20px;
-      color: #071224;
-      text-shadow: 0 1px 2px rgba(255,255,255,.35);
-    }
-
-    .brand-title{
-      color:#fff;
-      font-weight: 950;
-      font-size: 16px;
-      line-height:1.15;
-      letter-spacing:-0.02em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .brand-sub{
-      color: rgba(255,255,255,.72);
-      font-size: 11px;
-      margin-top: 3px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width: 320px;
-    }
-
-    /* Desktop nav (keep, but on large screens) */
-    .topnav{
-      display:none;
-      gap:10px;
-      align-items:center;
-    }
-    .topnav a{
-      text-decoration:none;
-      color:rgba(255,255,255,.78);
-      font-weight:900;
-      font-size:13px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      transition: all .2s ease;
-      white-space:nowrap;
-    }
-    .topnav a:hover{
-      background:rgba(255,255,255,.12);
-      transform:translateY(-1px);
-    }
-    .topnav a.active{
-      color:#fff;
-      border-color:rgba(212,175,55,.35);
-      background:rgba(212,175,55,.14);
-      box-shadow: 0 0 0 3px rgba(212,175,55,.12);
-    }
-
-    .top-actions{
-      margin-left:auto;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
-    .icon-btn{
-      width:44px;
-      height:44px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.06) 100%);
-      display:grid;
-      place-items:center;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 6px 18px rgba(0,0,0,.14);
-      cursor:pointer;
-      transition: all .18s cubic-bezier(.2,.9,.2,1);
-      text-decoration:none;
-      outline:none;
-    }
-    .icon-btn:active{ transform:scale(.98); }
-    .icon-btn:focus-visible{ box-shadow: 0 6px 18px rgba(0,0,0,.14), var(--ring); }
-
-    .icon-btn svg{
-      width:22px;
-      height:22px;
-      fill:#fff;
-      opacity:.96;
-    }
-
-    /* ===== Container ===== */
-    .container{
-      padding: 14px 14px calc(170px + var(--safe-bottom));
-      margin-top: calc(74px + var(--safe-top));
-    }
-
-    /* ===== Welcome Card ===== */
-    .welcome{
-      border-radius: var(--radius-xl);
-      background: linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(253,251,247,.94) 100%);
-      border:1px solid rgba(212,175,55,.16);
-      box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.65) inset;
-      padding: 18px;
-      position:relative;
-      overflow:hidden;
-      backdrop-filter: blur(18px);
-    }
-
-    .welcome::before{
-      content:'';
-      position:absolute;
-      right:-120px;
-      top:-140px;
-      width:320px;
-      height:320px;
-      border-radius:50%;
-      background: radial-gradient(circle, rgba(212,175,55,.14) 0%, transparent 68%);
-      pointer-events:none;
-    }
-    .welcome::after{
-      content:'';
-      position:absolute;
-      left:-120px;
-      bottom:-160px;
-      width:320px;
-      height:320px;
-      border-radius:50%;
-      background: radial-gradient(circle, rgba(99,102,241,.10) 0%, transparent 70%);
-      pointer-events:none;
-    }
-
-    .welcome h2{
-      margin:0 0 8px;
-      font-size: 20px;
-      font-weight: 1000;
-      letter-spacing:-0.03em;
-      background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .welcome p{
-      margin:0 0 14px;
-      color: rgba(26,35,50,.76);
-      font-size: 13.5px;
-      line-height: 1.7;
-      max-width: 720px;
-    }
-    .welcome p b{
-      color: var(--gold-600);
-      font-weight: 800;
-    }
-
-    /* ===== Premium Tabs (bigger touch) ===== */
-    .tabs{
-      display:flex;
-      gap:10px;
-      background: rgba(212,175,55,.09);
-      border:1px solid rgba(212,175,55,.18);
-      padding:6px;
-      border-radius: 18px;
-      width: 100%;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,.04);
-    }
-
-    .tab{
-      flex:1;
-      border:0;
-      padding: 12px 12px;
-      border-radius: 14px;
-      font-weight: 950;
-      font-size: 13px;
-      cursor:pointer;
-      background:transparent;
-      color: rgba(26,35,50,.70);
-      transition: all .22s cubic-bezier(.2,.9,.2,1);
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:center;
-      letter-spacing:-0.01em;
-      outline:none;
-      min-height: 44px;
-    }
-    .tab:active{ transform: scale(.99); }
-    .tab:focus-visible{ box-shadow: var(--ring); }
-
-    .tab.active{
-      background: linear-gradient(135deg, #f3e6c2 0%, #d4af37 100%);
-      color: #071224;
-      box-shadow: 0 10px 24px rgba(212,175,55,.22), inset 0 1px 2px rgba(255,255,255,.45);
-    }
-
-    .count{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width: 26px;
-      height: 24px;
-      padding:0 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 1000;
-      background: rgba(255,255,255,.82);
-      border:1px solid rgba(10,25,41,.10);
-      color: var(--blue-900);
-      box-shadow: 0 2px 4px rgba(0,0,0,.06);
-    }
-    .tab.active .count{
-      background: rgba(255,255,255,.90);
-      color:#071224;
-      border-color: rgba(0,0,0,.12);
-    }
-
-    /* ===== Grid ===== */
-    .grid{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    /* ===== Contest Card ===== */
-    .card{
-      background: linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(253,251,247,.96) 100%);
-      border: 1px solid rgba(212,175,55,.16);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-      cursor:pointer;
-      transition: transform .22s cubic-bezier(.2,.9,.2,1), box-shadow .22s ease, border-color .22s ease;
-      outline:none;
-      will-change: transform;
-    }
-
-    .card::before{
-      content:'';
-      position:absolute;
-      inset:-1px;
-      border-radius: var(--radius-lg);
-      padding:1px;
-      background: linear-gradient(135deg, rgba(212,175,55,.34) 0%, transparent 55%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      opacity:0;
-      transition: opacity .22s ease;
-      pointer-events:none;
-    }
-
-    .card:active{ transform: scale(.99); }
-    .card:hover{
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-strong);
-    }
-    .card:hover::before{ opacity: 1; }
-    .card:focus-visible{ box-shadow: var(--shadow-strong), var(--ring); }
-
-    /* ===== Thumbnail ===== */
-    .thumb{
-      height: 168px;
-      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-      border-bottom:1px solid rgba(212,175,55,.12);
       display:flex;
       align-items:center;
-      justify-content:center;
-      color: rgba(10,25,41,.55);
-      font-weight: 900;
-      font-size: 13px;
-      text-align:center;
-      padding:12px;
-      overflow:hidden;
-      position:relative;
+      justify-content:flex-start;
     }
 
-    .thumb::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(7,18,36,.06) 100%);
-      pointer-events:none;
-    }
-
-    .thumb img{
+    .logo img{
+      display:block;
       width:100%;
       height:100%;
-      object-fit:cover;
-      display:block;
-      transform: scale(1.01);
+      object-fit:contain;
+      filter:drop-shadow(0 2px 6px rgba(0,0,0,.18));
     }
 
-
-.card.selected{
-  border-color: rgba(59,130,246,.95);
-  box-shadow:
-    0 18px 44px rgba(37,99,235,.22),
-    0 0 0 4px rgba(59,130,246,.28),
-    0 0 0 1px rgba(245,211,122,.22) inset;
-}
-
-.info-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  margin: 8px 0 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  font-weight: 1000;
-  font-size: 13px;
-  text-decoration:none;
-  color: rgba(7,26,58,.92);
-  background: rgba(37,99,235,.08);
-  border: 1px solid rgba(37,99,235,.18);
-  transition: transform .18s cubic-bezier(.2,.9,.2,1);
-  outline:none;
-  min-height: 46px;
-}
-.info-link:active{ transform: scale(.99); }
-.info-link:focus-visible{ box-shadow: var(--ring); }
-    .card-body{ padding: 14px; }
-
-    .title{
-      margin:0 0 10px;
-      font-size: 15px;
-      font-weight: 1000;
-      min-height: 18px;
-      line-height: 1.25;
-      letter-spacing:-0.02em;
-      color: #0f172a;
-    }
-
-    /* ===== Benefits pills ===== */
-    .benefits{
+    .topActions{
+      flex:0 0 auto;
       display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      margin:0 0 12px;
+      align-items:center;
+      gap:10px;
     }
 
-    .chip{
+    .iconBtn{
+      position:relative;
+      width:46px;
+      height:46px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      background:rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 6px 14px rgba(8,15,58,.22);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
       display:inline-flex;
       align-items:center;
-      padding:7px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 900;
-      background: linear-gradient(135deg, rgba(212,175,55,.12) 0%, rgba(212,175,55,.08) 100%);
-      border:1px solid rgba(212,175,55,.18);
-      color: var(--gold-600);
-      line-height: 1;
-      box-shadow: 0 2px 4px rgba(0,0,0,.04);
-      letter-spacing:-0.01em;
-      white-space:nowrap;
-    }
-
-
-   .join{
-  width:100%;
-  border:0;
-  padding: 14px 14px;
-  border-radius: 16px;
-  font-weight: 1000;
-  font-size: 14px;
-  background: linear-gradient(135deg, var(--peacock) 0%, var(--krishna-900) 100%);
-  color:#fff;
-  box-shadow: 0 12px 28px rgba(5,11,26,.22), inset 0 1px 2px rgba(255,255,255,.16);
-  cursor:pointer;
-  transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
-  letter-spacing:-0.01em;
-  outline:none;
-  min-height: 48px;
-}
-    /* ===== Join button ===== */
-    .join1{
-      width:100%;
-      border:0;
-      padding: 14px 14px;
-      border-radius: 16px;
-      font-weight: 1000;
-      font-size: 14px;
-      background: linear-gradient(135deg, #1e3a8a 0%, #071224 100%);
-      color:#fff;
-      box-shadow: 0 12px 28px rgba(7,18,36,.24), inset 0 1px 2px rgba(255,255,255,.16);
-      cursor:pointer;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
-      letter-spacing:-0.01em;
-      outline:none;
-      min-height: 48px;
-    }
-    .join:active{ transform: scale(.99); }
-    .join:focus-visible{ box-shadow: 0 12px 28px rgba(7,18,36,.24), var(--ring); }
-
-    /* ===== Selection Tick ===== */
-    .tick{
-      position:absolute;
-      top:12px;
-      right:12px;
-      width: 40px;
-      height: 40px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #f3e6c2 0%, #d4af37 100%);
-      border:2px solid rgba(255,255,255,.45);
-      box-shadow: 0 10px 26px rgba(212,175,55,.40), inset 0 1px 3px rgba(255,255,255,.35);
-      display:none;
-      place-items:center;
-    }
-
-    .tick svg{
-      width:22px;
-      height:22px;
-      fill:#071224;
-      filter: drop-shadow(0 1px 2px rgba(255,255,255,.3));
-    }
-
-    .card.selected{
-      border-color: rgba(212,175,55,.52);
-      box-shadow: 0 16px 36px rgba(212,175,55,.18), 0 0 0 3px rgba(212,175,55,.16);
-    }
-
-    .card.selected .tick{
-      display:grid;
-      animation: tickPop .32s cubic-bezier(.34,1.56,.64,1);
-    }
-
-    @keyframes tickPop{
-      0%{transform:scale(.75); opacity:0}
-      60%{transform:scale(1.12)}
-      100%{transform:scale(1); opacity:1}
-    }
-
-    /* ===== Paybar (bottom sticky CTA above nav) ===== */
-    .paybar{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom: calc(76px + var(--safe-bottom));
-      z-index:110;
-      padding: 10px 14px;
-      display:none;
-    }
-
-    .paybar.show{
-      display:block;
-      animation: paySlideUp .28s cubic-bezier(.34,1.56,.64,1);
-    }
-
-    @keyframes paySlideUp{
-      from{ transform:translateY(18px); opacity:0; }
-      to{ transform:translateY(0); opacity:1; }
-    }
-
-    .paybar-inner{
-      max-width:520px;
-      margin:0 auto;
-      display:flex;
       justify-content:center;
+      text-decoration:none;
+      transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
     }
 
-    .paybox{
+    .iconBtn:active{
+      transform:scale(.97);
+    }
+
+    .iconBtn:hover{
+      background:rgba(255,255,255,.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 8px 18px rgba(8,15,58,.28);
+    }
+
+    .iconBtn svg{
+      width:21px;
+      height:21px;
+      fill:#111827;
+    }
+
+    .cartBadge{
+      position:absolute;
+      top:-4px;
+      right:-4px;
+      min-width:20px;
+      height:20px;
+      padding:0 6px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#ff5a5f 0%,#ff3b30 100%);
+      color:#fff;
+      font-size:11px;
+      line-height:20px;
+      font-weight:800;
+      text-align:center;
+      box-shadow:0 4px 10px rgba(255,59,48,.35);
+      border:2px solid #2b39bb;
+      display:none;
+    }
+
+    .cartBadge.show{
+      display:inline-block;
+    }
+
+    .logoutBtn{
+      width:58px;
+      padding:0 10px;
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.12);
+    }
+
+    .logoutBtn svg{
+      fill:#ff7a7a;
+    }
+
+    .page{padding:14px 12px 22px}
+
+    .hero{
+      background:linear-gradient(135deg,#eef4ff 0%,#ffffff 58%,#fff9e6 100%);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .hero h1{
+      margin:0 0 6px;
+      font-size:21px;
+      line-height:1.25;
+      color:#111827;
+    }
+
+    .hero p{
+      margin:0;
+      font-size:13px;
+      color:#475569;
+      line-height:1.6;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:14px 0 12px;
+    }
+
+    .filterBtn{
+      border:1px solid #dbe4ef;
+      background:#fff;
+      color:#334155;
+      border-radius:14px;
+      padding:12px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.03);
+    }
+
+    .filterBtn.active{
+      background:linear-gradient(135deg,var(--primary),#3949ab);
+      color:#fff;
+      border-color:transparent;
+    }
+
+    .sectionTitle{
+      font-size:18px;
+      font-weight:900;
+      color:#111827;
+      margin:0 0 10px;
+      padding:0 2px;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    .contest{
+      background:#fff;
+      border:1px solid #e7edf6;
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .contest.selected{
+      border-color:#4f46e5;
+      box-shadow:0 12px 26px rgba(79,70,229,.16);
+    }
+
+    .contestMain{
+      display:grid;
+      grid-template-columns:104px 1fr;
+      min-height:132px;
+    }
+
+    .contestImgWrap{
+      background:#edf2f7;
+      border-right:1px solid #edf1f7;
+    }
+
+    .contestImg{
       width:100%;
+      height:100%;
+      min-height:132px;
+      object-fit:cover;
+      background:#eef2f7;
+    }
+
+    .contestBody{
+      padding:14px 14px 12px;
       display:flex;
       flex-direction:column;
       gap:8px;
     }
 
-    .paybtn{
-      width:100%;
-      padding: 16px 16px;
-      border-radius: 18px;
-      border:0;
-      background: linear-gradient(135deg,#f59e0b 0%,#ea580c 45%,#dc2626 100%);
-      color:#fff;
-      font-weight: 1000;
-      font-size: 17px;
-      box-shadow: 0 18px 44px rgba(245,158,11,.30), inset 0 2px 4px rgba(255,255,255,.20);
-      cursor:pointer;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
-      letter-spacing:-0.02em;
-      position:relative;
+    .contestName{
+      margin:0;
+      font-size:16px;
+      line-height:1.35;
+      color:#0f172a;
+      font-weight:900;
+    }
+
+    .contestDesc{
+      margin:0;
+      font-size:13px;
+      color:#5b6778;
+      line-height:1.55;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
       overflow:hidden;
-      outline:none;
-      min-height: 54px;
     }
-    .paybtn:active{ transform: scale(.99); }
-    .paybtn:focus-visible{ box-shadow: 0 18px 44px rgba(245,158,11,.30), var(--ring); }
 
-    .paysub{
+    .rowActions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:4px;
+      flex-wrap:wrap;
+    }
+
+    .detailsLink{
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .joinBtn{
+      border:0;
+      border-radius:12px;
+      padding:10px 14px;
+      background:linear-gradient(135deg,var(--primary),#3949ab);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 10px 20px rgba(26,35,126,.14);
+    }
+
+    .joinBtn.added{
+      background:linear-gradient(135deg,#0f766e,#0d9488);
+    }
+
+    .empty{
+      background:#fff;
+      border:1px dashed #d8e1ec;
+      color:#64748b;
+      border-radius:18px;
+      padding:22px 16px;
       text-align:center;
-      font-size: 12px;
-      font-weight: 900;
-      color: rgba(10,25,41,.70);
-      text-shadow: 0 1px 2px rgba(255,255,255,.85);
-      letter-spacing:-0.01em;
     }
 
-    .paybar.show.pulse .paybtn{ animation: payPulse .38s cubic-bezier(.4,0,.2,1); }
-    @keyframes payPulse{
-      0%, 100%{ transform:scale(1); }
-      50%{ transform:scale(1.015); }
+    .bottomNav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(560px, 100%);
+      background:#fff;
+      border-top:1px solid #e6edf6;
+      box-shadow:0 -10px 24px rgba(15,23,42,.08);
+      padding-bottom:max(10px, env(safe-area-inset-bottom));
+      z-index:98;
     }
 
-    /* ===== Modal / Sheet (Android bottom sheet style) ===== */
+    .bottomNavInner{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      padding:8px 6px 0;
+    }
+
+    .navBtn{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      min-height:58px;
+      color:#64748b;
+      font-size:10px;
+      font-weight:800;
+      border-radius:14px;
+      text-align:center;
+    }
+
+    .navBtn svg{
+      width:20px;
+      height:20px;
+      fill:currentColor;
+    }
+
+    .navBtn.active{
+      color:var(--primary);
+      background:#eef2ff;
+    }
+
     .modal{
       position:fixed;
       inset:0;
-      z-index:300;
+      background:rgba(15,23,42,.58);
       display:none;
-      background: rgba(7,18,36,.66);
-      backdrop-filter: blur(14px);
-      padding: 14px;
-      align-items: flex-end;
-      justify-content: center;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      z-index:110;
     }
 
     .modal.show{
       display:flex;
-      animation: modalFade .22s ease;
     }
 
-    @keyframes modalFade{ from{opacity:0} to{opacity:1} }
-
-    .sheet{
-      width:100%;
-      max-width:520px;
-      max-height: 86vh;
-      background: linear-gradient(135deg, rgba(255,255,255,.99) 0%, rgba(253,251,247,.96) 100%);
-      border-radius: 26px;
-      box-shadow: 0 28px 70px rgba(7,18,36,.30), 0 0 0 1px rgba(212,175,55,.12);
-      overflow:hidden;
-      transform: translateY(18px);
-      animation: sheetSlide .26s cubic-bezier(.34,1.56,.64,1) forwards;
-    }
-
-    @keyframes sheetSlide{ to{ transform: translateY(0); } }
-
-    .sheet-top{
-      padding: 14px 16px;
-      background: linear-gradient(135deg, rgba(7,18,36,.97) 0%, rgba(10,25,41,.96) 100%);
-      backdrop-filter: blur(20px);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      border-bottom:1px solid rgba(212,175,55,.12);
-    }
-
-    .sheet-top h3{
-      margin:0;
-      font-size: 16px;
-      font-weight: 1000;
-      flex:1;
-      letter-spacing:-0.02em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .close{
-      width:44px;
-      height:44px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.10);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), background .18s ease;
-      outline:none;
-    }
-    .close:active{ transform: scale(.98); }
-    .close:focus-visible{ box-shadow: var(--ring); }
-    .close svg{ width:20px; height:20px; fill:#fff; }
-
-    .sheet-body{
-      padding: 14px 16px;
-      max-height: calc(86vh - 150px);
+    .modalCard{
+      width:min(540px,100%);
+      max-height:90vh;
       overflow:auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 30px 60px rgba(0,0,0,.28);
+      position:relative;
     }
 
-    .hero{
-      border-radius: 18px;
-      overflow:hidden;
-      border:1px solid rgba(212,175,55,.16);
-      box-shadow: var(--shadow);
-      margin-bottom: 14px;
-      background: linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);
+    .modalHead{
+      padding:18px 18px 12px;
+      border-bottom:1px solid #eef2f7;
+      position:sticky;
+      top:0;
+      background:#fff;
     }
 
-    .hero img{
+    .modalTitle{
+      margin:0;
+      font-size:21px;
+      color:#0f172a;
+      padding-right:40px;
+      line-height:1.3;
+    }
+
+    .modalClose{
+      position:absolute;
+      right:14px;
+      top:12px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      cursor:pointer;
+      font-size:17px;
+    }
+
+    .modalBody{
+      padding:16px 18px 18px;
+    }
+
+    .modalImg{
       width:100%;
-      height: 220px;
+      max-height:220px;
       object-fit:cover;
-      display:block;
+      border-radius:16px;
+      border:1px solid #eef2f7;
+      margin-bottom:14px;
+      background:#f3f6fa;
     }
 
     .pillrow{
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
-      margin: 0 0 14px;
+      gap:8px;
+      margin-bottom:14px;
     }
 
     .pill{
       display:inline-flex;
       align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, rgba(212,175,55,.12) 0%, rgba(212,175,55,.08) 100%);
-      border:1px solid rgba(212,175,55,.18);
-      font-size: 12px;
-      font-weight: 950;
-      color: var(--gold-600);
-      box-shadow: 0 2px 4px rgba(0,0,0,.04);
-      letter-spacing:-0.01em;
+      padding:8px 11px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      font-size:11px;
+      font-weight:900;
+      color:#334155;
     }
 
-    .section{ margin:0 0 18px; }
-    .section h4{
+    .modalSection{
+      border:1px solid #edf2f7;
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+      background:#fcfdff;
+    }
+
+    .modalSection h4{
       margin:0 0 8px;
-      font-size: 14px;
-      font-weight: 1000;
-      color: var(--blue-900);
-      letter-spacing:-0.02em;
+      font-size:15px;
+      color:#111827;
     }
-    .section p, .section li{
-      color: rgba(26,35,50,.78);
-      font-size: 13.5px;
-      line-height: 1.7;
-    }
-    .section ul{ margin: 8px 0 0 18px; padding:0; }
 
-    .sheet-bottom{
-      padding: 12px 16px calc(12px + var(--safe-bottom));
-      background: rgba(255,255,255,.70);
-      border-top:1px solid rgba(212,175,55,.12);
-      backdrop-filter: blur(16px);
+    .modalSection p,
+    .modalSection li{
+      color:#475569;
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .modalSection ul{
+      margin:0;
+      padding-left:18px;
+    }
+
+    .modalFoot{
       display:flex;
-      gap:10px;
+      justify-content:flex-end;
+      padding-top:4px;
     }
 
-    .okbtn{
-      flex:1;
-      border:0;
-      padding: 14px 16px;
-      border-radius: 18px;
-      font-weight: 1000;
-      font-size: 15px;
+    .btnGhost{
+      border:1px solid #dbe4ef;
+      background:#fff;
+      color:#334155;
+      border-radius:12px;
+      padding:11px 14px;
+      font-weight:900;
       cursor:pointer;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
-      background: linear-gradient(135deg,#f59e0b 0%,#ea580c 100%);
-      color:#fff;
-      box-shadow: 0 12px 28px rgba(245,158,11,.26), inset 0 1px 2px rgba(255,255,255,.22);
-      letter-spacing:-0.01em;
-      outline:none;
-      min-height: 52px;
-    }
-    .okbtn:active{ transform: scale(.99); }
-    .okbtn:focus-visible{ box-shadow: 0 12px 28px rgba(245,158,11,.26), var(--ring); }
-
-    /* ===== Bottom Nav (Android-like) ===== */
-    .bottomnav{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      height: calc(72px + var(--safe-bottom));
-      z-index:200;
-      background: linear-gradient(180deg, rgba(7,18,36,.96) 0%, rgba(10,25,41,.96) 100%);
-      backdrop-filter: blur(22px) saturate(180%);
-      box-shadow: 0 -10px 30px rgba(7,18,36,.22), 0 -1px 0 rgba(212,175,55,.12);
-      display:flex;
-      align-items:center;
-      justify-content:space-around;
-      padding: 8px 10px calc(8px + var(--safe-bottom));
     }
 
-    .navitem{
-      width: 76px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:5px;
-      color: rgba(255,255,255,.68);
-      text-decoration:none;
-      font-size: 11px;
-      font-weight: 950;
-      letter-spacing:-0.01em;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), color .18s ease;
-      outline:none;
-      padding: 8px 10px;
-      border-radius: 18px;
-    }
-    .navitem:active{ transform: scale(.98); }
-    .navitem:focus-visible{ box-shadow: var(--ring); }
-
-    .navitem svg{
-      width: 24px;
-      height: 24px;
-      fill: rgba(255,255,255,.72);
-      transition: all .18s ease;
+    @keyframes cartBounce {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.10); }
+      70% { transform: scale(.96); }
+      100% { transform: scale(1); }
     }
 
-    .navitem.active{
-      color:#fff;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .navitem.active svg{
-      fill: #d4af37;
-      filter: drop-shadow(0 0 10px rgba(212,175,55,.45));
+    .iconBtn.bounce{
+      animation:cartBounce .28s ease;
     }
 
-    /* ===== My Contests premium styling (keep selectors) ===== */
-    .mineWrap{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .mineCard{
-      background: linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.96) 100%);
-      border: 1px solid rgba(212,175,55,.16);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
-    .mineTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .mineTitle{
-      font-weight:1000;
-      color:var(--blue-900);
-      letter-spacing:-0.02em;
-      font-size: 15px;
-      line-height: 1.25;
-    }
-    .mineDesc{
-      margin-top:6px;
-      color: rgba(26,35,50,.74);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .minePrice{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight:1000;
-      font-size: 13px;
-      background: rgba(212,175,55,.12);
-      border: 1px solid rgba(212,175,55,.18);
-      color: var(--gold-600);
-      white-space:nowrap;
+    @media (max-width:420px){
+      .topbarInner{
+        min-height:78px;
+        padding:8px 12px 10px;
+        gap:10px;
+      }
+
+      .logo{
+        width:clamp(138px, 40vw, 156px);
+        height:clamp(42px, 11vw, 48px);
+      }
+
+      .iconBtn{
+        width:42px;
+        height:42px;
+        border-radius:14px;
+      }
+
+      .logoutBtn{
+        width:52px;
+      }
+
+      .iconBtn svg{
+        width:19px;
+        height:19px;
+      }
     }
 
-    .mineRight{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:10px;
-      min-width: 150px;
-    }
+    @media (max-width:360px){
+      .logo{
+        width:130px;
+        height:40px;
+      }
 
-    .mineTags{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
-    }
-    .mineTag{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-weight: 1000;
-      font-size: 12px;
-      border:1px solid rgba(10,25,41,.10);
-      background: rgba(255,255,255,.82);
-      color: rgba(26,35,50,.84);
-      white-space:nowrap;
-    }
-    .tagSubmitted{
-      border-color: rgba(22,101,52,.22);
-      background: rgba(22,101,52,.10);
-      color:#166534;
-    }
-    .tagNotSubmitted{
-      border-color: rgba(180,35,24,.20);
-      background: rgba(180,35,24,.10);
-      color:#b42318;
-    }
-    .tagAttempts{
-      border-color: rgba(180,83,9,.22);
-      background: rgba(180,83,9,.10);
-      color:#b54708;
-    }
-    .tagTime{
-      border-color: rgba(30,58,138,.18);
-      background: rgba(30,58,138,.08);
-      color:#1e3a8a;
-    }
-    .tagClosed{
-      border-color: rgba(180,35,24,.20);
-      background: rgba(180,35,24,.10);
-      color:#b42318;
-    }
-
-    .mineMeta{
-      margin-top:10px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      font-size: 12px;
-      color: rgba(26,35,50,.74);
-      font-weight: 850;
-    }
-    .minePill{
-      padding: 7px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(10,25,41,.08);
-      background: rgba(255,255,255,.74);
-    }
-    .pillOpen{
-      border-color: rgba(22,101,52,.2);
-      background: rgba(22,101,52,.10);
-      color:#166534;
-    }
-    .pillClosed{
-      border-color: rgba(180,35,24,.2);
-      background: rgba(180,35,24,.10);
-      color:#b42318;
-    }
-    .mineHr{
-      border:none;
-      border-top:1px solid rgba(10,25,41,.08);
-      margin: 12px 0;
-    }
-    .mineLabel{
-      font-weight:1000;
-      color: var(--blue-900);
-      font-size: 13px;
-    }
-    .mineMuted{
-      color: rgba(26,35,50,.72);
-      font-size: 12px;
-      margin-top: 6px;
-      font-weight: 750;
-    }
-    .mineRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-    }
-    .mineFile{
-      flex: 1 1 240px;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(10,25,41,.12);
-      background: rgba(255,255,255,.90);
-      font-weight: 750;
-      outline:none;
-    }
-    .mineFile:focus-visible{ box-shadow: var(--ring); }
-
-    .mineBtn{
-      border:0;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 1000;
-      cursor:pointer;
-      background: linear-gradient(135deg,#1e3a8a 0%,#071224 100%);
-      color:#fff;
-      box-shadow: 0 10px 24px rgba(7,18,36,.18);
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s ease;
-      white-space:nowrap;
-      outline:none;
-      min-height: 46px;
-    }
-    .mineBtn:active{ transform: scale(.99); }
-    .mineBtn:focus-visible{ box-shadow: 0 10px 24px rgba(7,18,36,.18), var(--ring); }
-    .mineBtn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
-
-    .mineLink{
-      text-decoration:none;
-      font-weight: 1000;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border:1px solid rgba(10,25,41,.12);
-      background: rgba(255,255,255,.90);
-      color: var(--blue-900);
-      white-space:nowrap;
-      outline:none;
-      min-height: 46px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .mineLink:focus-visible{ box-shadow: var(--ring); }
-
-    .mineStatus{
-      margin-top: 8px;
-      font-size: 12px;
-      font-weight: 950;
-    }
-    .statusOk{ color:#166534; }
-    .statusWarn{ color:#b54708; }
-    .statusErr{ color:#b42318; }
-
-    progress.mineProg{
-      width:100%;
-      height: 14px;
-      border-radius: 10px;
-      overflow:hidden;
-      margin-top: 10px;
-      display:none;
-    }
-    progress.mineProg::-webkit-progress-bar{ background:#eef2f6 }
-    progress.mineProg::-webkit-progress-value{ background:#1a237e }
-
-    /* ===== Desktop / Tablet ===== */
-    @media (min-width: 700px){
-      .app{ max-width: 1080px; }
-      .topbar-inner, .paybar-inner{ max-width: 1080px; }
-      .container{ max-width: 1080px; margin:0 auto; padding: 18px 16px 80px; }
-      .grid{ grid-template-columns: repeat(2, 1fr); gap: 16px; }
-      .thumb{ height: 170px; }
-      .topnav{ display:flex; }
-      /* optional: hide bottom nav on desktop */
-      .bottomnav{ display:none; }
-      .paybar{ bottom: 18px; }
-      .modal{ align-items:center; }
-      .sheet{ max-height: 90vh; }
-      .hero img{ height: 260px; }
-    }
-
-    @media (min-width: 980px){
-      .grid{ grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    }
-
-    /* ===== Scrollbar ===== */
-    ::-webkit-scrollbar{ width:10px; height:10px; }
-    ::-webkit-scrollbar-track{ background:rgba(212,175,55,.06); }
-    ::-webkit-scrollbar-thumb{ background:rgba(212,175,55,.26); border-radius:6px; }
-    ::-webkit-scrollbar-thumb:hover{ background:rgba(212,175,55,.36); }
-
-    /* Accessibility */
-    @media (prefers-reduced-motion: reduce){
-      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+      .topActions{
+        gap:8px;
+      }
     }
   </style>
 </head>
-
 <body>
 <%
-  const displayName = (user && (user.name || user.phone)) ? (user.name || user.phone) : 'Devotee';
   function safeJsonAttr(obj){
-    const s = JSON.stringify(obj ?? []);
-    return s.replace(/</g, "\\u003c").replace(/"/g, "&quot;");
+    return JSON.stringify(obj ?? []).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function safeAttr(s){
-    return String(s ?? "").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function formatDateOnly(d){
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('en-GB', { timeZone:'Asia/Kolkata' });
   }
 %>
 
 <div class="app">
   <header class="topbar">
-    <div class="topbar-inner">
+    <div class="topbarInner">
       <div class="brand">
-
-        <div class="logo-badge"> <img src="/images/logo.png" alt="" class="logo-img" height="40">
-</div>
-        <div style="min-width:0">
-          <div class="brand-title">BhakthiVedanta Wisdom Contest 2026</div>
-          <div class="brand-sub">Free Book • Certificate • Course • Gold Medal Prizes</div>
+        <div class="logo">
+          <img src="/images/logo3.png" alt="Krishna Wisdom Contest" onerror="this.style.display='none'">
         </div>
       </div>
 
-      <!-- ✅ Desktop nav (keep routes same) -->
-      <nav class="topnav" aria-label="Desktop Navigation">
-        <a class="active" href="/dashboard">Home</a>
-        <a href="/dashboard/profile">Profile</a>
-        <a href="/dashboard/delivery">Track</a>
-        <a href="/dashboard/faqs">FAQs</a>
-      </nav>
+      <div class="topActions">
+        <button class="iconBtn" id="cartBtn" type="button" aria-label="Open cart">
+          <span class="cartBadge" id="cartBadge">0</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14h9.96c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.58 5H6.21l-.94-2H2v2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 8 18h12v-2H8l1.1-2Z"/>
+          </svg>
+        </button>
 
-      <div class="top-actions">
-        <a class="icon-btn" href="/logout" title="Logout" aria-label="Logout">
-          <svg viewBox="0 0 24 24"><path d="M10 17v-2h4v-6h-4V7l-5 5 5 5zm-7 4V3h9v2H5v14h7v2H3zm18-9-4-4v3h-5v2h5v3l4-4z"/></svg>
+        <a class="iconBtn logoutBtn" href="/logout" title="Logout" aria-label="Logout">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/>
+          </svg>
         </a>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <section class="welcome">
-      <h2>Welcome, <%= displayName %>!</h2>
-      <p>Tap a contest to join. You'll get a <b>free spiritual book home delivery</b>, <b>participation certificate</b>, and <b>free course</b>. Top 3 in each contest win <b>6g Gold Medal</b>.</p>
-
-      <div class="tabs" role="tablist" aria-label="Dashboard Tabs">
-        <button class="tab active" id="tab-available" type="button" role="tab" aria-controls="panel-available" aria-selected="true">
-          Available <span class="count" id="cntAvailable"><%= (pending && pending.length) ? pending.length : 0 %></span>
-        </button>
-
-        <button class="tab" id="tab-mine" type="button" role="tab" aria-controls="panel-mine" aria-selected="false">
-          My Contests <span class="count" id="cntMine"><%= (registered && registered.length) ? registered.length : 0 %></span>
-        </button>
-      </div>
+  <main class="page">
+    <section class="hero">
+      <h1>Welcome, <%= user?.name || 'Devotee' %></h1>
+      <p>Select your age category, add contests to cart, and continue to checkout when ready.</p>
     </section>
 
-    <!-- AVAILABLE -->
-    <section id="panel-available" role="tabpanel" aria-labelledby="tab-available">
-      <% if (!pending || pending.length === 0) { %>
-        <div style="margin-top:14px;background:linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.95) 100%);border:1px solid rgba(212,175,55,.16);border-radius:20px;box-shadow:var(--shadow);padding:16px;">
-          <div style="font-weight:1000;color:var(--blue-900);font-size:15px;">No contests available right now.</div>
-          <div style="margin-top:8px;color:rgba(26,35,50,.72);font-size:13px;line-height:1.6;">Please check again later.</div>
-        </div>
-      <% } else { %>
-        <div class="grid">
-          <% pending.forEach((c, index) => { %>
-            <article
-              class="card contest"
-              tabindex="0"
-              data-id="<%= c.id %>"
-              data-title="<%- safeAttr(c.title) %>"
-              data-price="<%= c.price %>"
-              data-deadline="<%- safeAttr(c.submission_deadline ? new Date(c.submission_deadline).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}) : '-') %>"
-              data-img="<%- safeAttr(c.image_url || '') %>"
-              data-prize="<%- safeAttr(c.prize_details || 'Top 3 winners will receive 6g Gold Medal.') %>"
-              data-rules="<%- safeJsonAttr(c.rules || []) %>"
-            >
-              <div class="tick" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M9.2 16.6 4.9 12.3l-1.4 1.4 5.7 5.7L20.5 8.1l-1.4-1.4z"/></svg>
+    <div class="filters">
+      <button class="filterBtn active" id="age025Btn" type="button">0 to 25 years</button>
+      <button class="filterBtn" id="ageAboveBtn" type="button">Above 25 years</button>
+    </div>
+
+    <h2 class="sectionTitle">Available Contests</h2>
+
+    <% if (!pending || !pending.length) { %>
+      <div class="empty">No active contests available right now.</div>
+    <% } else { %>
+      <div class="cards">
+        <% pending.forEach((c) => { %>
+          <article
+            class="contest"
+            tabindex="0"
+            data-id="<%= c.id %>"
+            data-title="<%- safeAttr(c.title) %>"
+            data-price="<%= Number(c.price || 0) %>"
+            data-registration-deadline="<%- safeAttr(formatDateOnly(c.registration_deadline)) %>"
+            data-submission-deadline="<%- safeAttr(formatDateOnly(c.submission_deadline)) %>"
+            data-winner-date="<%- safeAttr(formatDateOnly(c.winner_declaration_date)) %>"
+            data-img="<%- safeAttr(c.image_url || '') %>"
+            data-prize="<%- safeAttr(c.prize_details || '') %>"
+            data-rules="<%- safeJsonAttr(c.rules || []) %>"
+            data-benefits="<%- safeJsonAttr(c.participant_benefits || []) %>"
+            data-age-categories="<%- safeJsonAttr(c.age_categories || []) %>"
+          >
+            <div class="contestMain">
+              <div class="contestImgWrap">
+                <img
+                  class="contestImg"
+                  src="<%= (c.image_url || 'https://placehold.co/400x400?text=Contest') + '?v=20260320-1' %>"
+                  alt="<%= c.title %>"
+                  onerror="this.src='https://placehold.co/400x400?text=Contest';"
+                />
               </div>
 
-              <div class="thumb" data-thumb>
-                <% if (c.image_url) { %>
-                  <img src="<%= c.image_url %>" alt="<%= c.title %>"
-                    onerror="this.closest('[data-thumb]').innerHTML='Image coming soon';">
-                <% } else { %>
-                  Image coming soon
+              <div class="contestBody">
+                <h3 class="contestName"><%= c.title %></h3>
+                <% if (c.description) { %>
+                  <p class="contestDesc"><%= c.description %></p>
                 <% } %>
-              </div>
 
-              <div class="card-body">
-                <h3 class="title"><%= c.title %></h3>
-
-               <a class="info-link what-btn" href="#" data-open-details="1">✨ What will I get?</a>
-
-<button class="join" type="button">🎯 Join Now - Only ₹<%= c.price %></button>
-
-
-              </div>
-            </article>
-          <% }) %>
-        </div>
-      <% } %>
-    </section>
-
-    <!-- ✅ MY CONTESTS (REAL) -->
-    <section id="panel-mine" role="tabpanel" aria-labelledby="tab-mine" style="display:none;margin-top:14px">
-      <% if (!registered || registered.length === 0) { %>
-        <div style="margin-top:0;background:linear-gradient(135deg,rgba(255,255,255,.98) 0%,rgba(253,251,247,.95) 100%);border:1px solid rgba(212,175,55,.16);border-radius:20px;box-shadow:var(--shadow);padding:16px;">
-          <div style="font-weight:1000;color:var(--blue-900);font-size:15px;">My Contests</div>
-          <div style="margin-top:8px;color:rgba(26,35,50,.72);font-size:13px;line-height:1.6;">You have not registered for any contests yet.</div>
-        </div>
-      <% } else { %>
-        <div class="mineWrap">
-          <% registered.forEach(r => { %>
-            <div class="mineCard contest-card"
-                 data-order-id="<%= r.order_id %>"
-                 data-has-submission="<%= r.file_url ? '1' : '0' %>"
-                 data-deadline-passed="<%= r.deadline_passed ? '1' : '0' %>"
-                 data-attempts-used="<%= (r.attempts_used ?? 0) %>"
-                 data-seconds-left="<%= (r.seconds_left ?? '') %>">
-
-              <div class="mineTop">
-                <div>
-                  <div class="mineTitle"><%= r.title %></div>
-                  <div class="mineDesc"><%= r.description || '' %></div>
-
-                  <% if (r.submission_deadline) { %>
-                    <div class="mineMeta">
-                      <span class="minePill">
-                        ⏰ Deadline (IST):
-                        <%= new Date(r.submission_deadline).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) %>
-                      </span>
-
-                      <% if (r.deadline_passed) { %>
-                        <span class="minePill pillClosed">Closed</span>
-                      <% } else { %>
-                        <span class="minePill pillOpen">Open</span>
-                      <% } %>
-                    </div>
-                  <% } %>
-                </div>
-
-                <div class="mineRight">
-                  <div class="minePrice">₹<%= r.price %></div>
-                  <div class="mineTags">
-                    <% if (r.file_url) { %>
-                      <span class="mineTag tagSubmitted">✅ Submitted</span>
-                    <% } else { %>
-                      <span class="mineTag tagNotSubmitted">⚠️ Not submitted</span>
-                    <% } %>
-
-                    <span class="mineTag tagAttempts">
-                      Attempts: <%= (r.attempts_used ?? 0) %>/3
-                    </span>
-
-                    <% if (r.deadline_passed) { %>
-                      <span class="mineTag tagClosed">Closed</span>
-                    <% } else if (r.seconds_left !== null && r.seconds_left !== undefined) { %>
-                      <span class="mineTag tagTime timeleft" data-seconds-left="<%= r.seconds_left %>">--</span>
-                    <% } else { %>
-                      <span class="mineTag tagTime">No deadline</span>
-                    <% } %>
-                  </div>
+                <div class="rowActions">
+                  <a href="#" class="detailsLink" data-open-details="1">View Details</a>
+                  <button class="joinBtn" type="button">Join now at only ₹<%= Number(c.price || 0) %></button>
                 </div>
               </div>
-
-              <div class="mineHr"></div>
-
-              <% if (r.file_url) { %>
-                <div class="mineStatus statusOk">✅ Submission received</div>
-                <div class="mineMuted">
-                  File: <b><%= r.original_name || 'Uploaded file' %></b>
-                </div>
-                <div class="mineMuted">
-                  Last submitted (IST):
-                  <%= (r.last_updated_at || r.uploaded_at)
-                    ? new Date(r.last_updated_at || r.uploaded_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-                    : '-' %>
-                </div>
-                <div class="mineRow" style="margin-top:12px">
-                  <a class="mineLink" href="/dashboard/submission/download?orderId=<%= r.order_id %>">Download</a>
-                </div>
-              <% } else { %>
-                <div class="mineStatus statusWarn">⚠️ No submission uploaded yet.</div>
-                <div class="mineMuted">Only submitted entries are eligible for prize evaluation.</div>
-              <% } %>
-
-              <div class="mineHr"></div>
-
-              <div class="mineLabel">Upload / Update Submission</div>
-              <div class="mineMuted">Max 500MB • Up to 3 attempts • Check “Rules” for allowed formats</div>
-
-              <% if (r.deadline_passed) { %>
-                <div class="mineStatus statusErr" style="margin-top:10px">🚫 Submissions closed (deadline passed).</div>
-              <% } %>
-
-              <div class="mineRow">
-                <input type="file" class="mineFile file"
-                  <%= r.deadline_passed ? 'disabled' : '' %>
-                  accept="audio/*,video/*,image/*,.pdf,.doc,.docx" />
-
-                <button type="button" class="mineBtn upload-btn"
-                  <%= r.deadline_passed ? 'disabled' : '' %>
-                  data-order-id="<%= r.order_id %>">
-                  <%= r.file_url ? 'Resubmit' : 'Upload' %>
-                </button>
-
-                <a class="mineLink rules-btn" href="#" data-open-rules="1">Rules</a>
-              </div>
-
-              <div class="mineStatus status mineStatus" style="margin-top:10px"></div>
-              <progress class="mineProg prog" value="0" max="100"></progress>
             </div>
-          <% }) %>
-        </div>
-      <% } %>
-    </section>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
   </main>
 
-  <!-- Paybar -->
-  <div id="paybar" class="paybar">
-    <div class="paybar-inner">
-      <div class="paybox">
-        <button id="paybtn" class="paybtn" type="button">Pay Now ₹0</button>
-        <div class="paysub" id="paySub">✨ Includes Free Book Home Delivery + Certificate + Course</div>
-      </div>
+  <nav class="bottomNav" aria-label="Bottom navigation">
+    <div class="bottomNavInner">
+      <a class="navBtn active" href="/dashboard">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </a>
+
+      <a class="navBtn" href="/dashboard/my-contests">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg>
+        <span>My Contests</span>
+      </a>
+
+      <a class="navBtn" href="/dashboard/profile">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg>
+        <span>Profile</span>
+      </a>
+
+      <a class="navBtn" href="/dashboard/delivery">
+        <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg>
+        <span>Track</span>
+      </a>
+
+      <a class="navBtn" href="/dashboard/help">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg>
+        <span>Help</span>
+      </a>
     </div>
-  </div>
-
-  <!-- Modal (contest details) -->
-  <div id="modal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Contest Details">
-      <div class="sheet-top">
-        <h3 id="mTitle">Contest</h3>
-        <button class="close" id="mClose" type="button" aria-label="Close">
-          <svg viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg>
-        </button>
-      </div>
-
-      <div class="sheet-body">
-        <div class="hero">
-          <img id="mImg" src="" alt="">
-        </div>
-
-        <div class="pillrow">
-          <span class="pill" id="mPrice">₹0</span>
-          <span class="pill" id="mDeadline">Deadline: -</span>
-        </div>
-
-        <div class="section">
-          <h4>🏆 Prize Details</h4>
-          <p id="mPrize"></p>
-        </div>
-
-        <div class="section">
-          <h4>🎁 What You Get FREE on Registration</h4>
-          <ul>
-            <li>📚 <strong>One Free Spiritual Book</strong> delivered to your home</li>
-            <li>📜 <strong>Participation Certificate</strong></li>
-            <li>🧘 <strong>Free Work-Life Balance Course</strong></li>
-            <li>🥇 <strong>Chance to win 6g Gold Medal</strong> (Top 3)</li>
-          </ul>
-        </div>
-
-        <div class="section">
-          <h4>📋 Contest Rules</h4>
-          <ul id="mRules"></ul>
-        </div>
-      </div>
-
-      <div class="sheet-bottom">
-        <button class="okbtn" id="mOk" type="button">✅ Got It, Let's Register!</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ Rules modal (single, safe ids) -->
-  <div id="rulesModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="Submission Rules">
-      <div class="sheet-top">
-        <h3>Submission Rules</h3>
-        <button class="close" id="rulesClose" type="button" aria-label="Close">
-          <svg viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg>
-        </button>
-      </div>
-      <div class="sheet-body">
-        <div style="font-weight:1000;color:var(--blue-900);margin-bottom:10px">Please follow:</div>
-        <div style="color:rgba(26,35,50,.78);font-size:13.5px;line-height:1.75">
-          • Max size: 500MB<br/>
-          • Allowed: audio (any), video (any), images (jpg/png/webp/gif), PDF, DOC, DOCX<br/>
-          • Max attempts: 3 submissions per contest (per registration/order)<br/>
-          • Resubmitting will replace your previous submission for evaluation<br/>
-          • Use stable internet (Wi-Fi recommended for video)<br/>
-          • Submit before deadline shown in IST
-        </div>
-      </div>
-      <div class="sheet-bottom">
-        <button class="okbtn" id="rulesOk" type="button">OK</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom nav (mobile) -->
-  <nav class="bottomnav" aria-label="Bottom Navigation">
-    <a class="navitem active" href="/dashboard">
-      <svg viewBox="0 0 24 24"><path d="M12 3 3 10v11h7v-7h4v7h7V10l-9-7z"/></svg>
-      Home
-    </a>
-    <a class="navitem" href="/dashboard/profile">
-      <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5z"/></svg>
-      Profile
-    </a>
-    <a class="navitem" href="/dashboard/delivery">
-      <svg viewBox="0 0 24 24"><path d="M3 7h11v10H3V7zm13 3h3l2 3v4h-5V10zm-2-3h2v2h-2V7zm-9 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm14 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
-      Track
-    </a>
-    <a class="navitem" href="/dashboard/faqs">
-      <svg viewBox="0 0 24 24"><path d="M11 18h2v2h-2v-2zm1-16C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 2 2c-1.1 0-2 .9-2 2v1h2v-1c1.7 0 3-1.3 3-3a4 4 0 0 0-4-4z"/></svg>
-      FAQs
-    </a>
   </nav>
 </div>
 
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modalCard">
+    <div class="modalHead">
+      <h3 class="modalTitle" id="mTitle">Contest Details</h3>
+      <button class="modalClose" id="mClose" type="button">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <img class="modalImg" id="mImg" alt="Contest Image" />
+      <div class="pillrow">
+        <span class="pill" id="mPrice">₹0</span>
+        <span class="pill" id="mRegistrationDeadline">Registration: -</span>
+        <span class="pill" id="mSubmissionDeadline">Submission: -</span>
+        <span class="pill" id="mWinnerDate">Winners: -</span>
+      </div>
+
+      <div class="modalSection">
+        <h4>Prize Details</h4>
+        <p id="mPrize">Prize details will be updated soon.</p>
+      </div>
+
+      <div class="modalSection">
+        <h4>Participant Benefits</h4>
+        <ul id="mBenefits"></ul>
+      </div>
+
+      <div class="modalSection">
+        <h4>Age Categories</h4>
+        <ul id="mAgeCategories"></ul>
+      </div>
+
+      <div class="modalSection">
+        <h4>Rules</h4>
+        <ul id="mRules"></ul>
+      </div>
+
+      <div class="modalFoot">
+        <button class="btnGhost" id="mOk" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-/* Tabs */
-const tabAvailable = document.getElementById('tab-available');
-const tabMine = document.getElementById('tab-mine');
-const panelAvailable = document.getElementById('panel-available');
-const panelMine = document.getElementById('panel-mine');
-const cntMine = document.getElementById('cntMine');
+(function(){
+  const age025Btn = document.getElementById('age025Btn');
+  const ageAboveBtn = document.getElementById('ageAboveBtn');
+  const cartBtn = document.getElementById('cartBtn');
+  const cartBadge = document.getElementById('cartBadge');
+  let selectedAgeCategory = '0-25';
 
-tabAvailable?.addEventListener('click', () => {
-  tabAvailable.classList.add('active');
-  tabMine.classList.remove('active');
-  panelAvailable.style.display = 'block';
-  panelMine.style.display = 'none';
-  tabAvailable.setAttribute("aria-selected","true");
-  tabMine.setAttribute("aria-selected","false");
-});
-tabMine?.addEventListener('click', () => {
-  tabMine.classList.add('active');
-  tabAvailable.classList.remove('active');
-  panelAvailable.style.display = 'none';
-  panelMine.style.display = 'block';
-  tabMine.setAttribute("aria-selected","true");
-  tabAvailable.setAttribute("aria-selected","false");
-});
-
-/* Cart + paybar (available tab selection only) */
-const paybar = document.getElementById('paybar');
-const paybtn = document.getElementById('paybtn');
-const selected = new Map();
-
-function setPaybar(show){
-  if (!paybar) return;
-  paybar.classList.toggle('show', !!show);
-}
-function updatePay(){
-  let total = 0;
-  for (const p of selected.values()) total += Number(p||0);
-
-  const count = selected.size;
-  if (cntMine) cntMine.textContent = String(<%= (registered && registered.length) ? registered.length : 0 %>);
-
-  if (total > 0){
-    setPaybar(true);
-    paybtn.textContent = `🔥 ${count} Selected • Pay ₹${total}`;
-  } else {
-    setPaybar(false);
-    paybtn.textContent = `Pay Now ₹0`;
-  }
-}
-
-/* Modal (contest details) */
-const modal = document.getElementById('modal');
-const mTitle = document.getElementById('mTitle');
-const mImg = document.getElementById('mImg');
-const mPrize = document.getElementById('mPrize');
-const mRules = document.getElementById('mRules');
-const mDeadline = document.getElementById('mDeadline');
-const mPrice = document.getElementById('mPrice');
-const mClose = document.getElementById('mClose');
-const mOk = document.getElementById('mOk');
-
-let activeCard = null;
-
-function openModal(card){
-  activeCard = card;
-
-  const title = card.dataset.title || '';
-  const price = Number(card.dataset.price || 0);
-  const deadline = card.dataset.deadline || '-';
-  const prize = card.dataset.prize || 'Top 3 winners will receive 6g Gold Medal each.';
-  const img = card.dataset.img || '';
-
-  let rules = [];
-  try { rules = JSON.parse(card.dataset.rules || "[]"); } catch(e){ rules=[]; }
-
-  mTitle.textContent = title;
-  mPrice.textContent = `₹${price}`;
-  mDeadline.textContent = `⏰ Deadline: ${deadline}`;
-  mPrize.textContent = prize;
-
-  if (img) {
-    mImg.src = img;
-    mImg.style.display = 'block';
-  } else {
-    mImg.removeAttribute('src');
-    mImg.style.display = 'none';
+  function setAgeFilter(age){
+    selectedAgeCategory = age;
+    age025Btn.classList.toggle('active', age === '0-25');
+    ageAboveBtn.classList.toggle('active', age === 'above-25');
+    syncCardStates();
   }
 
-  mRules.innerHTML = "";
-  if (Array.isArray(rules) && rules.length > 0){
-    rules.forEach(r => {
+  age025Btn?.addEventListener('click', () => setAgeFilter('0-25'));
+  ageAboveBtn?.addEventListener('click', () => setAgeFilter('above-25'));
+
+  async function fetchJson(url, options) {
+    const r = await fetch(url, options);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) throw new Error(data.message || 'Request failed');
+    return data;
+  }
+
+  async function updateCartBadge(){
+    try {
+      const data = await fetchJson('/api/cart/count');
+      const count = Number(data.count || 0);
+      cartBadge.textContent = String(count);
+      cartBadge.classList.toggle('show', count > 0);
+    } catch {}
+  }
+
+  async function getCartItems(){
+    try {
+      const data = await fetchJson('/api/cart/items');
+      return Array.isArray(data.items) ? data.items : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function syncCardStates(){
+    const items = await getCartItems();
+
+    document.querySelectorAll('.contest').forEach(card => {
+      const btn = card.querySelector('.joinBtn');
+      const contestId = card.dataset.id;
+      const matched = items.find(x => x.contest_id === contestId && x.age_category === selectedAgeCategory);
+      const qty = matched ? Number(matched.quantity || 0) : 0;
+
+      if (!btn) return;
+
+      if (qty > 0) {
+        card.classList.add('selected');
+        btn.classList.add('added');
+        btn.textContent = `Added (${qty})`;
+      } else {
+        card.classList.remove('selected');
+        btn.classList.remove('added');
+        btn.textContent = `Join now at only ₹${Number(card.dataset.price || 0)}`;
+      }
+    });
+  }
+
+  async function addToCart(card){
+    const contestId = card.dataset.id;
+
+    await fetchJson('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ contestId, ageCategory: selectedAgeCategory })
+    });
+
+    await updateCartBadge();
+    await syncCardStates();
+
+    cartBtn.classList.add('bounce');
+    setTimeout(() => cartBtn.classList.remove('bounce'), 280);
+  }
+
+  cartBtn?.addEventListener('click', () => {
+    window.location.href = '/cart-review';
+  });
+
+  document.querySelectorAll('.contest').forEach(card => {
+    const joinBtn = card.querySelector('.joinBtn');
+
+    joinBtn?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        await addToCart(card);
+      } catch (err) {
+        alert(err.message || 'Failed to add to cart');
+      }
+    });
+
+    card.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        try {
+          await addToCart(card);
+        } catch (err) {
+          alert(err.message || 'Failed to add to cart');
+        }
+      }
+    });
+  });
+
+  const modal = document.getElementById('modal');
+  const mTitle = document.getElementById('mTitle');
+  const mImg = document.getElementById('mImg');
+  const mPrize = document.getElementById('mPrize');
+  const mRules = document.getElementById('mRules');
+  const mPrice = document.getElementById('mPrice');
+  const mRegistrationDeadline = document.getElementById('mRegistrationDeadline');
+  const mSubmissionDeadline = document.getElementById('mSubmissionDeadline');
+  const mWinnerDate = document.getElementById('mWinnerDate');
+  const mBenefits = document.getElementById('mBenefits');
+  const mAgeCategories = document.getElementById('mAgeCategories');
+  const mClose = document.getElementById('mClose');
+  const mOk = document.getElementById('mOk');
+
+  function openModal(card){
+    const title = card.dataset.title || '';
+    const price = Number(card.dataset.price || 0);
+    const registrationDeadline = card.dataset.registrationDeadline || '-';
+    const submissionDeadline = card.dataset.submissionDeadline || '-';
+    const winnerDate = card.dataset.winnerDate || '-';
+    const prize = card.dataset.prize || '';
+    const img = card.dataset.img || '';
+
+    let rules = [], benefits = [], ageCategories = [];
+    try { rules = JSON.parse(card.dataset.rules || '[]'); } catch(e){}
+    try { benefits = JSON.parse(card.dataset.benefits || '[]'); } catch(e){}
+    try { ageCategories = JSON.parse(card.dataset.ageCategories || '[]'); } catch(e){}
+
+    mTitle.textContent = title;
+    mPrice.textContent = `₹${price}`;
+    mRegistrationDeadline.textContent = `Registration: ${registrationDeadline}`;
+    mSubmissionDeadline.textContent = `Submission: ${submissionDeadline}`;
+    mWinnerDate.textContent = `Winners: ${winnerDate}`;
+    mPrize.textContent = prize || 'Prize details will be updated soon.';
+
+    if (img) {
+      mImg.src = img + '?v=20260320-1';
+      mImg.style.display = 'block';
+    } else {
+      mImg.removeAttribute('src');
+      mImg.style.display = 'none';
+    }
+
+    mRules.innerHTML = '';
+    (rules.length ? rules : ['Contest rules will be updated soon.']).forEach(r => {
       const li = document.createElement('li');
       li.textContent = String(r);
       mRules.appendChild(li);
     });
-  } else {
-    const li = document.createElement('li');
-    li.textContent = 'Contest rules will be updated soon.';
-    mRules.appendChild(li);
-  }
 
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(){
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
-  activeCard = null;
-}
-
-function pulsePaybar(){
-  if (!paybar) return;
-  paybar.classList.add('pulse');
-  setTimeout(() => paybar.classList.remove('pulse'), 420);
-}
-
-function selectCard(card){
-  const id = card.dataset.id;
-  const price = Number(card.dataset.price || 0);
-  card.classList.add('selected');
-  selected.set(id, price);
-  updatePay();
-  pulsePaybar();
-}
-
-function deselectCard(card){
-  const id = card.dataset.id;
-  card.classList.remove('selected');
-  selected.delete(id);
-  updatePay();
-  pulsePaybar();
-}
-
-document.querySelectorAll('.contest').forEach(card => {
-  const joinBtn = card.querySelector('.join');
-const whatBtn = card.querySelector("[data-open-details='1']");
-whatBtn?.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openModal(card);
-});
-
-function handleSelect(e){
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (card.classList.contains('selected')){
-    deselectCard(card);
-  } else {
-    selectCard(card);
-  }
-}
-
-card.addEventListener('click', handleSelect);
-joinBtn?.addEventListener('click', handleSelect);
-
-
-  // keyboard accessibility (optional)
-  card.addEventListener('keydown', (e) => {
-    if (e.key === "Enter" || e.key === " "){
-      handleTap(e);
-    }
-  });
-});
-
-mClose?.addEventListener('click', closeModal);
-modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-mOk?.addEventListener('click', closeModal);
-
-/* Pay click */
-paybtn?.addEventListener('click', () => {
-  const ids = Array.from(selected.keys()).join(',');
-  if (!ids) return alert("Please select at least one contest");
-  window.location.href = `/cart?contestIds=${encodeURIComponent(ids)}`;
-});
-
-/* ✅ Rules modal */
-const rulesModal = document.getElementById("rulesModal");
-const rulesClose = document.getElementById("rulesClose");
-const rulesOk = document.getElementById("rulesOk");
-
-function openRules(){
-  rulesModal.classList.add("show");
-  rulesModal.setAttribute("aria-hidden","false");
-  document.body.style.overflow = "hidden";
-}
-function closeRules(){
-  rulesModal.classList.remove("show");
-  rulesModal.setAttribute("aria-hidden","true");
-  document.body.style.overflow = "";
-}
-
-document.querySelectorAll("[data-open-rules='1']").forEach(btn=>{
-  btn.addEventListener("click",(e)=>{ e.preventDefault(); openRules(); });
-});
-rulesClose?.addEventListener("click", closeRules);
-rulesOk?.addEventListener("click", closeRules);
-rulesModal?.addEventListener("click",(e)=>{ if(e.target === rulesModal) closeRules(); });
-
-/* ✅ Multipart upload (your older working logic) */
-(() => {
-
-  const UPLOAD_MAX_MB = 500;
-  const MAX_ATTEMPTS = 3;
-  const allowedExt = new Set(["pdf","doc","docx","mp3","wav","aac","m4a","ogg","mp4","m4v","mov","webm","mkv","jpg","jpeg","png","webp","gif"]);
-
-  function extOf(name){
-    const m = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
-    return m ? m[1] : "";
-  }
-
-  function validateFile(file){
-    if (!file) return { ok:false, msg:"Please choose a file first." };
-    if (file.size > UPLOAD_MAX_MB * 1024 * 1024) {
-      return { ok:false, msg:`Max file size is ${UPLOAD_MAX_MB}MB.` };
-    }
-    const mime = String(file.type || "").toLowerCase();
-    const ext = extOf(file.name);
-
-    const okMime =
-      mime.startsWith("audio/") ||
-      mime.startsWith("video/") ||
-      mime.startsWith("image/") ||
-      mime === "application/pdf" ||
-      mime === "application/msword" ||
-      mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
-    const okExt = allowedExt.has(ext);
-
-    if (!(okMime || okExt)){
-      return { ok:false, msg:"This file type is not allowed. Please check Rules." };
-    }
-    return { ok:true };
-  }
-
-  function formatLeft(seconds){
-    const s = Math.max(0, Math.floor(Number(seconds || 0)));
-    const d = Math.floor(s / 86400);
-    const h = Math.floor((s % 86400) / 3600);
-    if (s <= 0) return "Closed";
-    if (d > 0) return `${d}d ${h}h left`;
-    return `${h}h left`;
-  }
-
-  function initTimeLeft(){
-    const nodes = document.querySelectorAll(".timeleft[data-seconds-left]");
-    nodes.forEach(n => {
-      const sec = Number(n.getAttribute("data-seconds-left") || "0");
-      n.textContent = formatLeft(sec);
+    mBenefits.innerHTML = '';
+    (benefits.length ? benefits : ['Participant benefits will be updated soon.']).forEach(b => {
+      const li = document.createElement('li');
+      li.textContent = String(b);
+      mBenefits.appendChild(li);
     });
 
-    // refresh every minute (good enough)
-    setInterval(() => {
-      nodes.forEach(n => {
-        const old = Number(n.getAttribute("data-seconds-left") || "0");
-        const next = old - 60;
-        n.setAttribute("data-seconds-left", String(next));
-        n.textContent = formatLeft(next);
-        if (next <= 0){
-          n.classList.add("tagClosed");
-          n.classList.remove("tagTime");
-        }
-      });
-    }, 60000);
-  }
-
-  function initAttemptLocks(){
-    document.querySelectorAll(".contest-card").forEach(card => {
-      const used = Number(card.getAttribute("data-attempts-used") || "0");
-      const deadlinePassed = card.getAttribute("data-deadline-passed") === "1";
-      if (deadlinePassed) return;
-
-      if (used >= MAX_ATTEMPTS){
-        const file = card.querySelector(".file");
-        const btn = card.querySelector(".upload-btn");
-        const status = card.querySelector(".status");
-        if (file) file.disabled = true;
-        if (btn) btn.disabled = true;
-        if (status) setErr(status, "🚫 Attempts over (max 3 submissions).");
-      }
+    mAgeCategories.innerHTML = '';
+    (ageCategories.length ? ageCategories : ['Age categories will be updated soon.']).forEach(a => {
+      const li = document.createElement('li');
+      li.textContent = String(a);
+      mAgeCategories.appendChild(li);
     });
+
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
   }
 
-  const MAX_MB = 500;
-  const PART_SIZE = 10 * 1024 * 1024; // 10MB parts
-
-  function setErr(el, msg) { el.textContent = msg; el.classList.add("statusErr"); el.classList.remove("statusOk","statusWarn"); }
-  function setOk(el, msg) { el.textContent = msg; el.classList.add("statusOk"); el.classList.remove("statusErr","statusWarn"); }
-  function setInfo(el, msg) { el.textContent = msg; el.classList.add("statusWarn"); el.classList.remove("statusErr","statusOk"); }
-
-  async function logFailure(orderId, stage, message, meta) {
-    try {
-      await fetch("/dashboard/upload/log", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ orderId, stage, message, meta })
-      });
-    } catch (_) {}
+  function closeModal(){
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
   }
 
-  async function uploadMultipart(orderId, file, ui) {
-    if (file.size > MAX_MB * 1024 * 1024) throw new Error(`Max file size is ${MAX_MB}MB`);
-
-    setInfo(ui.status, "Starting upload...");
-    ui.prog.style.display = "block";
-    ui.prog.value = 0;
-
-    // 1) start
-    let start;
-    try {
-      const startRes = await fetch("/dashboard/upload/start", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          orderId,
-          fileName: file.name,
-          contentType: file.type || "application/octet-stream",
-          fileSize: file.size
-        })
-      });
-
-      start = await startRes.json().catch(() => ({}));
-      if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
-    } catch (e) {
-      await logFailure(orderId, "start", e.message || "start failed", { fileName: file.name, fileType: file.type, size: file.size });
-      throw e;
-    }
-
-    const { key, uploadId } = start;
-
-    const totalParts = Math.ceil(file.size / PART_SIZE);
-    const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
-
-    // 2) presign parts
-    let presign;
-    try {
-      setInfo(ui.status, "Preparing parts...");
-      const presignRes = await fetch("/dashboard/upload/presign-parts", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ orderId, key, uploadId, partNumbers })
-      });
-
-      presign = await presignRes.json().catch(() => ({}));
-      if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
-    } catch (e) {
-      await logFailure(orderId, "presign", e.message || "presign failed", { key });
-      await fetch("/dashboard/upload/abort", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ orderId, key, uploadId })
-      }).catch(() => {});
-      throw e;
-    }
-
-    const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
-    const uploadedParts = [];
-
-    // 3) upload parts
-    for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
-      const startByte = (partNumber - 1) * PART_SIZE;
-      const endByte = Math.min(partNumber * PART_SIZE, file.size);
-      const blob = file.slice(startByte, endByte);
-
-      setInfo(ui.status, `Uploading part ${partNumber}/${totalParts}...`);
-
-      try {
-        const putRes = await fetch(urlMap.get(partNumber), { method: "PUT", body: blob });
-        if (!putRes.ok) throw new Error(`Part ${partNumber} failed`);
-
-        const etag = putRes.headers.get("ETag");
-        uploadedParts.push({ ETag: etag, PartNumber: partNumber });
-
-        ui.prog.value = Math.round((partNumber / totalParts) * 100);
-      } catch (e) {
-        await logFailure(orderId, "part", e.message || "part upload failed", { key, partNumber });
-        await fetch("/dashboard/upload/abort", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ orderId, key, uploadId })
-        }).catch(() => {});
-        throw new Error("Upload failed due to network issue. Please retry (Wi-Fi recommended for videos).");
-      }
-    }
-
-    // 4) complete
-    try {
-      setInfo(ui.status, "Finalizing...");
-      const completeRes = await fetch("/dashboard/upload/complete", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          orderId,
-          key,
-          uploadId,
-          parts: uploadedParts,
-          contentType: file.type || "application/octet-stream",
-          originalName: file.name,
-          fileSize: file.size
-        })
-      });
-
-      const complete = await completeRes.json().catch(() => ({}));
-      if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
-    } catch (e) {
-      await logFailure(orderId, "complete", e.message || "complete failed", { key });
-      throw e;
-    }
-
-    setOk(ui.status, "✅ Uploaded successfully!");
-    setTimeout(() => window.location.reload(), 700);
-  }
-
-  initTimeLeft();
-  initAttemptLocks();
-
-  document.querySelectorAll(".upload-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const card = btn.closest(".contest-card");
-      const fileInput = card.querySelector(".file");
-      const status = card.querySelector(".status");
-      const prog = card.querySelector(".prog");
-      const orderId = btn.dataset.orderId;
-
-      if (btn.disabled) return;
-
-      const file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
-      const v = validateFile(file);
-      if (!v.ok){
-        alert(v.msg);
-        setErr(status, v.msg);
-        return;
-      }
-
-      const attemptsUsed = Number(card.getAttribute("data-attempts-used") || "0");
-      if (attemptsUsed >= MAX_ATTEMPTS){
-        alert("Max 3 submissions allowed for this contest.");
-        setErr(status, "🚫 Attempts over (max 3 submissions).");
-        return;
-      }
-
-      const hasSubmission = card.dataset.hasSubmission === "1";
-      if (hasSubmission) {
-        const ok = confirm("This will replace your previous submission for evaluation. Continue?");
-        if (!ok) return;
-      }
-
-      try {
-        btn.disabled = true;
-        await uploadMultipart(orderId, file, { status, prog });
-      } catch (e) {
-        setErr(status, e.message || "Upload error");
-        prog.style.display = "none";
-      } finally {
-        btn.disabled = false;
-      }
+  document.querySelectorAll("[data-open-details='1']").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const card = btn.closest(".contest");
+      if (card) openModal(card);
     });
   });
+
+  mClose?.addEventListener("click", closeModal);
+  mOk?.addEventListener("click", closeModal);
+  modal?.addEventListener("click", (e) => {
+    if(e.target === modal) closeModal();
+  });
+
+  document.querySelector(".logoutBtn")?.addEventListener("click", function(e){
+    if(!confirm("Are you sure you want to logout?")){
+      e.preventDefault();
+    }
+  });
+
+  updateCartBadge();
+  syncCardStates();
 })();
 </script>
-
 </body>
 </html>

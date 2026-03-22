@@ -14,10 +14,7 @@ const router = express.Router();
  */
 
 const ALLOWED_EXT = new Set([
-  "pdf", "doc", "docx",
-  "mp3", "wav", "aac", "m4a", "ogg",
-  "mp4", "m4v", "mov", "webm", "mkv",
-  "jpg", "jpeg", "png", "webp", "gif"
+  "pdf", "doc", "docx"
 ]);
 
 const ALLOWED_MIME = new Set([
@@ -26,17 +23,7 @@ const ALLOWED_MIME = new Set([
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 
-  // audio
-  "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
-  "audio/aac", "audio/mp4", "audio/m4a", "audio/ogg",
-  "application/ogg",
 
-  // video
-  "video/mp4", "video/m4v", "video/x-m4v",
-  "video/quicktime",
-  "video/webm",
-  "video/x-matroska",
-  "application/octet-stream"
 ]);
 
 const MAX_ATTEMPTS = 3;
@@ -49,6 +36,46 @@ async function getAttemptsUsed(userId: string, orderId: string) {
     [userId, orderId]
   );
   return r.rows[0]?.cnt ?? 0;
+}
+
+
+function genInternalPaymentId() {
+  return "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
+}
+
+function normAgeCategory(v: string): "0-25" | "above-25" | null {
+  const x = String(v || "").trim();
+  if (x === "0-25") return "0-25";
+  if (x === "above-25") return "above-25";
+  return null;
+}
+
+function parseCartItems(raw: string): Array<{ contestId: string; ageCategory: "0-25" | "above-25" }> {
+  const txt = String(raw || "").trim();
+  if (!txt) return [];
+
+  const uuidRe =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  const out: Array<{ contestId: string; ageCategory: "0-25" | "above-25" }> = [];
+  const seen = new Set<string>();
+
+  for (const part of txt.split(",")) {
+    const [contestIdRaw, ageRaw] = String(part || "").split("|");
+    const contestId = String(contestIdRaw || "").trim();
+    const ageCategory = String(ageRaw || "").trim();
+
+    if (!uuidRe.test(contestId)) continue;
+    if (ageCategory !== "0-25" && ageCategory !== "above-25") continue;
+
+    const key = `${contestId}|${ageCategory}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({ contestId, ageCategory: ageCategory as "0-25" | "above-25" });
+  }
+
+  return out;
 }
 
 function getExt(fileName: string) {
@@ -70,9 +97,6 @@ function isAllowedMime(mime: string) {
   if (mime === "application/pdf") return true;
   if (mime === "application/msword") return true;
   if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return true;
-  if (mime.startsWith("audio/")) return true;
-  if (mime.startsWith("video/")) return true;
-  if (mime.startsWith("image/")) return true;
   return false;
 }
 
@@ -332,19 +356,51 @@ router.get("/dashboard/submission/download", authMiddleware, async (req: any, re
 /**
  * Dashboard Home
  */
+
+
+
 router.get("/dashboard", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
 
   const userRes = await pool.query(
-    `SELECT id, name, email, phone, role, created_at
-     FROM users WHERE id = $1`,
+    `SELECT id, name, email, phone FROM users WHERE id=$1 LIMIT 1`,
     [userId]
   );
 
   const activeContests = await pool.query(
-    `SELECT * FROM contests
+    `SELECT
+        id,
+        title,
+        description,
+        price,
+        registration_deadline,
+        submission_deadline,
+        winner_declaration_date,
+        image_url,
+        prize_details,
+        rules,
+        age_categories,
+        participant_benefits,
+        is_active
+     FROM contests
      WHERE is_active = true
-     ORDER BY submission_deadline NULLS LAST`
+     ORDER BY title ASC`
+  );
+
+  return res.render("dashboard-home", {
+    user: userRes.rows[0] || null,
+    pending: activeContests.rows,
+    activeTab: "home",
+  });
+});
+
+
+router.get("/dashboard/my-contests", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const userRes = await pool.query(
+    `SELECT id, name, email, phone FROM users WHERE id=$1 LIMIT 1`,
+    [userId]
   );
 
   const registeredRes = await pool.query(
@@ -352,11 +408,19 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
         o.id AS order_id,
         o.contest_id,
         o.book_option,
+        o.age_category,
         o.created_at AS order_created_at,
+
         c.title,
         c.description,
         c.price,
+        c.registration_deadline,
         c.submission_deadline,
+        c.winner_declaration_date,
+        c.age_categories,
+        c.participant_benefits,
+        c.prize_details,
+        c.rules,
 
         CASE
           WHEN c.submission_deadline IS NULL THEN NULL
@@ -377,30 +441,28 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
         s.last_updated_at,
         s.is_locked,
 
-        (SELECT COUNT(*)::int FROM upload_logs ul
-         WHERE ul.user_id = $1 AND ul.order_id = o.id::text AND ul.stage='complete_ok') AS attempts_used
+        (SELECT COUNT(*)::int
+         FROM upload_logs ul
+         WHERE ul.user_id = $1
+           AND ul.order_id = o.id::text
+           AND ul.stage='complete_ok') AS attempts_used
 
      FROM orders o
      JOIN contests c ON c.id = o.contest_id
      LEFT JOIN submissions s ON s.order_id = o.id
-     WHERE o.user_id = $1 AND o.payment_status = 'paid'
+     WHERE o.user_id = $1
+       AND o.payment_status = 'paid'
      ORDER BY o.created_at DESC`,
     [userId]
   );
 
-  //  // ✅ Allow repeat participation: do not remove already participated contests from Available
-  //const pending = activeContests.rows;
-
-    // ✅ Allow repeat participation (children etc)
-  const pending = activeContests.rows;
-
-  res.render("dashboard-home", {
-    activeTab: "dashboard",
-    user: userRes.rows[0],
+  return res.render("dashboard-my-contests", {
+    user: userRes.rows[0] || null,
     registered: registeredRes.rows,
-    pending,
+    activeTab: "my-contests",
   });
 });
+
 
 /**
  * Delivery
@@ -440,6 +502,173 @@ router.get("/dashboard/faqs", authMiddleware, async (_req: any, res) => {
 });
 
 
+router.get("/api/cart/count", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
 
+  const q = await pool.query(
+    `SELECT COALESCE(SUM(quantity), 0)::int AS count
+     FROM cart_items
+     WHERE user_id=$1`,
+    [userId]
+  );
+
+  return res.json({ ok: true, count: Number(q.rows[0]?.count || 0) });
+});
+
+router.get("/api/cart/items", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const q = await pool.query(
+    `SELECT
+        ci.id,
+        ci.user_id,
+        ci.contest_id,
+        ci.age_category,
+        ci.quantity,
+        c.title,
+        c.price,
+        c.image_url
+     FROM cart_items ci
+     JOIN contests c ON c.id = ci.contest_id
+     WHERE ci.user_id=$1
+     ORDER BY ci.created_at ASC`,
+    [userId]
+  );
+
+  return res.json({ ok: true, items: q.rows });
+});
+
+router.post("/api/cart/add", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+  const contestId = String(req.body.contestId || "").trim();
+  const ageCategory = normAgeCategory(String(req.body.ageCategory || ""));
+
+  if (!contestId || !ageCategory) {
+    return res.status(400).json({ ok: false, message: "contestId and ageCategory are required." });
+  }
+
+  const contestQ = await pool.query(
+    `SELECT id FROM contests WHERE id=$1 AND is_active=true LIMIT 1`,
+    [contestId]
+  );
+  if (contestQ.rows.length === 0) {
+    return res.status(404).json({ ok: false, message: "Contest not found." });
+  }
+
+  await pool.query(
+    `INSERT INTO cart_items (user_id, contest_id, age_category, quantity)
+     VALUES ($1,$2,$3,1)
+     ON CONFLICT (user_id, contest_id, age_category)
+     DO UPDATE SET
+       quantity = cart_items.quantity + 1,
+       updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')`,
+    [userId, contestId, ageCategory]
+  );
+
+  return res.json({ ok: true });
+});
+
+router.post("/api/cart/update", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+  const cartItemId = String(req.body.cartItemId || "").trim();
+  const action = String(req.body.action || "").trim();
+
+  if (!cartItemId || !["plus", "minus", "delete"].includes(action)) {
+    return res.status(400).json({ ok: false, message: "Invalid request." });
+  }
+
+  const q = await pool.query(
+    `SELECT id, quantity
+     FROM cart_items
+     WHERE id=$1 AND user_id=$2
+     LIMIT 1`,
+    [cartItemId, userId]
+  );
+
+  if (q.rows.length === 0) {
+    return res.status(404).json({ ok: false, message: "Cart item not found." });
+  }
+
+  const currentQty = Number(q.rows[0].quantity || 0);
+
+  if (action === "delete" || (action === "minus" && currentQty <= 1)) {
+    await pool.query(`DELETE FROM cart_items WHERE id=$1 AND user_id=$2`, [cartItemId, userId]);
+    return res.json({ ok: true });
+  }
+
+  if (action === "plus") {
+    await pool.query(
+      `UPDATE cart_items
+       SET quantity = quantity + 1,
+           updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')
+       WHERE id=$1 AND user_id=$2`,
+      [cartItemId, userId]
+    );
+    return res.json({ ok: true });
+  }
+
+  await pool.query(
+    `UPDATE cart_items
+     SET quantity = quantity - 1,
+         updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')
+     WHERE id=$1 AND user_id=$2`,
+    [cartItemId, userId]
+  );
+
+  return res.json({ ok: true });
+});
+
+
+router.get("/cart-review", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const userRes = await pool.query(
+    `SELECT id, name, email, phone
+     FROM users
+     WHERE id=$1
+     LIMIT 1`,
+    [userId]
+  );
+
+  return res.render("cart-review", {
+    user: userRes.rows[0] || null
+  });
+});
+
+router.post("/cart-review/start", authMiddleware, async (_req: any, res) => {
+  return res.redirect("/checkout/review");
+});
+
+
+router.get("/dashboard/help", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const userRes = await pool.query(
+    `SELECT id, name, email, phone FROM users WHERE id=$1 LIMIT 1`,
+    [userId]
+  );
+
+  const ticketsRes = await pool.query(
+    `SELECT id, message, status, category, source, transaction_ref, created_at
+     FROM feedback_tickets
+     WHERE user_id=$1
+     ORDER BY created_at DESC
+     LIMIT 20`,
+    [userId]
+  );
+
+  return res.render("dashboard-help", {
+    user: userRes.rows[0] || null,
+    tickets: ticketsRes.rows,
+    activeTab: "help",
+    error: null,
+    success: null,
+  });
+});
+
+// optional alias so old FAQ links still work
+router.get("/dashboard/faqs", authMiddleware, (_req: any, res) => {
+  return res.redirect("/dashboard/help");
+});
 
 export default router;

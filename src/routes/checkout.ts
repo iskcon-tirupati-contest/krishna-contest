@@ -5,7 +5,15 @@ import { pool } from "../config/db";
 import https from "https";
 
 const router = express.Router();
-const BOOKS = ["Bhagavad Gita", "Krishna Book", "Ramayana", "Mahabharata"];
+
+const BOOKS = [
+  "Bhagavad Gita",
+  "Krishna Book",
+  "Ramayana",
+  "Bhagavatam",
+  "Science of Self Realization"
+];
+
 const LANGUAGES = ["English", "Tamil", "Telugu", "Kannada", "Hindi"];
 
 const RZP_KEY_ID = process.env.RZP_KEY_ID || "";
@@ -33,9 +41,7 @@ function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
           let json: any = null;
           try {
             json = data ? JSON.parse(data) : null;
-          } catch {
-            // keep raw
-          }
+          } catch {}
           if (status >= 200 && status < 300) return resolve(json);
           return reject(new Error(`RZP ${method} ${path} failed: ${status} ${data?.slice(0, 200)}`));
         });
@@ -47,43 +53,273 @@ function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
   });
 }
 
-// --------------------
-// SINGLE checkout (keep your existing flow)
-// --------------------
-async function loadCheckoutData(orderId: string, userId: string) {
-  const orderQ = await pool.query(
-    `SELECT o.*, c.title AS contest_title
-     FROM orders o
-     JOIN contests c ON c.id=o.contest_id
-     WHERE o.id=$1 AND o.user_id=$2`,
-    [orderId, userId]
-  );
+function renderReview(res: any, data: any) {
+  return res.render("checkout-review", data);
+}
 
-  const userQ = await pool.query(
-    `SELECT name, email, phone, phone_locked, address, city, state, pincode
-     FROM users WHERE id=$1`,
+
+router.get("/checkout/review", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const cartQ = await pool.query(
+    `SELECT
+        ci.id AS cart_item_id,
+        ci.contest_id,
+        ci.age_category,
+        ci.quantity,
+        c.title AS contest_title,
+        c.price
+     FROM cart_items ci
+     JOIN contests c ON c.id = ci.contest_id
+     WHERE ci.user_id=$1
+     ORDER BY ci.created_at ASC`,
     [userId]
   );
 
-  return { order: orderQ.rows[0], user: userQ.rows[0] };
-}
+  if (!cartQ.rows.length) {
+    return res.redirect("/cart-review");
+  }
 
-router.get("/checkout", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const orderId = String(req.query.orderId || "");
-  if (!orderId) return res.status(400).send("Missing orderId");
+  const expandedRows: any[] = [];
+  for (const row of cartQ.rows) {
+    const qty = Number(row.quantity || 0);
+    for (let i = 0; i < qty; i++) {
+      expandedRows.push({
+        cart_item_id: row.cart_item_id,
+        contest_id: row.contest_id,
+        age_category: row.age_category,
+        contest_title: row.contest_title,
+        amount: Number(row.price || 0),
+        saved_book_title: "",
+        saved_book_language: "",
+      });
+    }
+  }
 
-  const { order, user } = await loadCheckoutData(orderId, userId);
-  if (!order) return res.status(404).send("Order not found");
+  const userQ = await pool.query(
+    `SELECT id, name, email, phone, phone_locked, address, city, state, pincode
+     FROM users
+     WHERE id=$1
+     LIMIT 1`,
+    [userId]
+  );
 
-  if (order.payment_status !== "paid") return res.redirect(`/payment?orderId=${orderId}`);
-
-  return res.render("checkout", { order, user, books: BOOKS, error: null });
+  return renderReview(res, {
+    paymentId: "",
+    orders: expandedRows,
+    user: userQ.rows[0] || null,
+    books: BOOKS,
+    languages: LANGUAGES,
+    shipment: null,
+    deliveryMode: "deliver",
+    error: null,
+  });
 });
 
-// --------------------
-// BULK checkout (ADD dual inquiry here)
-// --------------------
+
+router.post("/checkout/review", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const cartQ = await pool.query(
+    `SELECT
+        ci.id AS cart_item_id,
+        ci.contest_id,
+        ci.age_category,
+        ci.quantity,
+        c.title AS contest_title,
+        c.price
+     FROM cart_items ci
+     JOIN contests c ON c.id = ci.contest_id
+     WHERE ci.user_id=$1
+     ORDER BY ci.created_at ASC`,
+    [userId]
+  );
+
+  if (!cartQ.rows.length) {
+    return res.status(400).send("Cart is empty");
+  }
+
+  const expandedRows: any[] = [];
+  for (const row of cartQ.rows) {
+    const qty = Number(row.quantity || 0);
+    for (let i = 0; i < qty; i++) {
+      expandedRows.push({
+        cart_item_id: row.cart_item_id,
+        contest_id: row.contest_id,
+        age_category: row.age_category,
+        contest_title: row.contest_title,
+        amount: Number(row.price || 0),
+      });
+    }
+  }
+
+  const userQ = await pool.query(
+    `SELECT name, email, phone, phone_locked, address, city, state, pincode
+     FROM users
+     WHERE id=$1`,
+    [userId]
+  );
+  const user = userQ.rows[0] || null;
+
+  const renderError = async (msg: string) => {
+    return renderReview(res, {
+      paymentId: "",
+      orders: expandedRows,
+      user: {
+        ...(user || {}),
+        name: req.body.fullName || user?.name || "",
+        phone: req.body.phone || user?.phone || "",
+        address: req.body.address || user?.address || "",
+        city: req.body.city || user?.city || "",
+        state: req.body.state || user?.state || "",
+        pincode: req.body.pincode || user?.pincode || "",
+      },
+      books: BOOKS,
+      languages: LANGUAGES,
+      shipment: null,
+      deliveryMode: String(req.body.deliveryMode || "deliver"),
+      error: msg,
+    });
+  };
+
+  const deliveryMode = String(req.body.deliveryMode || "").trim();
+  if (deliveryMode !== "deliver" && deliveryMode !== "donate") {
+    return renderError("Please choose Home Delivery or Donation.");
+  }
+
+  const phoneStr = String(req.body.phone || "").trim();
+  if (!/^[6-9]\d{9}$/.test(phoneStr)) {
+    return renderError("Please enter a valid 10-digit mobile number.");
+  }
+
+  const existingPhone = user?.phone ? String(user.phone).trim() : "";
+  if (existingPhone && existingPhone !== phoneStr) {
+    return renderError("Mobile number cannot be changed. Please use your registered mobile number.");
+  }
+  if (!existingPhone) {
+    const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
+    if (clash.rows.length > 0) return renderError("This mobile number is already registered. Please login with that number.");
+  }
+
+  const fullName = String(req.body.fullName || user?.name || "").trim();
+  if (fullName.length < 2) return renderError("Full name is required.");
+
+  const bookTitleArr = ([] as any[]).concat(req.body.bookTitle || []);
+  const bookLangArr = ([] as any[]).concat(req.body.bookLanguage || []);
+
+  if (deliveryMode === "deliver") {
+    const address = String(req.body.address || "").trim();
+    const city = String(req.body.city || "").trim();
+    const state = String(req.body.state || "").trim();
+    const pincode = String(req.body.pincode || "").trim();
+
+    if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+      return renderError("Please enter a valid 6-digit Indian pincode.");
+    }
+    if (!address || !city || !state) {
+      return renderError("Please fill complete address (Address, City, State, Pincode).");
+    }
+
+    if (bookTitleArr.length !== expandedRows.length || bookLangArr.length !== expandedRows.length) {
+      return renderError("Please select Book + Language for each contest row.");
+    }
+
+    for (let i = 0; i < expandedRows.length; i++) {
+      const bt = String(bookTitleArr[i] || "").trim();
+      const bl = String(bookLangArr[i] || "").trim();
+      if (!bt) return renderError("Please select book for every row.");
+      if (!bl) return renderError("Please select language for every row.");
+    }
+  }
+
+  const paymentId = "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
+
+  await pool.query("BEGIN");
+  try {
+    if (!existingPhone) {
+      await pool.query(`UPDATE users SET phone=$1, phone_locked=true WHERE id=$2`, [phoneStr, userId]);
+    }
+
+    await pool.query(`UPDATE users SET name=$1 WHERE id=$2`, [fullName, userId]);
+
+    const createdOrderIds: string[] = [];
+
+    for (let i = 0; i < expandedRows.length; i++) {
+      const row = expandedRows[i];
+
+      const ins = await pool.query(
+        `INSERT INTO orders
+         (user_id, contest_id, amount, payment_status, payment_id, age_category, created_at, book_option, full_name, book_title)
+         VALUES ($1,$2,$3,'pending',$4,$5,(NOW() AT TIME ZONE 'Asia/Kolkata'),$6,$7,$8)
+         RETURNING id`,
+        [
+          userId,
+          row.contest_id,
+          Number(row.amount || 0),
+          paymentId,
+          row.age_category,
+          deliveryMode === "donate" ? "donation" : "book",
+          fullName,
+          deliveryMode === "deliver" ? String(bookTitleArr[i] || "").trim() : null,
+        ]
+      );
+
+      createdOrderIds.push(ins.rows[0].id);
+    }
+
+    if (deliveryMode === "donate") {
+      await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
+      await pool.query("COMMIT");
+      return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
+    }
+
+    const address = String(req.body.address || "").trim();
+    const city = String(req.body.city || "").trim();
+    const state = String(req.body.state || "").trim();
+    const pincode = String(req.body.pincode || "").trim();
+
+    const createdShipment = await pool.query(
+      `INSERT INTO shipments (payment_id, address, city, state, pincode, status, updated_at)
+       VALUES ($1,$2,$3,$4,$5,'pending',NOW())
+       RETURNING id`,
+      [paymentId, address, city, state, pincode]
+    );
+
+    const shipmentId = createdShipment.rows[0].id;
+
+    for (let i = 0; i < createdOrderIds.length; i++) {
+      const orderId = createdOrderIds[i];
+      const bookTitle = String(bookTitleArr[i] || "").trim();
+      const bookLanguage = String(bookLangArr[i] || "").trim();
+
+      await pool.query(
+        `INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
+         VALUES ($1,$2,$3,$4)`,
+        [shipmentId, orderId, bookTitle, bookLanguage]
+      );
+    }
+
+    await pool.query(
+      `UPDATE users
+       SET address=$1, city=$2, state=$3, pincode=$4
+       WHERE id=$5`,
+      [address, city, state, pincode, userId]
+    );
+
+    await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
+
+    await pool.query("COMMIT");
+    return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    console.error("checkout/review save error:", e);
+    return res.status(500).send("Failed to save checkout details");
+  }
+});
+
+
+// Keep your old GET /checkout/bulk logic here if you still want dual inquiry/fallback,
+// or replace its final render with payment-success after paid.
 router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
   const paymentId = String(req.query.paymentId || "");
@@ -99,321 +335,17 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   );
   if (ordersQ.rows.length === 0) return res.status(404).send("Orders not found");
 
-  // Use first row to reach payment session (all in same group should share it)
-  const paymentSessionId = ordersQ.rows[0].payment_session_id;
-  let gatewayOrderId: string | null = null;
-  let gatewayPaymentId: string | null = null;
-  let gatewayStatus: string | null = null;
-  let verifiedOk = false;
-  let verifyError: string | null = null;
+    const paid = ordersQ.rows.every((o: any) => String(o.payment_status || "") === "paid");
 
-  // Load user
-  const userQ = await pool.query(
-    `SELECT name, email, phone, phone_locked, address, city, state, pincode
-     FROM users WHERE id=$1`,
-    [userId]
-  );
 
-  // --- Mandatory: Status API dual inquiry on response page ---
-  if (paymentSessionId && RZP_KEY_ID && RZP_KEY_SECRET) {
-    try {
-      const psQ = await pool.query(
-        `SELECT id, payment_id, amount, status
-         FROM payment_sessions
-         WHERE id=$1 AND user_id=$2`,
-        [paymentSessionId, userId]
-      );
+    const shipQ = await pool.query(`SELECT * FROM shipments WHERE payment_id=$1 LIMIT 1`, [paymentId]);
 
-      if (psQ.rows.length > 0) {
-        gatewayOrderId = psQ.rows[0].payment_id; // razorpay_order_id
-        if (gatewayOrderId) {
-          const apiResp = await rzpRequest("GET", `/v1/orders/${gatewayOrderId}/payments`);
-          const items = Array.isArray(apiResp?.items) ? apiResp.items : [];
-
-          const captured = items.find((p: any) => String(p?.status || "").toLowerCase() === "captured");
-          const authorized = items.find((p: any) => String(p?.status || "").toLowerCase() === "authorized");
-
-          if (captured) {
-            gatewayPaymentId = captured.id || null;
-            gatewayStatus = "captured";
-            verifiedOk = true;
-          } else if (authorized) {
-            gatewayPaymentId = authorized.id || null;
-            gatewayStatus = "authorized";
-          } else if (items.length > 0) {
-            gatewayPaymentId = items[0]?.id || null;
-            gatewayStatus = String(items[0]?.status || "unknown");
-          } else {
-            gatewayStatus = "no_payments_found";
-          }
-
-          // Log request/response
-          await pool.query(
-            `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
-             VALUES ($1,$2,$3)`,
-            [
-              paymentSessionId,
-              "checkout_bulk_status_api",
-              {
-                request: { path: `/v1/orders/${gatewayOrderId}/payments` },
-                response: apiResp,
-                derived: { gatewayStatus, gatewayPaymentId },
-                at: new Date().toISOString(),
-              },
-            ]
-          );
-
-          // If captured, ensure DB is consistent (idempotent updates)
-          if (verifiedOk) {
-            await pool.query("BEGIN");
-            try {
-
-              await pool.query(
-                `UPDATE payment_sessions
-                 SET status='paid'
-                 WHERE id=$1 AND status <> 'paid'`,
-                [paymentSessionId]
-              );
-
-              await pool.query(
-                `UPDATE orders
-                 SET payment_status='paid'
-                 WHERE user_id=$1 AND payment_id=$2`,
-                [userId, paymentId]
-              );
-
-              await pool.query("COMMIT");
-            } catch (e) {
-              await pool.query("ROLLBACK");
-              throw e;
-            }
-          }
-        }
-      }
-    } catch (e: any) {
-      verifyError = e?.message || "Status verification failed";
-      // Log failure (still useful for audit)
-      if (paymentSessionId) {
-        await pool.query(
-          `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
-           VALUES ($1,$2,$3)`,
-          [
-            paymentSessionId,
-            "checkout_bulk_status_api_error",
-            { error: verifyError, at: new Date().toISOString() },
-          ]
-        );
-      }
-    }
-  } else {
-    verifyError = "Gateway keys missing on server (RZP_KEY_ID / RZP_KEY_SECRET).";
-  }
-
-  // Reload orders (in case we updated statuses)
-  const ordersQ2 = await pool.query(
-    `SELECT o.*, c.title AS contest_title
-     FROM orders o
-     JOIN contests c ON c.id=o.contest_id
-     WHERE o.user_id=$1 AND o.payment_id=$2
-     ORDER BY o.created_at ASC`,
-    [userId, paymentId]
-  );
-
-  // If still not paid, redirect back to payment (or show “verification pending”)
-  const anyUnpaid = ordersQ2.rows.some((o: any) => o.payment_status !== "paid");
-  if (anyUnpaid) {
-    // For audit: better to SHOW page with verification message than redirect loop.
-    // But your existing flow redirects; keeping it safe:
-    return res.render("checkout-bulk", {
-      paymentId,
-      orders: ordersQ2.rows,
-      user: userQ.rows[0],
-      books: BOOKS,
-      languages: LANGUAGES,
-      error: verifyError || "Payment verification is pending. Please refresh after a moment.",
-      gatewayOrderId,
-      gatewayPaymentId,
-      gatewayStatus,
-      verifiedOk,
-    });
-  }
-
-  return res.render("checkout-bulk", {
+  return res.render("payment-success", {
+    paid,
     paymentId,
-    orders: ordersQ2.rows,
-    user: userQ.rows[0],
-    books: BOOKS,
-    languages: LANGUAGES,
-    error: null,
-    gatewayOrderId,
-    gatewayPaymentId,
-    gatewayStatus,
-    verifiedOk,
+    orders: ordersQ.rows,
+    shipment: shipQ.rows[0] || null,
   });
-});
-
-// ✅ KEEP ONLY THIS POST (unchanged)
-router.post("/checkout/bulk", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const paymentId = String(req.body.paymentId || "");
-  if (!paymentId) return res.status(400).send("Missing paymentId");
-
-  const ordersQ = await pool.query(
-    `SELECT o.*, c.title AS contest_title
-     FROM orders o
-     JOIN contests c ON c.id=o.contest_id
-     WHERE o.user_id=$1 AND o.payment_id=$2
-     ORDER BY o.created_at ASC`,
-    [userId, paymentId]
-  );
-  if (ordersQ.rows.length === 0) return res.status(404).send("Orders not found");
-
-  const anyUnpaid = ordersQ.rows.some((o: any) => o.payment_status !== "paid");
-  if (anyUnpaid) return res.redirect(`/payment?paymentId=${encodeURIComponent(paymentId)}`);
-
-  const userQ = await pool.query(
-    `SELECT name, email, phone, phone_locked, address, city, state, pincode
-     FROM users WHERE id=$1`,
-    [userId]
-  );
-  const user = userQ.rows[0];
-
-  const renderError = (msg: string) =>
-    res.status(400).render("checkout-bulk", {
-      paymentId,
-      orders: ordersQ.rows,
-      user,
-      books: BOOKS,
-      languages: LANGUAGES, // ✅ FIX (so page can render even on error)
-      error: msg,
-	// ✅ add safe defaults so EJS never breaks
-    gatewayOrderId: null,
-    gatewayPaymentId: null,
-    gatewayStatus: null,
-    verifiedOk: false,
-
-    });
-
-  // 1) delivery choice
-  const deliveryMode = String(req.body.deliveryMode || "");
-  if (!["deliver", "donate"].includes(deliveryMode)) {
-    return renderError("Please choose Deliver to Home or Donate.");
-  }
-
-  // 2) phone lock logic
-  const phoneStr = String(req.body.phone || "").trim();
-  if (!/^[6-9][0-9]{9}$/.test(phoneStr)) {
-    return renderError("Please enter a valid 10-digit Indian mobile number.");
-  }
-
-  const existingPhone = user?.phone ? String(user.phone).trim() : "";
-  if (existingPhone && existingPhone !== phoneStr) {
-    return renderError("Mobile number cannot be changed. Please use your registered mobile number.");
-  }
-  if (!existingPhone) {
-    const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
-    if (clash.rows.length > 0) return renderError("This mobile number is already registered. Please login with that number.");
-    await pool.query(`UPDATE users SET phone=$1, phone_locked=true WHERE id=$2`, [phoneStr, userId]);
-  }
-
-  const shipmentName = String(req.body.fullName || user?.name || "").trim();
-  if (shipmentName.length < 2) return renderError("Full name is required.");
-
-  // 3) DONATE: mark orders donation + cleanup shipment/shipment_items if any
-  if (deliveryMode === "donate") {
-    await pool.query(
-      `UPDATE orders
-       SET book_option='donation', book_title=NULL
-       WHERE user_id=$1 AND payment_id=$2 AND payment_status='paid'`,
-      [userId, paymentId]
-    );
-
-    // cleanup any previous shipment created for this payment group
-    const shipQ = await pool.query(`SELECT id FROM shipments WHERE payment_id=$1 LIMIT 1`, [paymentId]);
-    if (shipQ.rows.length > 0) {
-      const shipmentId = shipQ.rows[0].id;
-      await pool.query(`DELETE FROM shipment_items WHERE shipment_id=$1`, [shipmentId]);
-      await pool.query(`DELETE FROM shipments WHERE id=$1`, [shipmentId]);
-    }
-
-    return res.render("payment-success",  { deliveryMode: "donate" });
-  }
-
-  // 4) DELIVER: validate address + book rows
-  const address = String(req.body.address || "").trim();
-  const city = String(req.body.city || "").trim();
-  const state = String(req.body.state || "").trim();
-  const pincode = String(req.body.pincode || "").trim();
-
-  if (!/^[1-9][0-9]{5}$/.test(pincode)) return renderError("Please enter a valid 6-digit Indian pincode.");
-  if (!address || !city || !state) return renderError("Please fill complete address (Address, City, State, Pincode).");
-
-  const bookTitleArr = ([] as any[]).concat(req.body.bookTitle || []);
-  const bookLangArr = ([] as any[]).concat(req.body.bookLanguage || []);
-
-  if (bookTitleArr.length !== ordersQ.rows.length || bookLangArr.length !== ordersQ.rows.length) {
-    return renderError("Please select Book + Language for each contest row.");
-  }
-
-  for (let i = 0; i < ordersQ.rows.length; i++) {
-    const bt = String(bookTitleArr[i] || "").trim();
-    const bl = String(bookLangArr[i] || "").trim();
-    if (!bt) return renderError("Please select book for every row.");
-    if (!bl) return renderError("Please select language for every row.");
-  }
-
-  // 5) Create/Update ONE shipment per payment_id
-  const shipQ = await pool.query(`SELECT id FROM shipments WHERE payment_id=$1 LIMIT 1`, [paymentId]);
-
-  let shipmentId: string;
-
-  if (shipQ.rows.length === 0) {
-    const created = await pool.query(
-      `INSERT INTO shipments (payment_id, address, city, state, pincode, status, updated_at)
-       VALUES ($1,$2,$3,$4,$5,'pending',NOW())
-       RETURNING id`,
-      [paymentId, address, city, state, pincode]
-    );
-    shipmentId = created.rows[0].id;
-  } else {
-    shipmentId = shipQ.rows[0].id;
-    await pool.query(
-      `UPDATE shipments
-       SET address=$1, city=$2, state=$3, pincode=$4, status='pending', updated_at=NOW()
-       WHERE id=$5`,
-      [address, city, state, pincode, shipmentId]
-    );
-    await pool.query(`DELETE FROM shipment_items WHERE shipment_id=$1`, [shipmentId]);
-  }
-
-  // 6) Save per order + shipment_items
-  for (let i = 0; i < ordersQ.rows.length; i++) {
-    const orderId = ordersQ.rows[i].id;
-    const bookTitle = String(bookTitleArr[i]).trim();
-    const bookLanguage = String(bookLangArr[i]).trim();
-
-    await pool.query(
-      `UPDATE orders
-       SET book_option='book'
-       WHERE id=$1 AND user_id=$2 AND payment_status='paid'`,
-      [orderId, userId]
-    );
-
-    await pool.query(
-      `INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
-       VALUES ($1,$2,$3,$4)`,
-      [shipmentId, orderId, bookTitle, bookLanguage]
-    );
-  }
-
-  await pool.query(
-    `UPDATE users SET address=$1, city=$2, state=$3, pincode=$4 WHERE id=$5`,
-    [address, city, state, pincode, userId]
-  );
-
-  return res.render("payment-success",  { deliveryMode: "deliver" });
-
-
 });
 
 export default router;

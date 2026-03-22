@@ -286,91 +286,226 @@ router.post("/payment/start", authMiddleware, async (req: any, res) => {
 /**
  * EMBEDDED PAYMENT PAGE
  */
+
+/**
+ * EMBEDDED PAYMENT PAGE (DEV SIMULATION)
+ */
 router.get("/payment/embedded", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const paymentId = String(req.query.paymentId || "").trim();
-  if (!paymentId) return res.status(400).send("Missing paymentId");
+  try {
+    const userId = req.userId;
+    const paymentId = String(req.query.paymentId || "").trim();
+    if (!paymentId) return res.status(400).send("Missing paymentId");
 
-  const ordersQ = await pool.query(
-    `SELECT o.id, o.amount, o.payment_status, o.payment_id, c.title AS contest_title
-     FROM orders o
-     JOIN contests c ON c.id=o.contest_id
-     WHERE o.user_id=$1 AND o.payment_id=$2
-     ORDER BY o.created_at ASC`,
-    [userId, paymentId]
-  );
-
-  if (ordersQ.rows.length === 0) return res.status(404).send("Payment group not found");
-
-  const allPaid = ordersQ.rows.every((r: any) => r.payment_status === "paid");
-  if (allPaid) return res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(paymentId)}`);
-
-  const totalAmount = ordersQ.rows.reduce((a: number, r: any) => a + Number(r.amount || 0), 0);
-
-  // Reuse or create payment_sessions + razorpay order
-  const linked = await pool.query(
-    `SELECT ps.id, ps.payment_id AS razorpay_order_id
-     FROM orders o
-     JOIN payment_sessions ps ON ps.id = o.payment_session_id
-     WHERE o.user_id=$1 AND o.payment_id=$2 AND o.payment_session_id IS NOT NULL
-     ORDER BY o.created_at ASC
-     LIMIT 1`,
-    [userId, paymentId]
-  );
-
-  let paymentSessionId: string;
-  let razorpayOrderId: string;
-
-  if (linked.rows.length > 0) {
-    paymentSessionId = linked.rows[0].id;
-    razorpayOrderId = linked.rows[0].razorpay_order_id;
-  } else {
-    const amountPaise = Math.round(Number(totalAmount) * 100);
-
-    const orderResp = await rzpRequest<RzpOrder>("POST", "/v1/orders", {
-      amount: amountPaise,
-      currency: "INR",
-      receipt: paymentId,
-      payment_capture: 1,
-      notes: { payment_group: paymentId, user_id: userId },
-    });
-
-    razorpayOrderId = orderResp.id;
-
-    const ps = await pool.query(
-      `INSERT INTO payment_sessions (user_id, payment_id, amount, status)
-       VALUES ($1,$2,$3,'pending')
-       RETURNING id`,
-      [userId, razorpayOrderId, totalAmount]
+    const ordersQ = await pool.query(
+      `SELECT o.id, o.amount, o.payment_status, o.payment_id, c.title AS contest_title
+       FROM orders o
+       JOIN contests c ON c.id = o.contest_id
+       WHERE o.user_id=$1 AND o.payment_id=$2
+       ORDER BY o.created_at ASC`,
+      [userId, paymentId]
     );
 
-    paymentSessionId = ps.rows[0].id;
+    if (ordersQ.rows.length === 0) {
+      return res.status(404).send("Payment group not found");
+    }
+
+    const allPaid = ordersQ.rows.every((r: any) => String(r.payment_status || "") === "paid");
+    if (allPaid) {
+      return res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(paymentId)}`);
+    }
+
+    const totalAmount = ordersQ.rows.reduce(
+      (a: number, r: any) => a + Number(r.amount || 0),
+      0
+    );
+
+    // Reuse existing linked payment session if already created
+    const linked = await pool.query(
+      `SELECT ps.id, ps.payment_id
+       FROM orders o
+       JOIN payment_sessions ps ON ps.id = o.payment_session_id
+       WHERE o.user_id=$1
+         AND o.payment_id=$2
+         AND o.payment_session_id IS NOT NULL
+       ORDER BY o.created_at ASC
+       LIMIT 1`,
+      [userId, paymentId]
+    );
+
+    let paymentSessionId: string;
+
+    if (linked.rows.length > 0) {
+      paymentSessionId = linked.rows[0].id;
+    } else {
+      const mockGatewayPaymentId = `DEV_${paymentId}`;
+
+      const ps = await pool.query(
+        `INSERT INTO payment_sessions (user_id, payment_id, amount, status)
+         VALUES ($1,$2,$3,'pending')
+         RETURNING id`,
+        [userId, mockGatewayPaymentId, totalAmount]
+      );
+
+      paymentSessionId = ps.rows[0].id;
+
+      await pool.query(
+        `UPDATE orders
+         SET payment_session_id=$1
+         WHERE user_id=$2
+           AND payment_id=$3
+           AND payment_session_id IS NULL`,
+        [paymentSessionId, userId, paymentId]
+      );
+    }
+
+    return res.render("payment-embedded", {
+      paymentId,
+      paymentSessionId,
+      orders: ordersQ.rows,
+      totalAmount,
+    });
+  } catch (e) {
+    console.error("DEV payment embedded error:", e);
+    return res.status(500).send("Unable to open payment page");
+  }
+});
+
+
+/**
+ * DEV MOCK SUCCESS
+ */
+router.post("/payment/mock-success", authMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const paymentId = String(req.body.paymentId || "").trim();
+    if (!paymentId) return res.status(400).send("Missing paymentId");
+
+    const psQ = await pool.query(
+      `SELECT ps.id
+       FROM orders o
+       JOIN payment_sessions ps ON ps.id = o.payment_session_id
+       WHERE o.user_id=$1 AND o.payment_id=$2
+       ORDER BY o.created_at ASC
+       LIMIT 1`,
+      [userId, paymentId]
+    );
+
+    if (psQ.rows.length === 0) {
+      return res.status(404).send("Payment session not found");
+    }
+
+    const paymentSessionId = psQ.rows[0].id;
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions
+       SET status='paid'
+       WHERE id=$1 AND status <> 'paid'`,
+      [paymentSessionId]
+    );
 
     await pool.query(
       `UPDATE orders
-       SET payment_session_id=$1
-       WHERE user_id=$2 AND payment_id=$3 AND payment_session_id IS NULL`,
-      [paymentSessionId, userId, paymentId]
+       SET payment_status='paid'
+       WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
+      [paymentSessionId]
     );
+
+    // Optional audit-style log in dev
+    await pool.query(
+      `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+       VALUES ($1,$2,'payment_mock','Simulated payment success',$3::jsonb)`,
+      [
+        userId,
+        String(paymentSessionId),
+        JSON.stringify({
+          paymentId,
+          at: new Date().toISOString(),
+          mode: "mock_success",
+        }),
+      ]
+    );
+
+    await pool.query("COMMIT");
+
+    return res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(paymentId)}`);
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    console.error("DEV mock success error:", e);
+    return res.status(500).send("Failed to simulate payment success");
   }
+});
 
-  const callbackUrl = `${req.protocol}://${req.get("host")}/payment/hdfc/callback`;
+/**
+ * DEV MOCK FAILURE
+ */
+router.post("/payment/mock-failure", authMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const paymentId = String(req.body.paymentId || "").trim();
+    if (!paymentId) return res.status(400).send("Missing paymentId");
 
-  const userQ = await pool.query(`SELECT name, email, phone FROM users WHERE id=$1 LIMIT 1`, [userId]);
-  const u = userQ.rows[0] || {};
+    const psQ = await pool.query(
+      `SELECT ps.id
+       FROM orders o
+       JOIN payment_sessions ps ON ps.id = o.payment_session_id
+       WHERE o.user_id=$1 AND o.payment_id=$2
+       ORDER BY o.created_at ASC
+       LIMIT 1`,
+      [userId, paymentId]
+    );
 
-  return res.render("payment-embedded", {
-    paymentId,
-    orders: ordersQ.rows,
-    totalAmount,
-    rzpKeyId: RZP_KEY_ID,
-    rzpOrderId: razorpayOrderId,
-    rzpAmountPaise: Math.round(Number(totalAmount) * 100),
-    callbackUrl,
-    prefillName: u.name || "Devotee",
-    prefillEmail: u.email || "",
-    prefillContact: u.phone || "",
-  });
+    if (psQ.rows.length === 0) {
+      return res.status(404).send("Payment session not found");
+    }
+
+    const paymentSessionId = psQ.rows[0].id;
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions
+       SET status='failed'
+       WHERE id=$1 AND status <> 'paid'`,
+      [paymentSessionId]
+    );
+
+    await pool.query(
+      `UPDATE orders
+       SET payment_status='failed'
+       WHERE payment_session_id=$1 AND payment_status <> 'paid'`,
+      [paymentSessionId]
+    );
+
+    await pool.query(
+      `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+       VALUES ($1,$2,'payment_mock','Simulated payment failure',$3::jsonb)`,
+      [
+        userId,
+        String(paymentSessionId),
+        JSON.stringify({
+          paymentId,
+          at: new Date().toISOString(),
+          mode: "mock_failure",
+        }),
+      ]
+    );
+
+    await pool.query("COMMIT");
+
+    return res.status(200).render("payment-failure", {
+      retryUrl: `/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`,
+      gatewayOrderId: `DEV_${paymentId}`,
+      errorCode: "DEV_SIMULATED_FAILURE",
+      errorDescription: "This is a simulated failure in the developer environment.",
+      errorReason: "Manual test failure",
+    });
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    console.error("DEV mock failure error:", e);
+    return res.status(500).send("Failed to simulate payment failure");
+  }
 });
 
 /**

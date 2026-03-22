@@ -467,24 +467,30 @@ router.get("/dashboard/my-contests", authMiddleware, async (req: any, res) => {
 /**
  * Delivery
  */
+
 router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
 
   const shipmentsRes = await pool.query(
-    `SELECT
-        o.id AS order_id,
-        c.title,
-        sh.tracking_id,
-        sh.status,
-        sh.courier_mode,
-        sh.updated_at
-     FROM orders o
-     JOIN contests c ON c.id = o.contest_id
-     LEFT JOIN shipments sh ON sh.order_id = o.id
-     WHERE o.user_id = $1
-       AND o.payment_status = 'paid'
-       AND o.book_option = 'book'
-     ORDER BY o.created_at DESC`,
+    `
+    SELECT
+      sh.id AS shipment_id,
+      sh.payment_id,
+      sh.tracking_id,
+      sh.status,
+      sh.courier_mode,
+      sh.updated_at,
+      STRING_AGG(DISTINCT COALESCE(si.book_title, c.title), ', ' ORDER BY COALESCE(si.book_title, c.title)) AS title
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN contests c ON c.id = o.contest_id
+    WHERE o.user_id = $1
+      AND o.payment_status = 'paid'
+      AND o.book_option = 'book'
+    GROUP BY sh.id, sh.payment_id, sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
+    ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
+    `,
     [userId]
   );
 
@@ -493,6 +499,7 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     shipments: shipmentsRes.rows,
   });
 });
+
 
 /**
  * FAQs

@@ -5,13 +5,28 @@ import { adminMiddleware } from "../middleware/admin";
 import { presignGet } from "../utils/s3Get";
 import { v4 as uuidv4 } from "uuid";
 import { startMultipart, presignPart, completeMultipart, abortMultipart } from "../utils/s3Multipart";
-
+import multer from "multer";
+import * as XLSX from "xlsx";
+import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 
 const toInt = (v: any, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const norm = (v: any) => String(v ?? "").trim();
 const normLike = (v: any) => `%${norm(v)}%`;
+
+const upload = multer({ dest: path.join(process.cwd(), "tmp") });
+
+function genBatchNo() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `IP-${y}${m}${day}-${rand}`;
+}
+
 
 function csvEscape(v: any) {
   if (v === null || v === undefined) return "";
@@ -457,6 +472,164 @@ router.get("/admin/orders/export.csv", authMiddleware, adminMiddleware, async (r
   return sendCsv(res, "orders_export.csv", headers, rows);
 });
 
+router.get(
+  "/admin/india-post/export/:batchNo",
+  authMiddleware,
+  adminMiddleware,
+  async (req: any, res) => {
+    try {
+      const batchNo = (req.params.batchNo || "").trim();
+      if (!batchNo) {
+        return res.status(400).send("Missing batch number");
+      }
+
+      const q = await pool.query(
+        `
+        SELECT *
+        FROM india_post_bookings
+        WHERE batch_no = $1
+        ORDER BY serial_number ASC, created_at ASC
+        `,
+        [batchNo]
+      );
+
+      if (!q.rows.length) {
+        return res.status(404).send("Batch not found");
+      }
+
+      // -------- ArticleDetails Sheet --------
+      const articleDetails = q.rows.map((r: any) => ({
+        "SERIAL NUMBER": r.serial_number,
+        "BARCODE NO": r.barcode_no || "",
+        "PHYSICAL WEIGHT": Number(r.physical_weight || 0.8),
+
+        "SENDER NAME": r.sender_name || "",
+        "SENDER COMPANY NAME": r.sender_company || "",
+        "SENDER ADD LINE 1": r.sender_add_line1 || "",
+        "SENDER ADD LINE 2": r.sender_add_line2 || "",
+        "SENDER ADD LINE 3": r.sender_add_line3 || "",
+        "SENDER CITY": r.sender_city || "",
+        "SENDER STATE": r.sender_state || "",
+        "SENDER PINCODE": r.sender_pincode || "",
+        "SENDER EMAILID": r.sender_emailid || "",
+        "SENDER ALT CONTACT NO": r.sender_alt_contact || "",
+        "SENDER MOBILE NO": r.sender_mobile_no || "",
+
+        "RECEIVER NAME": r.receiver_name || "",
+        "RECEIVER COMPANY NAME": r.receiver_company || "",
+        "RECEIVER ADD LINE 1": r.receiver_add_line1 || "",
+        "RECEIVER ADD LINE 2": r.receiver_add_line2 || "",
+        "RECEIVER ADD LINE 3": r.receiver_add_line3 || "",
+        "RECEIVER CITY": r.receiver_city || "",
+        "RECEIVER STATE": r.receiver_state || "",
+        "RECEIVER PINCODE": r.receiver_pincode || "",
+        "RECEIVER EMAILID": r.receiver_emailid || "",
+        "RECEIVER ALT CONTACT NO": r.receiver_alt_contact || "",
+        "RECEIVER MOBILE NO": r.receiver_mobile_no || "",
+
+        "SHAPE OF ARTICLE": r.shape_of_article || "",
+        "LENGTH(CM)": r.length_cm || "",
+        "BREADTH/DIAMETER(CM)": r.breadth_cm || "",
+        "HEIGHT(CM)": r.height_cm || "",
+        "PRIORITY FLAG": r.priority_flag || "",
+
+        "ALT ADDRESS FLAG": r.alt_address_flag || "N",
+        "PICKUP ADDRESS FLAG": r.pickup_address_flag || "N",
+        "PICKUP ADDRESS SERIAL NO": r.pickup_address_serial_no || "",
+        "ALT ADDRESS SERIAL NO": r.alt_address_serial_no || "",
+        "DROP OFF PINCODE": r.drop_off_pincode || "",
+        "ACK": r.ack || "N"
+      }));
+
+      // -------- Required Empty Sheets --------
+      const pickupAddress = [{
+        addressee_name: "",
+        company_name: "",
+        address_line1: "",
+        address_line2: "",
+        address_line3: "",
+        city: "",
+        state: "",
+        pincode: "",
+        email_id: "",
+        alt_contact_no: "",
+        mobile_no: "",
+        pickup_schedule_slot: "",
+        pickup_schedule_date: ""
+      }];
+
+      const altAddress = [{
+        "SERIAL NO": "",
+        "ADDRESSEE NAME": "",
+        "COMPANY NAME": "",
+        "ADDRESS LINE 1": "",
+        "ADDRESS LINE 2": "",
+        "ADDRESS LINE 3": "",
+        "CITY": "",
+        "STATE": "",
+        "PINCODE": "",
+        "EMAIL ID": "",
+        "ALT CONTACT NO": "",
+        "MOBILE NO": ""
+      }];
+
+      const info = [{
+        note: `India Post Batch: ${batchNo}`
+      }];
+
+      // -------- Create Workbook --------
+      const wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(articleDetails),
+        "ArticleDetails"
+      );
+
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(pickupAddress),
+        "PickupAddress"
+      );
+
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(altAddress),
+        "AltAddress"
+      );
+
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(info),
+        "Information"
+      );
+
+      const fileName = `india_post_${batchNo}.xlsx`;
+      const tmpPath = path.join(process.cwd(), "tmp", fileName);
+
+      XLSX.writeFile(wb, tmpPath);
+
+      // mark exported
+      await pool.query(
+        `
+        UPDATE india_post_bookings
+        SET export_status='exported', updated_at=NOW()
+        WHERE batch_no=$1
+        `,
+        [batchNo]
+      );
+
+      return res.download(tmpPath, fileName, () => {
+        fs.unlink(tmpPath, () => {});
+      });
+
+    } catch (err) {
+      console.error("India Post export error:", err);
+      return res.status(500).send("Failed to export India Post Excel");
+    }
+  }
+);
+
 // --------------------
 // SUBMISSIONS (filters + csv + download rename)
 // --------------------
@@ -586,22 +759,50 @@ router.get("/admin/submissions/download", authMiddleware, adminMiddleware, async
 // --------------------
 // SHIPMENTS (filters + missing tracking + status counts)
 // --------------------
+
+
+
+
+
 function buildShipmentsFilter(req: any) {
   const contestId = norm(req.query.contest_id || "");
   const userName = norm(req.query.user_name || "");
-  const status = norm(req.query.status || "all"); // all|pending|packed|dispatched|delivered
-  const missingTracking = norm(req.query.missing_tracking || "0"); // 1/0
+  const status = norm(req.query.status || "all");
+  const missingTracking = norm(req.query.missing_tracking || "0");
+  const ipStatus = norm(req.query.ip_status || "all");
 
   const where: string[] = [`o.payment_status='paid'`, `o.book_option='book'`];
   const params: any[] = [];
 
-  if (contestId) { where.push(`c.id=$${params.length + 1}`); params.push(contestId); }
-  if (userName) { where.push(`u.name ILIKE $${params.length + 1}`); params.push(normLike(userName)); }
-  if (status !== "all") { where.push(`COALESCE(LOWER(sh.status),'pending') = $${params.length + 1}`); params.push(status.toLowerCase()); }
-  if (missingTracking === "1") { where.push(`(sh.tracking_id IS NULL OR sh.tracking_id='')`); }
+  if (contestId) {
+    where.push(`o.contest_id=$${params.length + 1}`);
+    params.push(contestId);
+  }
+  if (userName) {
+    where.push(`u.name ILIKE $${params.length + 1}`);
+    params.push(normLike(userName));
+  }
+  if (status !== "all") {
+    where.push(`COALESCE(LOWER(sh.status),'pending') = $${params.length + 1}`);
+    params.push(status.toLowerCase());
+  }
+  if (missingTracking === "1") {
+    where.push(`(sh.tracking_id IS NULL OR sh.tracking_id='')`);
+  }
+  if (ipStatus !== "all") {
+    where.push(`
+      EXISTS (
+        SELECT 1
+        FROM india_post_bookings ipb
+        WHERE ipb.shipment_id = sh.id
+          AND COALESCE(LOWER(ipb.booking_status),'pending') = $${params.length + 1}
+      )
+    `);
+    params.push(ipStatus.toLowerCase());
+  }
 
   const whereSql = `WHERE ${where.join(" AND ")}`;
-  return { whereSql, params, filters: { contestId, userName, status, missingTracking } };
+  return { whereSql, params, filters: { contestId, userName, status, missingTracking, ipStatus } };
 }
 
 router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any, res) => {
@@ -610,31 +811,50 @@ router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any,
   const q = await pool.query(
     `
     SELECT
-      o.id AS order_id,
-      u.id AS user_id, u.name AS user_name, u.email, u.phone,
-      c.id AS contest_id, c.title AS contest_title,
+      sh.id AS shipment_id,
+      sh.payment_id,
+      u.id AS user_id,
+      u.name AS user_name,
+      u.email,
+      u.phone,
+      STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles,
+      STRING_AGG(DISTINCT COALESCE(si.book_title, ''), ', ' ORDER BY COALESCE(si.book_title, '')) AS book_titles,
+      sh.address,
+      sh.city,
+      sh.state,
+      sh.pincode,
+      sh.tracking_id,
+      sh.courier_mode,
+      sh.status,
+      sh.updated_at,
+      MAX(ipb.batch_no) AS batch_no,
+      MAX(ipb.booking_status) AS ip_booking_status
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+    LEFT JOIN india_post_bookings ipb ON ipb.shipment_id = sh.id
+    ${whereSql}
+    GROUP BY
+      sh.id, sh.payment_id, u.id, u.name, u.email, u.phone,
       sh.address, sh.city, sh.state, sh.pincode,
       sh.tracking_id, sh.courier_mode, sh.status, sh.updated_at
-    FROM orders o
-    JOIN users u ON u.id=o.user_id
-    JOIN contests c ON c.id=o.contest_id
-    LEFT JOIN shipments sh ON sh.order_id=o.id
-    ${whereSql}
-    ORDER BY o.created_at DESC
+    ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     LIMIT 500
     `,
     params
   );
 
-  // status counts ignoring status filter (amazon-style facet)
   const fNoStatus = buildShipmentsFilter({ query: { ...req.query, status: "all" } });
   const statusCounts = await pool.query(
     `
-    SELECT COALESCE(LOWER(sh.status),'pending') AS status, COUNT(*)::int AS c
-    FROM orders o
-    JOIN users u ON u.id=o.user_id
-    JOIN contests c ON c.id=o.contest_id
-    LEFT JOIN shipments sh ON sh.order_id=o.id
+    SELECT COALESCE(LOWER(sh.status),'pending') AS status, COUNT(DISTINCT sh.id)::int AS c
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
     ${fNoStatus.whereSql}
     GROUP BY COALESCE(LOWER(sh.status),'pending')
     `,
@@ -650,8 +870,13 @@ router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any,
     filters,
     statusFacets: statusCounts.rows,
     qs: qsOf(req),
+    batchCreated: norm(req.query.batchCreated || ""),
+    imported: norm(req.query.imported || ""),
+    errorMsg: norm(req.query.errorMsg || ""),
   });
 });
+
+
 
 router.get("/admin/shipments/export.csv", authMiddleware, adminMiddleware, async (req: any, res) => {
   const { whereSql, params } = buildShipmentsFilter(req);
@@ -659,53 +884,309 @@ router.get("/admin/shipments/export.csv", authMiddleware, adminMiddleware, async
   const q = await pool.query(
     `
     SELECT
-      o.id AS order_id,
-      u.id AS user_id, u.name AS user_name, u.email, u.phone,
-      c.title AS contest_title,
-      sh.address, sh.city, sh.state, sh.pincode,
-      sh.tracking_id, sh.courier_mode, COALESCE(sh.status,'pending') AS status, sh.updated_at
-    FROM orders o
-    JOIN users u ON u.id=o.user_id
-    JOIN contests c ON c.id=o.contest_id
-    LEFT JOIN shipments sh ON sh.order_id=o.id
+      sh.id AS shipment_id,
+      sh.payment_id,
+      u.id AS user_id,
+      u.name AS user_name,
+      u.email,
+      u.phone,
+      STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles,
+      STRING_AGG(DISTINCT COALESCE(si.book_title, ''), ', ' ORDER BY COALESCE(si.book_title, '')) AS book_titles,
+      sh.address,
+      sh.city,
+      sh.state,
+      sh.pincode,
+      sh.tracking_id,
+      sh.courier_mode,
+      sh.status,
+      sh.updated_at,
+      MAX(ipb.batch_no) AS batch_no,
+      MAX(ipb.booking_status) AS ip_booking_status
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+    LEFT JOIN india_post_bookings ipb ON ipb.shipment_id = sh.id
     ${whereSql}
-    ORDER BY o.created_at DESC
-    LIMIT 5000
+    GROUP BY
+      sh.id, sh.payment_id, u.id, u.name, u.email, u.phone,
+      sh.address, sh.city, sh.state, sh.pincode,
+      sh.tracking_id, sh.courier_mode, sh.status, sh.updated_at
+    ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     `,
     params
   );
 
-  const headers = ["order_id","user_id","user_name","email","phone","contest_title","address","city","state","pincode","tracking_id","courier_mode","status","updated_at"];
-  const rows = q.rows.map((r: any) => [r.order_id,r.user_id,r.user_name,r.email,r.phone,r.contest_title,r.address,r.city,r.state,r.pincode,r.tracking_id,r.courier_mode,r.status,r.updated_at]);
+  const headers = [
+    "shipment_id","payment_id","user_id","user_name","email","phone",
+    "contest_titles","book_titles","address","city","state","pincode",
+    "tracking_id","courier_mode","status","batch_no","ip_booking_status","updated_at"
+  ];
+
+  const rows = q.rows.map((r: any) => [
+    r.shipment_id, r.payment_id, r.user_id, r.user_name, r.email, r.phone,
+    r.contest_titles, r.book_titles, r.address, r.city, r.state, r.pincode,
+    r.tracking_id, r.courier_mode, r.status, r.batch_no, r.ip_booking_status, r.updated_at
+  ]);
 
   return sendCsv(res, "shipments_export.csv", headers, rows);
 });
 
+
 router.post("/admin/shipments/update", authMiddleware, adminMiddleware, async (req: any, res) => {
-  const orderId = norm(req.body.orderId);
+  const shipmentId = norm(req.body.shipmentId);
   const trackingId = norm(req.body.tracking_id);
   const courierMode = norm(req.body.courier_mode);
   const status = norm(req.body.status || "pending").toLowerCase();
-  if (!orderId) return res.redirect("/admin/shipments");
 
-  const existing = await pool.query(`SELECT id FROM shipments WHERE order_id=$1`, [orderId]);
+  if (!shipmentId) return res.redirect("/admin/shipments");
 
-  if (existing.rows.length === 0) {
-    await pool.query(
-      `INSERT INTO shipments (order_id, tracking_id, courier_mode, status, updated_at)
-       VALUES ($1,$2,$3,$4,NOW())`,
-      [orderId, trackingId || null, courierMode || null, status]
-    );
-  } else {
-    await pool.query(
-      `UPDATE shipments
-       SET tracking_id=$1, courier_mode=$2, status=$3, updated_at=NOW()
-       WHERE order_id=$4`,
-      [trackingId || null, courierMode || null, status, orderId]
-    );
-  }
+  await pool.query(
+    `UPDATE shipments
+     SET tracking_id=$1, courier_mode=$2, status=$3, updated_at=NOW()
+     WHERE id=$4`,
+    [trackingId || null, courierMode || null, status, shipmentId]
+  );
+
   res.redirect("/admin/shipments");
 });
+
+router.post("/admin/india-post/create-batch", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const shipmentIdsRaw = req.body.shipment_ids;
+  const shipmentIds = Array.isArray(shipmentIdsRaw)
+    ? shipmentIdsRaw.map((x: any) => norm(x)).filter(Boolean)
+    : shipmentIdsRaw ? [norm(shipmentIdsRaw)] : [];
+
+  if (!shipmentIds.length) {
+    return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Please select at least one shipment."));
+  }
+
+  const batchNo = genBatchNo();
+
+  const senderName = process.env.IP_SENDER_NAME || "ISKCON Tirupati";
+  const senderAdd1 = process.env.IP_SENDER_ADD1 || "Tirupati";
+  const senderAdd2 = process.env.IP_SENDER_ADD2 || "";
+  const senderCity = process.env.IP_SENDER_CITY || "Tirupati";
+  const senderState = process.env.IP_SENDER_STATE || "Andhra Pradesh";
+  const senderPincode = process.env.IP_SENDER_PINCODE || "";
+  const senderEmail = process.env.IP_SENDER_EMAIL || "";
+  const senderAlt = process.env.IP_SENDER_ALT_CONTACT || "";
+  const senderMobile = process.env.IP_SENDER_MOBILE || "";
+  const defaultWeight = Number(process.env.IP_DEFAULT_WEIGHT_KG || "0.800");
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    let serial = 1;
+
+    for (const shipmentId of shipmentIds) {
+      const exists = await client.query(
+        `SELECT 1 FROM india_post_bookings WHERE shipment_id=$1 LIMIT 1`,
+        [shipmentId]
+      );
+      if (exists.rows.length) continue;
+
+      const rowsQ = await client.query(
+        `
+        SELECT
+          sh.id AS shipment_id,
+          sh.address,
+          sh.city,
+          sh.state,
+          sh.pincode,
+          sh.payment_id,
+          o.id AS order_id,
+          u.id AS user_id,
+          COALESCE(o.full_name, u.name) AS receiver_name,
+          u.email AS receiver_email,
+          u.phone AS receiver_mobile
+        FROM shipments sh
+        JOIN shipment_items si ON si.shipment_id = sh.id
+        JOIN orders o ON o.id = si.order_id
+        JOIN users u ON u.id = o.user_id
+        WHERE sh.id = $1
+        ORDER BY o.created_at ASC
+        LIMIT 1
+        `,
+        [shipmentId]
+      );
+
+      if (!rowsQ.rows.length) continue;
+
+      const r = rowsQ.rows[0];
+
+      await client.query(
+        `
+        INSERT INTO india_post_bookings (
+          shipment_id, order_id, user_id, batch_no, serial_number,
+          physical_weight,
+          sender_name, sender_add_line1, sender_add_line2, sender_city, sender_state, sender_pincode,
+          sender_emailid, sender_alt_contact, sender_mobile_no,
+          receiver_name, receiver_add_line1, receiver_city, receiver_state, receiver_pincode,
+          receiver_emailid, receiver_mobile_no,
+          alt_address_flag, pickup_address_flag, drop_off_pincode, ack,
+          export_status, booking_status
+        )
+        VALUES (
+          $1,$2,$3,$4,$5,
+          $6,
+          $7,$8,$9,$10,$11,$12,
+          $13,$14,$15,
+          $16,$17,$18,$19,$20,
+          $21,$22,
+          'N','N',$23,'N',
+          'ready','pending'
+        )
+        `,
+        [
+          r.shipment_id,
+          r.order_id,
+          r.user_id,
+          batchNo,
+          serial++,
+          defaultWeight,
+          senderName,
+          senderAdd1,
+          senderAdd2 || null,
+          senderCity,
+          senderState,
+          senderPincode,
+          senderEmail || null,
+          senderAlt || null,
+          senderMobile || null,
+          r.receiver_name || "Receiver",
+          r.address || "",
+          r.city || "",
+          r.state || "",
+          r.pincode || "",
+          r.receiver_email || null,
+          r.receiver_mobile || null,
+          r.pincode || ""
+        ]
+      );
+    }
+
+    await client.query("COMMIT");
+    return res.redirect("/admin/shipments?batchCreated=" + encodeURIComponent(batchNo));
+  } catch (e) {
+    await client.query("ROLLBACK");
+    console.error("india-post create-batch error:", e);
+    return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Failed to create India Post batch."));
+  } finally {
+    client.release();
+  }
+});
+
+router.post(
+  "/admin/india-post/import-result",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("result_file"),
+  async (req: any, res) => {
+    try {
+      if (!req.file?.path) {
+        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Please choose a result Excel file."));
+      }
+
+      const wb = XLSX.readFile(req.file.path);
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      let updated = 0;
+
+      for (const row of rows) {
+        const serialNumber = Number(
+          row["SERIAL NUMBER"] ||
+          row["SERIAL NO"] ||
+          row["Serial Number"] ||
+          0
+        );
+
+        const barcodeNo =
+          String(
+            row["BARCODE NO"] ||
+            row["BARCODE"] ||
+            row["ARTICLE NUMBER"] ||
+            row["ARTICLE NO"] ||
+            row["TRACKING NUMBER"] ||
+            ""
+          ).trim();
+
+        if (!serialNumber) continue;
+
+        const ipbQ = await pool.query(
+          `
+          SELECT id, shipment_id, batch_no
+          FROM india_post_bookings
+          WHERE serial_number=$1
+          ORDER BY created_at DESC
+          LIMIT 1
+          `,
+          [serialNumber]
+        );
+
+        if (!ipbQ.rows.length) continue;
+
+        const ipb = ipbQ.rows[0];
+        const trackingNo = barcodeNo || null;
+        const trackingUrl = trackingNo
+          ? `https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx?consignment=${encodeURIComponent(trackingNo)}`
+          : null;
+
+        await pool.query(
+          `
+          UPDATE india_post_bookings
+          SET
+            barcode_no = COALESCE($1, barcode_no),
+            tracking_no = COALESCE($2, tracking_no),
+            tracking_url = COALESCE($3, tracking_url),
+            booking_status = CASE WHEN $2 IS NOT NULL AND $2 <> '' THEN 'booked' ELSE booking_status END,
+            booked_at = CASE WHEN $2 IS NOT NULL AND $2 <> '' THEN NOW() ELSE booked_at END,
+            result_row = $4::jsonb,
+            updated_at = NOW()
+          WHERE id = $5
+          `,
+          [
+            barcodeNo || null,
+            trackingNo,
+            trackingUrl,
+            JSON.stringify(row),
+            ipb.id
+          ]
+        );
+
+        if (trackingNo) {
+          await pool.query(
+            `
+            UPDATE shipments
+            SET
+              tracking_id = $1,
+              courier_mode = 'india_post',
+              status = CASE
+                WHEN COALESCE(status,'') IN ('delivered') THEN status
+                ELSE 'dispatched'
+              END,
+              updated_at = NOW()
+            WHERE id = $2
+            `,
+            [trackingNo, ipb.shipment_id]
+          );
+        }
+
+        updated++;
+      }
+
+      fs.unlink(req.file.path, () => {});
+      return res.redirect("/admin/shipments?imported=" + encodeURIComponent(String(updated)));
+    } catch (e) {
+      console.error("india-post import-result error:", e);
+      return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Failed to import result file."));
+    }
+  }
+);
+
 
 // --------------------
 // USERS 360 (mega view)

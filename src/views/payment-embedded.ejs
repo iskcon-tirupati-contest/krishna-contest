@@ -1,133 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Payment - Secure Checkout</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Payment - Iskcon Tirupati Essay Writing Contest</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1220;margin:0;padding:24px;color:#e5e7eb}
-    .wrap{max-width:980px;margin:0 auto}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-    a{color:#93c5fd;text-decoration:none;font-weight:900}
-    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.25);overflow:hidden}
-    .cardHead{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-    .h1{font-weight:1000;font-size:18px;color:#fff}
-    .muted{color:rgba(229,231,235,.75);font-size:12px;line-height:1.45}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);color:#dbeafe;font-size:12px;font-weight:900}
-    .sum{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:1000;cursor:pointer}
-    .pay{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
-    .pay:disabled{opacity:.6;cursor:not-allowed}
-    .embed-box{margin-top:14px;padding:14px;border:1px dashed rgba(148,163,184,.55);border-radius:16px;background:rgba(255,255,255,.03)}
-    iframe{width:100%;height:620px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:#fff}
-    details{padding:0 18px 16px}
-    summary{cursor:pointer;color:#e5e7eb;font-weight:900;margin-top:10px}
-    .list{margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
-    .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-    .row:last-child{border-bottom:none}
-    .title{font-weight:900;color:#fff}
-    .price{font-weight:900;color:#fff;white-space:nowrap}
+    :root{
+      --navy:#1a237e;--navy2:#283593;--navy3:#3949ab;
+      --gold:#f59e0b;--gold-lt:#fef3c7;--gold-dark:#92400e;
+      --green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;
+      --bg:#eef1fb;--surface:#fff;
+      --border:#c5cae9;--border-lt:#e8eaf6;
+      --text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;
+      --sh:0 8px 28px rgba(26,35,126,.12);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:var(--bg);color:var(--text-b);
+      padding:0 0 40px;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
+
+    /* ── TOPBAR ── */
+    .topbar{
+      background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);
+      padding:0 20px;
+      box-shadow:0 4px 18px rgba(26,35,126,.25);
+      position:sticky;top:0;z-index:100;
+    }
+    .topbar-inner{
+      max-width:760px;margin:0 auto;
+      display:flex;align-items:center;gap:12px;
+      height:58px;justify-content:space-between;
+    }
+    .topbar-brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+    .topbar-logo{width:38px;height:38px;border-radius:11px;overflow:hidden;
+      background:linear-gradient(135deg,#283593,#3949ab);
+      border:1.5px solid rgba(255,215,0,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .topbar-logo img{width:100%;height:100%;object-fit:contain}
+    .topbar-logo svg{width:20px;height:20px;fill:#ffd700}
+    .topbar-titles{min-width:0}
+    .topbar-line1{font-family:'Sora',sans-serif;font-size:clamp(11px,3vw,14px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2vw,11px);font-weight:600;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:5px;
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+      color:#fff;border-radius:999px;padding:6px 14px;
+      font-family:'Sora',sans-serif;font-size:12px;font-weight:700;
+      flex-shrink:0;transition:background .15s;white-space:nowrap;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.18)}
+    .back-btn svg{width:14px;height:14px;fill:currentColor}
+
+    /* ── PAGE ── */
+    .page{max-width:760px;margin:0 auto;padding:22px 16px 0}
+
+    /* ── STEP INDICATOR ── */
+    .steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
+    .step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:120px}
+    .step-circle{
+      width:32px;height:32px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Sora',sans-serif;font-size:13px;font-weight:800;
+      border:2px solid var(--border);background:#fff;color:var(--text-muted);
+    }
+    .step.done .step-circle{background:var(--green);border-color:var(--green);color:#fff}
+    .step.active .step-circle{background:linear-gradient(135deg,var(--navy),var(--navy3));border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(26,35,126,.3)}
+    .step-label{font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:var(--text-muted);text-align:center}
+    .step.done .step-label,.step.active .step-label{color:var(--navy)}
+    .step-line{flex:1;height:2px;background:var(--border-lt);margin:0;max-width:60px;align-self:flex-start;margin-top:15px}
+    .step-line.done{background:var(--green)}
+
+    /* ── SECURE BADGE ── */
+    .secure-badge{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      background:var(--green-lt);border:1.5px solid rgba(16,185,129,.3);
+      border-radius:999px;padding:6px 16px;width:fit-content;margin:0 auto 20px;
+      font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--green-dark);
+    }
+    .secure-badge svg{width:14px;height:14px;fill:var(--green)}
+
+    /* ── SUMMARY CARD ── */
+    .card{
+      background:var(--surface);border:1.5px solid var(--border-lt);
+      border-radius:22px;box-shadow:var(--sh);overflow:hidden;margin-bottom:14px;
+    }
+    .card-head{
+      background:linear-gradient(135deg,#eef2ff,#fff);
+      padding:16px 18px;border-bottom:1.5px solid var(--border-lt);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .card-head-left h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--text-h);margin-bottom:3px}
+    .card-head-left p{font-size:12px;color:var(--text-muted);line-height:1.5}
+    .ref-pill{
+      background:var(--navy);color:#fff;border-radius:10px;padding:7px 12px;
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
+      text-align:right;flex-shrink:0;white-space:nowrap;
+    }
+    .ref-pill span{display:block;font-size:9px;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:2px}
+
+    /* contest list */
+    .contest-list{padding:4px 18px}
+    .contest-row{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 0;border-bottom:1px solid var(--border-lt);
+    }
+    .contest-row:last-child{border-bottom:none}
+    .cr-left{display:flex;align-items:center;gap:10px;min-width:0}
+    .cr-emoji{width:36px;height:36px;border-radius:10px;background:var(--bg);
+      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+      border:1px solid var(--border-lt)}
+    .cr-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text-h);line-height:1.3}
+    .cr-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+    .cr-price{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--navy);white-space:nowrap}
+
+    /* total row */
+    .total-row{
+      background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+      padding:16px 18px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .total-label{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}
+    .total-label small{display:block;font-size:10px;color:rgba(255,255,255,.55);font-weight:600;margin-top:1px}
+    .total-amount{font-family:'Sora',sans-serif;font-size:24px;font-weight:900;color:#ffd700}
+
+    /* ── PAY BUTTON ── */
+    .pay-section{margin-bottom:14px}
+    .pay-btn{
+      width:100%;border:0;border-radius:16px;padding:17px 20px;
+      background:linear-gradient(135deg,#d97706 0%,#f59e0b 100%);
+      color:#fff;font-family:'Sora',sans-serif;font-size:17px;font-weight:800;
+      cursor:pointer;box-shadow:0 8px 24px rgba(217,119,6,.4);
+      transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+    }
+    .pay-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(217,119,6,.52)}
+    .pay-btn:active{transform:scale(.98)}
+    .pay-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
+    .pay-btn svg{width:20px;height:20px;fill:currentColor}
+
+    /* trust strip */
+    .trust-strip{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;
+      padding:12px 18px;background:#f8faff;border-top:1px solid var(--border-lt);
+    }
+    .trust-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-muted)}
+    .trust-item svg{width:14px;height:14px;fill:var(--green)}
+
+    /* ── PAYMENT EMBED ── */
+    .embed-card{
+      background:var(--surface);border:1.5px solid var(--border-lt);
+      border-radius:22px;box-shadow:var(--sh);overflow:hidden;
+    }
+    .embed-head{
+      background:linear-gradient(135deg,#eef2ff,#fff);
+      padding:14px 18px;border-bottom:1.5px solid var(--border-lt);
+      display:flex;align-items:center;gap:10px;
+    }
+    .embed-head-icon{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,var(--navy),var(--navy3));
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .embed-head-icon svg{width:18px;height:18px;fill:#fff}
+    .embed-head-text h3{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:var(--text-h);margin-bottom:2px}
+    .embed-head-text p{font-size:11px;color:var(--text-muted);line-height:1.5}
+    .embed-body{padding:14px}
+    iframe{
+      width:100%;height:620px;
+      border:1.5px solid var(--border-lt);border-radius:14px;
+      background:#fff;display:block;
+    }
+
+    /* warning strip */
+    .warn-strip{
+      display:flex;align-items:flex-start;gap:8px;
+      background:#fffbeb;border:1px solid #fde68a;border-radius:12px;
+      padding:10px 13px;margin-top:12px;
+      font-size:12px;color:#78350f;line-height:1.55;
+    }
+    .warn-strip svg{width:16px;height:16px;fill:#f59e0b;flex-shrink:0;margin-top:1px}
+
+    @media(max-width:480px){
+      .topbar-line2{display:none}
+      .steps{gap:0}
+      .step-label{font-size:9px}
+      .total-amount{font-size:20px}
+      .pay-btn{font-size:15px;padding:15px 18px}
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="top">
-    <a href="/dashboard">← Back</a>
-    <div style="font-weight:1000;color:#fff">Secure Payment</div>
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <img src="/images/logo.png" alt="Iskcon Tirupati" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <svg style="display:none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div class="topbar-titles">
+        <div class="topbar-line1">Iskcon Tirupati</div>
+        <div class="topbar-line2">Essay Writing Contest</div>
+      </div>
+    </div>
+    <a class="back-btn" href="/dashboard">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Dashboard
+    </a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step done">
+      <div class="step-circle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      <div class="step-label">Cart</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step done">
+      <div class="step-circle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      <div class="step-label">Review</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active">
+      <div class="step-circle">3</div>
+      <div class="step-label">Payment</div>
+    </div>
   </div>
 
+  <!-- Secure badge -->
+  <div class="secure-badge">
+    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    100% Secure · SSL Encrypted Payment
+  </div>
+
+  <!-- Order Summary Card -->
   <div class="card">
-    <div class="cardHead">
-      <div>
-        <div class="h1">Review & Pay</div>
-        <div class="muted">
-          You selected <span class="pill"><%= (orders || []).length %> contest(s)</span>
-          &nbsp;•&nbsp; Complete payment to confirm registration.
-        </div>
+    <div class="card-head">
+      <div class="card-head-left">
+        <h2>Order Summary</h2>
+        <p><%= (orders||[]).length %> contest(s) · Complete payment to confirm registration</p>
       </div>
-      <div class="muted" style="text-align:right">
-        Reference<br><b style="color:#fff"><%= paymentId %></b>
+      <div class="ref-pill">
+        <span>Reference</span>
+        <%= paymentId %>
       </div>
     </div>
 
-    <div class="sum">
-      <div style="font-weight:1000;color:#fff;font-size:16px">Total: ₹<%= Number(totalAmount||0) %></div>
-      <button id="payBtn" class="btn pay" type="button">Pay Now (HDFC CollectNow)</button>
-    </div>
-
-    <details>
-      <summary>View selected contests</summary>
-      <div class="list">
-        <% (orders || []).forEach((o) => { %>
-          <div class="row">
-            <div style="min-width:0">
-              <div class="title"><%= o.contest_title %></div>
-              <div class="muted">Order: <%= o.id %></div>
-            </div>
-            <div class="price">₹<%= Number(o.amount||0) %></div>
+    <div class="contest-list">
+      <% (orders||[]).forEach((o) => {
+        const t = String(o.contest_title||'').toLowerCase();
+        let emoji = '📘';
+        if(t.includes('gita')) emoji = '📖';
+        else if(t.includes('bhagavatam')) emoji = '📿';
+        else if(t.includes('ramayana')) emoji = '🏹';
+        else if(t.includes('krishna')) emoji = '🪈';
+        else if(t.includes('combo')) emoji = '🎯';
+      %>
+      <div class="contest-row">
+        <div class="cr-left">
+          <div class="cr-emoji"><%= emoji %></div>
+          <div>
+            <div class="cr-title"><%= o.contest_title %></div>
+            <div class="cr-meta">Order: <%= o.id %></div>
           </div>
-        <% }) %>
+        </div>
+        <div class="cr-price">₹<%= Number(o.amount||0) %></div>
       </div>
-    </details>
-  </div>
-
-  <div class="embed-box" id="embedBox">
-    <div style="font-weight:1000;color:#fff">HDFC CollectNow</div>
-    <div class="muted" style="margin-top:6px">
-      The checkout will open below. If payment succeeds, you will be redirected to complete delivery/donation details.
-      Please do not refresh while processing.
+      <% }) %>
     </div>
 
-    <div style="margin-top:12px">
-      <iframe id="rzpFrame" name="rzp_iframe" title="Payment"></iframe>
+    <div class="total-row">
+      <div class="total-label">
+        Total Payable
+        <small>Including all taxes</small>
+      </div>
+      <div class="total-amount">₹<%= Number(totalAmount||0) %></div>
     </div>
 
-    <form
-      id="rzpForm"
-      method="POST"
-      action="https://api.razorpay.com/v1/checkout/embedded"
-      target="rzp_iframe"
-      style="display:none"
-    >
-      <input type="hidden" name="key_id" value="<%= rzpKeyId %>">
-      <input type="hidden" name="amount" value="<%= rzpAmountPaise %>">
-      <input type="hidden" name="order_id" value="<%= rzpOrderId %>">
-      <input type="hidden" name="callback_url" value="<%= callbackUrl %>">
-
-      <input type="hidden" name="redirect" value="true">
-
-      <input type="hidden" name="name" value="BhakthiVedanta Wisdom Contest 2026">
-      <input type="hidden" name="description" value="Krishna Contest Registration">
-
-      <input type="hidden" name="prefill[name]" value="<%= prefillName %>">
-      <input type="hidden" name="prefill[email]" value="<%= prefillEmail %>">
-      <input type="hidden" name="prefill[contact]" value="<%= prefillContact %>">
-
-      <input type="hidden" name="notes[payment_group]" value="<%= paymentId %>">
-    </form>
+    <!-- Trust strip -->
+    <div class="trust-strip">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        Secure Payment
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        HDFC CollectNow
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Instant Confirmation
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        RBI Approved Gateway
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- Pay Button -->
+  <div class="pay-section">
+    <button id="payBtn" class="pay-btn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+      Pay ₹<%= Number(totalAmount||0) %> Securely
+    </button>
+  </div>
+
+  <!-- Payment Embed -->
+  <div class="embed-card" id="embedCard">
+    <div class="embed-head">
+      <div class="embed-head-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+      </div>
+      <div class="embed-head-text">
+        <h3>HDFC CollectNow — Secure Checkout</h3>
+        <p>Complete your payment below. Do not close or refresh this page.</p>
+      </div>
+    </div>
+    <div class="embed-body">
+      <iframe id="rzpFrame" name="rzp_iframe" title="HDFC Payment"></iframe>
+
+      <div class="warn-strip">
+        <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        <span>Please do not refresh this page while payment is processing. After successful payment you will be redirected automatically.</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Hidden Razorpay form -->
+<form
+  id="rzpForm"
+  method="POST"
+  action="https://api.razorpay.com/v1/checkout/embedded"
+  target="rzp_iframe"
+  style="display:none"
+>
+  <input type="hidden" name="key_id"       value="<%= rzpKeyId %>">
+  <input type="hidden" name="amount"        value="<%= rzpAmountPaise %>">
+  <input type="hidden" name="order_id"      value="<%= rzpOrderId %>">
+  <input type="hidden" name="callback_url"  value="<%= callbackUrl %>">
+  <input type="hidden" name="redirect"      value="true">
+  <input type="hidden" name="name"          value="Iskcon Tirupati EWC 2026">
+  <input type="hidden" name="description"   value="Essay Writing Contest Registration">
+  <input type="hidden" name="prefill[name]"    value="<%= prefillName %>">
+  <input type="hidden" name="prefill[email]"   value="<%= prefillEmail %>">
+  <input type="hidden" name="prefill[contact]" value="<%= prefillContact %>">
+  <input type="hidden" name="notes[payment_group]" value="<%= paymentId %>">
+</form>
 
 <script>
-  const payBtn = document.getElementById("payBtn");
-  const form = document.getElementById("rzpForm");
-  const embedBox = document.getElementById("embedBox");
+(function(){
+  const payBtn   = document.getElementById('payBtn');
+  const form     = document.getElementById('rzpForm');
+  const embedCard = document.getElementById('embedCard');
 
-  payBtn?.addEventListener("click", () => {
+  payBtn.addEventListener('click', () => {
     try {
       payBtn.disabled = true;
-      payBtn.textContent = "Opening secure checkout...";
+      payBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Opening secure checkout...';
       form.submit();
-      embedBox.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (e) {
+      setTimeout(() => {
+        embedCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 400);
+    } catch(e) {
       payBtn.disabled = false;
-      payBtn.textContent = "Pay Now (HDFC CollectNow)";
-      alert("Unable to open payment. Please try again.");
+      payBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg> Pay ₹<%= Number(totalAmount||0) %> Securely';
+      alert('Unable to open payment. Please try again.');
     }
   });
+})();
 </script>
-
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>

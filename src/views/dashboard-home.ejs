@@ -1,629 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - Krishna Wisdom Contest 2026</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Iskcon Tirupati Essay Contest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#f6f7fb;
-      --card:#fff;
-      --ink:#132238;
-      --muted:#64748b;
-      --line:#e7ecf3;
-      --primary:#1a237e;
-      --primary2:#283593;
-      --shadow:0 10px 26px rgba(15,23,42,.07);
-      --safe-bottom:calc(86px + env(safe-area-inset-bottom));
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-      padding-bottom:var(--safe-bottom);
-    }
-
-    a{text-decoration:none;color:inherit}
+    :root{--navy:#1a237e;--navy-mid:#283593;--navy-lt:#3949ab;--navy-ghost:#eef2ff;--gold:#f59e0b;--gold-lt:#fef3c7;--gold-dark:#92400e;--green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;--bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;--text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;--text-faint:#94a3b8;--sh-sm:0 4px 16px rgba(26,35,126,.10);--sh-md:0 8px 28px rgba(26,35,126,.15);--safe-bottom:calc(100px + env(safe-area-inset-bottom))}
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding-bottom:var(--safe-bottom);-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}img{display:block;max-width:100%}
     .app{max-width:560px;margin:0 auto;min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);color:#fff;padding-top:max(10px,env(safe-area-inset-top));box-shadow:0 6px 24px rgba(26,35,126,.3)}
+    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px 12px;min-height:64px}
+    .brand{flex:1;min-width:0;display:flex;align-items:center;gap:8px;overflow:hidden}
+    .topbar-logo-wrap{flex-shrink:0;width:clamp(36px,9vw,46px);height:clamp(36px,9vw,46px);display:flex;align-items:center;justify-content:center}
+    .topbar-logo-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35))}
+    .topbar-title{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.2}
+    .topbar-title-line1{font-family:'Sora',sans-serif;font-size:clamp(12px,3.2vw,16px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+    .topbar-title-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2.4vw,12px);font-weight:600;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+    .topActions{flex-shrink:0;display:flex;align-items:center;gap:8px}
+    .iconBtn{position:relative;width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.13);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .16s,transform .12s}
+    .iconBtn:hover{background:rgba(255,255,255,.22)}.iconBtn:active{transform:scale(.93)}
+    .iconBtn svg{width:20px;height:20px;fill:currentColor}.iconBtn.danger svg{fill:#fca5a5}
+    .cartBadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:linear-gradient(135deg,#ff5a5f,#ff3b30);color:#fff;font-size:10px;line-height:18px;font-weight:800;text-align:center;border:2px solid #283593;box-shadow:0 3px 8px rgba(255,59,48,.4);display:none}
+    .cartBadge.show{display:block}
+    .page{padding:14px 12px calc(var(--safe-bottom) + 20px)}
+    .hero{background:linear-gradient(135deg,#eef4ff 0%,#fff 60%,#fff8e6 100%);border:1.5px solid #d8e0f8;border-radius:24px;padding:14px 16px;box-shadow:var(--sh-sm);margin-bottom:12px}
+    .hero h1{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;color:var(--text-h)}
+    .freeBanner{background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#b45309 100%);border-radius:18px;padding:13px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 20px rgba(146,64,14,.3);position:relative;overflow:hidden;width:100%;border:0;text-align:left;cursor:pointer;appearance:none}
+    .freeBanner:active{transform:translateY(1px)}
+    .freeBanner:focus-visible{outline:3px solid rgba(255,255,255,.45);outline-offset:2px}
+    .freeBanner::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 90% 50%,rgba(255,255,255,.08) 0%,transparent 60%);pointer-events:none}
+    .fbIcon{font-size:26px;flex-shrink:0;margin-top:1px}
+    .fbBody{flex:1;position:relative}
+    .fbTitle{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#fef3c7;margin-bottom:3px}
+    .fbDesc{font-size:11.5px;color:rgba(254,243,199,.85);line-height:1.55}
+    .fbBadge{display:inline-block;background:#f59e0b;color:#78350f;border-radius:7px;padding:2px 7px;font-size:10px;font-weight:800;margin-top:5px}
+    .filterLabel{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;padding:0 2px}
+    .filterRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+    .filterBtn{border:1.5px solid var(--border);background:#fff;color:var(--text-mid);border-radius:14px;padding:10px 8px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--sh-sm);transition:all .18s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+    .filterBtn:hover{border-color:var(--navy-lt);color:var(--navy)}
+    .filterBtn.active{background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(26,35,126,.25)}
+    .filterSub{font-size:10px;font-weight:600;opacity:.72}
+    .filterBtn.active .filterSub{opacity:.85;color:rgba(255,255,255,.85)}
+    .ageLabel{font-size:12px;font-weight:700;color:var(--navy);background:var(--navy-ghost);border:1px solid var(--border);border-radius:9px;padding:5px 10px;margin-bottom:12px;display:flex;align-items:center;gap:5px}
+    .sectionTitle{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:var(--text-h);margin:0 0 10px;padding:0 2px}
+    .cards{display:grid;gap:12px;padding-bottom:8px}
+    .contest{background:#fff;border:1.5px solid #e0e5f5;border-radius:22px;box-shadow:var(--sh-sm);overflow:hidden;transition:box-shadow .2s,transform .2s,border-color .2s;animation:fadeUp .32s ease both}
+    .contest:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}.contest.selected{border-color:#4f46e5;box-shadow:0 8px 28px rgba(79,70,229,.2)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .contestMain{display:grid;grid-template-columns:100px 1fr;min-height:130px}
+    .contestImgWrap{background:#edf2f8;border-right:1.5px solid #e8edf8;overflow:hidden}
+    .contestImg{width:100%;height:100%;min-height:130px;object-fit:cover}
+    .contestBody{padding:13px 13px 11px;display:flex;flex-direction:column;gap:7px}
+    .contestName{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text-h);line-height:1.3}
+    .contestDesc{font-size:12px;color:#5b6778;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .rowActions{display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap}
+    .detailsLink{color:#1d4ed8;font-size:12px;font-weight:700;padding:4px 0}
 
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:90;
-      padding-top:max(10px, env(safe-area-inset-top));
-      background:linear-gradient(135deg, #1f2ca7 0%, #2f3fc7 55%, #2737b6 100%);
-      color:#fff;
-      box-shadow:0 10px 24px rgba(26,35,126,.20);
-    }
+    /* ── CHANGE 2: Join button + stepper ── */
+    .joinBtn{border:none;border-radius:11px;padding:9px 13px;background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(26,35,126,.2);transition:transform .14s,box-shadow .14s}
+    .joinBtn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(26,35,126,.3)}.joinBtn:active{transform:scale(.96)}
+    /* Qty stepper — same style as cart-review qtyBtn */
+    .qtyWrap{display:inline-flex;align-items:center;border-radius:11px;overflow:hidden;border:1.5px solid var(--navy);box-shadow:0 4px 12px rgba(26,35,126,.18)}
+    .qtyBtn{border:none;background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;width:34px;height:36px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;flex-shrink:0;line-height:1;padding:0}
+    .qtyBtn:hover{background:#1d4ed8}.qtyBtn:active{transform:scale(.93)}
+    .qtyNum{background:#fff;color:var(--navy);font-family:'Sora',sans-serif;font-size:13px;font-weight:800;min-width:32px;text-align:center;line-height:36px;border-left:1px solid #c5cae9;border-right:1px solid #c5cae9;padding:0 4px}
 
-    .topbarInner{
-      min-height:84px;
-      padding:10px 14px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
+    .empty{background:#fff;border:1.5px dashed #c5cae9;color:var(--text-muted);border-radius:18px;padding:28px 16px;text-align:center;font-size:14px}
 
-    .brand{
-      flex:1;
-      min-width:0;
-      display:flex;
-      align-items:center;
-    }
-
-    .logo{
-      width:clamp(150px, 42vw, 180px);
-      height:clamp(46px, 12vw, 56px);
-      flex:0 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-    }
-
-    .logo img{
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      filter:drop-shadow(0 2px 6px rgba(0,0,0,.18));
-    }
-
-    .topActions{
-      flex:0 0 auto;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .iconBtn{
-      position:relative;
-      width:46px;
-      height:46px;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:16px;
-      background:rgba(255,255,255,.14);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        0 6px 14px rgba(8,15,58,.22);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      text-decoration:none;
-      transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
-    }
-
-    .iconBtn:active{
-      transform:scale(.97);
-    }
-
-    .iconBtn:hover{
-      background:rgba(255,255,255,.18);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.14),
-        0 8px 18px rgba(8,15,58,.28);
-    }
-
-    .iconBtn svg{
-      width:21px;
-      height:21px;
-      fill:#111827;
-    }
-
-    .cartBadge{
-      position:absolute;
-      top:-4px;
-      right:-4px;
-      min-width:20px;
-      height:20px;
-      padding:0 6px;
-      border-radius:999px;
-      background:linear-gradient(135deg,#ff5a5f 0%,#ff3b30 100%);
-      color:#fff;
-      font-size:11px;
-      line-height:20px;
-      font-weight:800;
-      text-align:center;
-      box-shadow:0 4px 10px rgba(255,59,48,.35);
-      border:2px solid #2b39bb;
-      display:none;
-    }
-
-    .cartBadge.show{
-      display:inline-block;
-    }
-
-    .logoutBtn{
-      width:58px;
-      padding:0 10px;
-      background:rgba(255,255,255,.10);
-      border-color:rgba(255,255,255,.12);
-    }
-
-    .logoutBtn svg{
-      fill:#ff7a7a;
-    }
-
-    .page{padding:14px 12px 22px}
-
-    .hero{
-      background:linear-gradient(135deg,#eef4ff 0%,#ffffff 58%,#fff9e6 100%);
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:16px;
-      box-shadow:var(--shadow);
-      margin-bottom:14px;
-    }
-
-    .hero h1{
-      margin:0 0 6px;
-      font-size:21px;
-      line-height:1.25;
-      color:#111827;
-    }
-
-    .hero p{
-      margin:0;
-      font-size:13px;
-      color:#475569;
-      line-height:1.6;
-    }
-
-    .filters{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin:14px 0 12px;
-    }
-
-    .filterBtn{
-      border:1px solid #dbe4ef;
-      background:#fff;
-      color:#334155;
-      border-radius:14px;
-      padding:12px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:0 6px 16px rgba(15,23,42,.03);
-    }
-
-    .filterBtn.active{
-      background:linear-gradient(135deg,var(--primary),#3949ab);
-      color:#fff;
-      border-color:transparent;
-    }
-
-    .sectionTitle{
-      font-size:18px;
-      font-weight:900;
-      color:#111827;
-      margin:0 0 10px;
-      padding:0 2px;
-    }
-
-    .cards{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-    }
-
-    .contest{
-      background:#fff;
-      border:1px solid #e7edf6;
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .contest.selected{
-      border-color:#4f46e5;
-      box-shadow:0 12px 26px rgba(79,70,229,.16);
-    }
-
-    .contestMain{
-      display:grid;
-      grid-template-columns:104px 1fr;
-      min-height:132px;
-    }
-
-    .contestImgWrap{
-      background:#edf2f7;
-      border-right:1px solid #edf1f7;
-    }
-
-    .contestImg{
-      width:100%;
-      height:100%;
-      min-height:132px;
-      object-fit:cover;
-      background:#eef2f7;
-    }
-
-    .contestBody{
-      padding:14px 14px 12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .contestName{
-      margin:0;
-      font-size:16px;
-      line-height:1.35;
-      color:#0f172a;
-      font-weight:900;
-    }
-
-    .contestDesc{
-      margin:0;
-      font-size:13px;
-      color:#5b6778;
-      line-height:1.55;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-
-    .rowActions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top:4px;
-      flex-wrap:wrap;
-    }
-
-    .detailsLink{
-      color:#1d4ed8;
-      font-size:13px;
-      font-weight:900;
-    }
-
-    .joinBtn{
-      border:0;
-      border-radius:12px;
-      padding:10px 14px;
-      background:linear-gradient(135deg,var(--primary),#3949ab);
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:0 10px 20px rgba(26,35,126,.14);
-    }
-
-    .joinBtn.added{
-      background:linear-gradient(135deg,#0f766e,#0d9488);
-    }
-
-    .empty{
-      background:#fff;
-      border:1px dashed #d8e1ec;
-      color:#64748b;
-      border-radius:18px;
-      padding:22px 16px;
-      text-align:center;
-    }
-
+    /* ── CHANGE 1: bottom nav ── */
     .bottomNav{
       position:fixed;
       left:50%;
       transform:translateX(-50%);
       bottom:0;
-      width:min(560px, 100%);
+      width:min(560px,100%);
       background:#fff;
-      border-top:1px solid #e6edf6;
-      box-shadow:0 -10px 24px rgba(15,23,42,.08);
-      padding-bottom:max(10px, env(safe-area-inset-bottom));
+      border-top:1.5px solid #e8eaf6;
+      box-shadow:0 -6px 24px rgba(26,35,126,.09);
+      padding-bottom:max(10px,env(safe-area-inset-bottom));
       z-index:98;
     }
+    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px 0}
 
-    .bottomNavInner{
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      padding:8px 6px 0;
-    }
+    /* CHANGE 3: Darker nav text */
+    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;color:#475569;font-size:10px;font-weight:800;border-radius:12px;text-align:center;transition:color .15s,background .15s}
+    .navBtn svg{width:20px;height:20px;fill:currentColor}.navBtn.active{color:var(--navy);background:var(--navy-ghost)}
 
-    .navBtn{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:58px;
-      color:#64748b;
-      font-size:10px;
-      font-weight:800;
-      border-radius:14px;
-      text-align:center;
-    }
-
-    .navBtn svg{
-      width:20px;
-      height:20px;
-      fill:currentColor;
-    }
-
-    .navBtn.active{
-      color:var(--primary);
-      background:#eef2ff;
-    }
-
-    .modal{
+    /* View cart bar — fixed above bottom nav */
+    .viewCartBar{
       position:fixed;
-      inset:0;
-      background:rgba(15,23,42,.58);
-      display:none;
+      left:50%;
+      transform:translateX(-50%) translateY(12px);
+      bottom:calc(72px + env(safe-area-inset-bottom));
+      width:min(calc(560px - 16px), calc(100% - 16px));
+      background:linear-gradient(135deg,#d97706,#f59e0b);
+      padding:0 16px;
+      height:44px;
+      display:flex;
       align-items:center;
-      justify-content:center;
-      padding:14px;
-      z-index:110;
+      justify-content:space-between;
+      gap:10px;
+      transition:opacity .22s, transform .22s;
+      box-shadow:0 8px 20px rgba(217,119,6,.28);
+      border-radius:14px;
+      z-index:99;
+      opacity:0;
+      pointer-events:none;
     }
-
-    .modal.show{
-      display:flex;
+    .viewCartBar.show{
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(0);
     }
+    .vcb-left{display:flex;align-items:center;gap:8px}
+    .vcb-badge{background:rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 8px;font-family:'Sora',sans-serif;font-size:11px;font-weight:800;min-width:22px;text-align:center}
+    .vcb-text{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#fff}
+    .vcb-cta{display:flex;align-items:center;gap:5px;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#fff}
+    .vcb-cta svg{width:15px;height:15px;fill:#fff}
 
-    .modalCard{
-      width:min(540px,100%);
-      max-height:90vh;
-      overflow:auto;
-      background:#fff;
-      border-radius:24px;
-      box-shadow:0 30px 60px rgba(0,0,0,.28);
-      position:relative;
-    }
-
-    .modalHead{
-      padding:18px 18px 12px;
-      border-bottom:1px solid #eef2f7;
-      position:sticky;
-      top:0;
-      background:#fff;
-    }
-
-    .modalTitle{
-      margin:0;
-      font-size:21px;
-      color:#0f172a;
-      padding-right:40px;
-      line-height:1.3;
-    }
-
-    .modalClose{
-      position:absolute;
-      right:14px;
-      top:12px;
-      width:36px;
-      height:36px;
-      border-radius:50%;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      cursor:pointer;
-      font-size:17px;
-    }
-
-    .modalBody{
-      padding:16px 18px 18px;
-    }
-
-    .modalImg{
-      width:100%;
-      max-height:220px;
-      object-fit:cover;
-      border-radius:16px;
-      border:1px solid #eef2f7;
-      margin-bottom:14px;
-      background:#f3f6fa;
-    }
-
-    .pillrow{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-bottom:14px;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      padding:8px 11px;
-      border-radius:999px;
-      background:#f8fafc;
-      border:1px solid #e2e8f0;
-      font-size:11px;
-      font-weight:900;
-      color:#334155;
-    }
-
-    .modalSection{
-      border:1px solid #edf2f7;
-      border-radius:16px;
-      padding:14px;
-      margin-bottom:12px;
-      background:#fcfdff;
-    }
-
-    .modalSection h4{
-      margin:0 0 8px;
-      font-size:15px;
-      color:#111827;
-    }
-
-    .modalSection p,
-    .modalSection li{
-      color:#475569;
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .modalSection ul{
-      margin:0;
-      padding-left:18px;
-    }
-
-    .modalFoot{
-      display:flex;
-      justify-content:flex-end;
-      padding-top:4px;
-    }
-
-    .btnGhost{
-      border:1px solid #dbe4ef;
-      background:#fff;
-      color:#334155;
-      border-radius:12px;
-      padding:11px 14px;
-      font-weight:900;
-      cursor:pointer;
-    }
-
-    @keyframes cartBounce {
-      0% { transform: scale(1); }
-      35% { transform: scale(1.10); }
-      70% { transform: scale(.96); }
-      100% { transform: scale(1); }
-    }
-
-    .iconBtn.bounce{
-      animation:cartBounce .28s ease;
-    }
-
-    @media (max-width:420px){
-      .topbarInner{
-        min-height:78px;
-        padding:8px 12px 10px;
-        gap:10px;
-      }
-
-      .logo{
-        width:clamp(138px, 40vw, 156px);
-        height:clamp(42px, 11vw, 48px);
-      }
-
-      .iconBtn{
-        width:42px;
-        height:42px;
-        border-radius:14px;
-      }
-
-      .logoutBtn{
-        width:52px;
-      }
-
-      .iconBtn svg{
-        width:19px;
-        height:19px;
-      }
-    }
-
-    @media (max-width:360px){
-      .logo{
-        width:130px;
-        height:40px;
-      }
-
-      .topActions{
-        gap:8px;
-      }
-    }
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;padding:14px;z-index:110;backdrop-filter:blur(3px)}
+    .modal.show{display:flex}
+    .modalCard{width:min(540px,100%);max-height:90vh;overflow-y:auto;background:#fff;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.3);position:relative}
+    .modalHead{padding:18px 18px 14px;border-bottom:1.5px solid #eef2f7;position:sticky;top:0;background:#fff;border-radius:26px 26px 0 0;z-index:2}
+    .modalTitle{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text-h);padding-right:44px;line-height:1.3}
+    .modalClose{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;font-size:16px;color:var(--text-mid);display:flex;align-items:center;justify-content:center;transition:background .14s}
+    .modalClose:hover{background:#f1f5f9}
+    .modalBody{padding:16px 18px 20px}
+    .modalImg{width:100%;max-height:200px;object-fit:cover;border-radius:16px;border:1.5px solid #eef2f7;margin-bottom:14px;background:#f3f6fa}
+    .pillrow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+    .mpill{display:inline-flex;align-items:center;padding:6px 11px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;font-weight:700;color:#334155}
+    .mpill-gold{background:var(--gold-lt);border-color:#fde68a;color:var(--gold-dark)}
+    .modalSection{border:1.5px solid #edf2f7;border-radius:16px;padding:14px;margin-bottom:10px;background:#fbfdff}
+    .modalSection h4{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;margin:0 0 8px;color:var(--text-h)}
+    .modalSection p,.modalSection li{color:#475569;font-size:13px;line-height:1.7}
+    .modalSection ul{margin:0;padding-left:18px}
+    .modalFoot{display:flex;justify-content:flex-end;padding-top:4px}
+    .btnGhost{border:1.5px solid var(--border);background:#fff;color:var(--text-b);border-radius:12px;padding:11px 18px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .14s}
+    .btnGhost:hover{background:#f8fafc}
+    .toast{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom) + 12px);left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:14px;padding:12px 18px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.err{background:#7f1d1d}.toast.ok{background:#065f46}
+    @media(max-width:420px){.topbarInner{min-height:60px;padding:8px 12px 10px;gap:8px}.topbar-logo-wrap{width:34px;height:34px}.topbar-title-line1{font-size:12px}.topbar-title-line2{font-size:9px}.iconBtn{width:38px;height:38px}.iconBtn svg{width:18px;height:18px}}
   </style>
 </head>
 <body>
 <%
-  function safeJsonAttr(obj){
-    return JSON.stringify(obj ?? []).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  }
-  function safeAttr(s){
-    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  }
-  function formatDateOnly(d){
-    if (!d) return '-';
-    return new Date(d).toLocaleDateString('en-GB', { timeZone:'Asia/Kolkata' });
-  }
+  function safeJsonAttr(obj){ return JSON.stringify(obj??[]).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function safeAttr(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function formatDateOnly(d){ if(!d)return'-'; return new Date(d).toLocaleDateString('en-GB',{timeZone:'Asia/Kolkata'}); }
 %>
-
 <div class="app">
   <header class="topbar">
     <div class="topbarInner">
       <div class="brand">
-        <div class="logo">
-          <img src="/images/logo3.png" alt="Krishna Wisdom Contest" onerror="this.style.display='none'">
+        <div class="topbar-logo-wrap">
+          <img src="/images/logo_new.png" alt="Iskcon Tirupati" class="topbar-logo-img" onerror="this.style.display='none'">
+        </div>
+        <div class="topbar-title">
+          <span class="topbar-title-line1">Iskcon Tirupati</span>
+          <span class="topbar-title-line2">Essay Writing Contest</span>
         </div>
       </div>
-
       <div class="topActions">
         <button class="iconBtn" id="cartBtn" type="button" aria-label="Open cart">
           <span class="cartBadge" id="cartBadge">0</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14h9.96c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.58 5H6.21l-.94-2H2v2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 8 18h12v-2H8l1.1-2Z"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14h9.96c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.58 5H6.21l-.94-2H2v2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 8 18h12v-2H8l1.1-2Z"/></svg>
         </button>
-
-        <a class="iconBtn logoutBtn" href="/logout" title="Logout" aria-label="Logout">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/>
-          </svg>
+        <a class="iconBtn danger" href="/logout" id="logoutBtn" title="Logout">
+          <svg viewBox="0 0 24 24"><path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg>
         </a>
       </div>
     </div>
   </header>
 
   <main class="page">
-    <section class="hero">
-      <h1>Welcome, <%= user?.name || 'Devotee' %></h1>
-      <p>Select your age category, add contests to cart, and continue to checkout when ready.</p>
-    </section>
+    <section class="hero"><h1>Welcome, <%= user?.name || 'Devotee' %> 🙏</h1></section>
 
-    <div class="filters">
-      <button class="filterBtn active" id="age025Btn" type="button">0 to 25 years</button>
-      <button class="filterBtn" id="ageAboveBtn" type="button">Above 25 years</button>
+    <button class="freeBanner" id="claimBookBtn" type="button">
+      <div class="fbIcon">🎁</div>
+      <div class="fbBody">
+        <div class="fbTitle">🔥 FREE Book Worth ₹150 — Just for You!</div>
+        <div class="fbDesc">Add all 4 contests to cart and claim your free <em>Science of Self Realization</em> book. You will also get Ramayana,Bhagavatam, Bhagavad Gita and Krishna book delivered to your home. </div>
+        <span class="fbBadge">📚 Buy Combo Pack</span>
+      </div>
+    </button>
+
+    <div class="filterLabel">🎯 Select Your Age Category</div>
+    <div class="filterRow">
+      <button class="filterBtn active" id="age025Btn" type="button">0 – 25 Years<span class="filterSub">Youth Category</span></button>
+      <button class="filterBtn" id="ageAboveBtn" type="button">Above 25 Years<span class="filterSub">Senior Category</span></button>
     </div>
+    <div class="ageLabel" id="ageLabel">✅ Browsing: <span id="ageLabelText">0 – 25 Years (Youth)</span></div>
 
     <h2 class="sectionTitle">Available Contests</h2>
-
     <% if (!pending || !pending.length) { %>
       <div class="empty">No active contests available right now.</div>
     <% } else { %>
       <div class="cards">
-        <% pending.forEach((c) => { %>
-          <article
-            class="contest"
-            tabindex="0"
-            data-id="<%= c.id %>"
-            data-title="<%- safeAttr(c.title) %>"
-            data-price="<%= Number(c.price || 0) %>"
+        <% pending
+            .filter(c => String(c.title || '').trim().toLowerCase() !== 'combo contest')
+            .forEach((c, idx) => { %>
+          <article class="contest" style="animation-delay:<%=idx*0.06%>s" tabindex="0"
+            data-id="<%= c.id %>" data-title="<%- safeAttr(c.title) %>" data-price="<%= Number(c.price||0) %>"
             data-registration-deadline="<%- safeAttr(formatDateOnly(c.registration_deadline)) %>"
             data-submission-deadline="<%- safeAttr(formatDateOnly(c.submission_deadline)) %>"
             data-winner-date="<%- safeAttr(formatDateOnly(c.winner_declaration_date)) %>"
-            data-img="<%- safeAttr(c.image_url || '') %>"
-            data-prize="<%- safeAttr(c.prize_details || '') %>"
-            data-rules="<%- safeJsonAttr(c.rules || []) %>"
-            data-benefits="<%- safeJsonAttr(c.participant_benefits || []) %>"
-            data-age-categories="<%- safeJsonAttr(c.age_categories || []) %>"
-          >
+            data-img="<%- safeAttr(c.image_url||'') %>" data-prize="<%- safeAttr(c.prize_details||'') %>"
+            data-rules="<%- safeJsonAttr(c.rules||[]) %>" data-benefits="<%- safeJsonAttr(c.participant_benefits||[]) %>"
+            data-age-categories="<%- safeJsonAttr(c.age_categories||[]) %>">
             <div class="contestMain">
               <div class="contestImgWrap">
-                <img
-                  class="contestImg"
-                  src="<%= (c.image_url || 'https://placehold.co/400x400?text=Contest') + '?v=20260320-1' %>"
-                  alt="<%= c.title %>"
-                  onerror="this.src='https://placehold.co/400x400?text=Contest';"
-                />
+                <img class="contestImg" src="<%= (c.image_url||'https://placehold.co/400x400?text=Contest')+'?v=20260320-1' %>"
+                  alt="<%= c.title %>" onerror="this.src='https://placehold.co/400x400?text=Contest'"/>
               </div>
-
               <div class="contestBody">
                 <h3 class="contestName"><%= c.title %></h3>
-                <% if (c.description) { %>
-                  <p class="contestDesc"><%= c.description %></p>
-                <% } %>
-
+                <% if(c.description){ %><p class="contestDesc"><%= c.description %></p><% } %>
                 <div class="rowActions">
                   <a href="#" class="detailsLink" data-open-details="1">View Details</a>
-                  <button class="joinBtn" type="button">Join now at only ₹<%= Number(c.price || 0) %></button>
+                  <button class="joinBtn" type="button">Join ₹<%= Number(c.price||0) %></button>
                 </div>
               </div>
             </div>
@@ -631,289 +228,262 @@
         <% }) %>
       </div>
     <% } %>
+    <div style="height:8px" aria-hidden="true"></div>
   </main>
 
-  <nav class="bottomNav" aria-label="Bottom navigation">
+  <nav class="bottomNav">
+    <!-- View Cart bar -->
+    <div class="viewCartBar" id="viewCartBar">
+      <div class="vcb-left">
+        <span class="vcb-badge" id="vcbCount">0</span>
+        <span class="vcb-text">items in cart</span>
+      </div>
+      <a href="/cart-review" class="vcb-cta">
+        View Cart
+        <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+      </a>
+    </div>
     <div class="bottomNavInner">
-      <a class="navBtn active" href="/dashboard">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <span>Home</span>
-      </a>
-
-      <a class="navBtn" href="/dashboard/my-contests">
-        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg>
-        <span>My Contests</span>
-      </a>
-
-      <a class="navBtn" href="/dashboard/profile">
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg>
-        <span>Profile</span>
-      </a>
-
-      <a class="navBtn" href="/dashboard/delivery">
-        <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg>
-        <span>Track</span>
-      </a>
-
-      <a class="navBtn" href="/dashboard/help">
-        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg>
-        <span>Help</span>
-      </a>
+      <a class="navBtn active" href="/dashboard"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
+      <a class="navBtn" href="/dashboard/my-contests"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span></a>
+      <a class="navBtn" href="/dashboard/profile"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span></a>
+      <a class="navBtn" href="/dashboard/delivery"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span></a>
+      <a class="navBtn" href="/dashboard/help"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span></a>
     </div>
   </nav>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div class="modal" id="modal" aria-hidden="true">
   <div class="modalCard">
     <div class="modalHead">
       <h3 class="modalTitle" id="mTitle">Contest Details</h3>
-      <button class="modalClose" id="mClose" type="button">✕</button>
+      <button class="modalClose" id="mClose" type="button" aria-label="Close">✕</button>
     </div>
-
     <div class="modalBody">
-      <img class="modalImg" id="mImg" alt="Contest Image" />
+      <img class="modalImg" id="mImg" alt="Contest Image" style="display:none"/>
       <div class="pillrow">
-        <span class="pill" id="mPrice">₹0</span>
-        <span class="pill" id="mRegistrationDeadline">Registration: -</span>
-        <span class="pill" id="mSubmissionDeadline">Submission: -</span>
-        <span class="pill" id="mWinnerDate">Winners: -</span>
+        <span class="mpill mpill-gold" id="mPrice">₹0</span>
+        <span class="mpill" id="mReg">Reg: -</span>
+        <span class="mpill" id="mSub">Submit: -</span>
+        <span class="mpill" id="mWin">Winners: -</span>
       </div>
-
-      <div class="modalSection">
-        <h4>Prize Details</h4>
-        <p id="mPrize">Prize details will be updated soon.</p>
-      </div>
-
-      <div class="modalSection">
-        <h4>Participant Benefits</h4>
-        <ul id="mBenefits"></ul>
-      </div>
-
-      <div class="modalSection">
-        <h4>Age Categories</h4>
-        <ul id="mAgeCategories"></ul>
-      </div>
-
-      <div class="modalSection">
-        <h4>Rules</h4>
-        <ul id="mRules"></ul>
-      </div>
-
-      <div class="modalFoot">
-        <button class="btnGhost" id="mOk" type="button">Close</button>
-      </div>
+      <div class="modalSection"><h4>🏆 Prize Details</h4><p id="mPrize">Coming soon.</p></div>
+      <div class="modalSection"><h4>🎁 Participant Benefits</h4><ul id="mBenefits"></ul></div>
+      <div class="modalSection"><h4>👥 Age Categories</h4><ul id="mAges"></ul></div>
+      <div class="modalSection"><h4>📋 Rules & Guidelines</h4><ul id="mRules"></ul></div>
+      <div class="modalFoot"><button class="btnGhost" id="mOk" type="button">Close</button></div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  const age025Btn = document.getElementById('age025Btn');
-  const ageAboveBtn = document.getElementById('ageAboveBtn');
-  const cartBtn = document.getElementById('cartBtn');
-  const cartBadge = document.getElementById('cartBadge');
-  let selectedAgeCategory = '0-25';
+  const EXTRA_BENEFITS=['Digital Certificate of Participation','Free gift book of your choice: Bhagavad Gita, Bhagavatam, Ramayana, or Krishna Book','ISKCON Life Patron Membership worth ₹50,000 (Winner – 1st place)','ISKCON Life Patron Membership worth ₹50,000 (Runner-up category)'];
+  const EXTRA_RULES=['Essay must be between 1,000 and 2,000 words','Only PDF or DOCX file formats are accepted'];
+
+  const age025Btn=document.getElementById('age025Btn');
+  const ageAboveBtn=document.getElementById('ageAboveBtn');
+  const ageLabelText=document.getElementById('ageLabelText');
+  const cartBtn=document.getElementById('cartBtn');
+  const cartBadge=document.getElementById('cartBadge');
+  const viewCartBar=document.getElementById('viewCartBar');
+  const vcbCount=document.getElementById('vcbCount');
+  const claimBookBtn=document.getElementById('claimBookBtn');
+  let selectedAge='0-25';
 
   function setAgeFilter(age){
-    selectedAgeCategory = age;
-    age025Btn.classList.toggle('active', age === '0-25');
-    ageAboveBtn.classList.toggle('active', age === 'above-25');
+    selectedAge=age;
+    age025Btn.classList.toggle('active',age==='0-25');
+    ageAboveBtn.classList.toggle('active',age==='above-25');
+    ageLabelText.textContent=age==='0-25'?'0 – 25 Years (Youth)':'Above 25 Years (Senior)';
     syncCardStates();
   }
+  age025Btn?.addEventListener('click',()=>setAgeFilter('0-25'));
+  ageAboveBtn?.addEventListener('click',()=>setAgeFilter('above-25'));
 
-  age025Btn?.addEventListener('click', () => setAgeFilter('0-25'));
-  ageAboveBtn?.addEventListener('click', () => setAgeFilter('above-25'));
+  let toastT;
+  function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');void t.offsetWidth;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
 
-  async function fetchJson(url, options) {
-    const r = await fetch(url, options);
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok || data.ok === false) throw new Error(data.message || 'Request failed');
-    return data;
-  }
+  async function fetchJson(url,opts){const r=await fetch(url,opts);const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.message||'Request failed');return d}
 
-  async function updateCartBadge(){
-    try {
-      const data = await fetchJson('/api/cart/count');
-      const count = Number(data.count || 0);
-      cartBadge.textContent = String(count);
-      cartBadge.classList.toggle('show', count > 0);
-    } catch {}
+  function refreshCartUI(count){
+    const c=Number(count||0);
+    cartBadge.textContent=String(c);
+    cartBadge.classList.toggle('show',c>0);
+    vcbCount.textContent=String(c);
+    viewCartBar.classList.toggle('show',c>0);
   }
 
   async function getCartItems(){
-    try {
-      const data = await fetchJson('/api/cart/items');
-      return Array.isArray(data.items) ? data.items : [];
-    } catch {
+    try{
+      const d=await fetchJson('/api/cart/items');
+      return Array.isArray(d.items)?d.items:[];
+    }catch{
       return [];
     }
   }
 
   async function syncCardStates(){
-    const items = await getCartItems();
+    const items=await getCartItems();
+    const totalQty=items.reduce((sum,item)=>sum+Number(item.quantity||0),0);
 
-    document.querySelectorAll('.contest').forEach(card => {
-      const btn = card.querySelector('.joinBtn');
-      const contestId = card.dataset.id;
-      const matched = items.find(x => x.contest_id === contestId && x.age_category === selectedAgeCategory);
-      const qty = matched ? Number(matched.quantity || 0) : 0;
+    document.querySelectorAll('.contest').forEach(card=>{
+      const rowActions=card.querySelector('.rowActions');
+      if(!rowActions) return;
 
-      if (!btn) return;
+      const id=card.dataset.id;
+      const price=Number(card.dataset.price||0);
+      const cartItem=items.find(x=>x.contest_id===id&&x.age_category===selectedAge)||null;
+      const qty=cartItem?Number(cartItem.quantity||0):0;
 
-      if (qty > 0) {
+      const existing=rowActions.querySelector('.joinBtn,.qtyWrap');
+      if(existing) existing.remove();
+
+      if(qty>0){
         card.classList.add('selected');
-        btn.classList.add('added');
-        btn.textContent = `Added (${qty})`;
-      } else {
+
+        const wrap=document.createElement('div');
+        wrap.className='qtyWrap';
+
+        const minusBtn=document.createElement('button');
+        minusBtn.className='qtyBtn';
+        minusBtn.type='button';
+        minusBtn.textContent='−';
+        minusBtn.setAttribute('aria-label','Remove one');
+
+        const numEl=document.createElement('span');
+        numEl.className='qtyNum';
+        numEl.textContent=String(qty);
+
+        const plusBtn=document.createElement('button');
+        plusBtn.className='qtyBtn';
+        plusBtn.type='button';
+        plusBtn.textContent='+';
+        plusBtn.setAttribute('aria-label','Add one');
+
+        wrap.appendChild(minusBtn);
+        wrap.appendChild(numEl);
+        wrap.appendChild(plusBtn);
+        rowActions.appendChild(wrap);
+
+        minusBtn.addEventListener('click',async e=>{
+          e.preventDefault();
+          e.stopPropagation();
+          if(!cartItem) return;
+
+          try{
+            await fetchJson('/api/cart/update',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({cartItemId:cartItem.id,action:'minus'})
+            });
+            await syncCardStates();
+            showToast(qty<=1?'Removed from cart':'Quantity updated','');
+          }catch(err){
+            showToast('⚠️ '+(err.message||'Failed'),'err');
+          }
+        });
+
+        plusBtn.addEventListener('click',async e=>{
+          e.preventDefault();
+          e.stopPropagation();
+          if(!cartItem) return;
+
+          try{
+            await fetchJson('/api/cart/update',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({cartItemId:cartItem.id,action:'plus'})
+            });
+            await syncCardStates();
+            showToast('✅ Quantity updated!','ok');
+          }catch(err){
+            showToast('⚠️ '+(err.message||'Failed'),'err');
+          }
+        });
+
+      }else{
         card.classList.remove('selected');
-        btn.classList.remove('added');
-        btn.textContent = `Join now at only ₹${Number(card.dataset.price || 0)}`;
+
+        const btn=document.createElement('button');
+        btn.className='joinBtn';
+        btn.type='button';
+        btn.textContent=`Join ₹${price}`;
+        rowActions.appendChild(btn);
+
+        btn.addEventListener('click',async e=>{
+          e.preventDefault();
+          e.stopPropagation();
+
+          try{
+            await fetchJson('/api/cart/add',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({contestId:id,ageCategory:selectedAge})
+            });
+            await syncCardStates();
+            showToast('✅ Added to cart!','ok');
+          }catch(err){
+            showToast('⚠️ '+(err.message||'Failed'),'err');
+          }
+        });
       }
     });
+
+    refreshCartUI(totalQty);
   }
 
-  async function addToCart(card){
-    const contestId = card.dataset.id;
-
-    await fetchJson('/api/cart/add', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ contestId, ageCategory: selectedAgeCategory })
-    });
-
-    await updateCartBadge();
-    await syncCardStates();
-
-    cartBtn.classList.add('bounce');
-    setTimeout(() => cartBtn.classList.remove('bounce'), 280);
-  }
-
-  cartBtn?.addEventListener('click', () => {
-    window.location.href = '/cart-review';
+  claimBookBtn?.addEventListener('click',async ()=>{
+    try{
+      claimBookBtn.disabled=true;
+      await fetchJson('/api/cart/add-combo',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ageCategory:selectedAge})
+      });
+      window.location.href='/cart-review';
+    }catch(err){
+      claimBookBtn.disabled=false;
+      showToast('⚠️ '+(err.message||'Failed to add all contests'),'err');
+    }
   });
 
-  document.querySelectorAll('.contest').forEach(card => {
-    const joinBtn = card.querySelector('.joinBtn');
+  cartBtn?.addEventListener('click',()=>{window.location.href='/cart-review'});
+  document.getElementById('logoutBtn')?.addEventListener('click',function(e){if(!confirm('Are you sure you want to logout?'))e.preventDefault()});
 
-    joinBtn?.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        await addToCart(card);
-      } catch (err) {
-        alert(err.message || 'Failed to add to cart');
-      }
-    });
-
-    card.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        try {
-          await addToCart(card);
-        } catch (err) {
-          alert(err.message || 'Failed to add to cart');
-        }
-      }
-    });
-  });
-
-  const modal = document.getElementById('modal');
-  const mTitle = document.getElementById('mTitle');
-  const mImg = document.getElementById('mImg');
-  const mPrize = document.getElementById('mPrize');
-  const mRules = document.getElementById('mRules');
-  const mPrice = document.getElementById('mPrice');
-  const mRegistrationDeadline = document.getElementById('mRegistrationDeadline');
-  const mSubmissionDeadline = document.getElementById('mSubmissionDeadline');
-  const mWinnerDate = document.getElementById('mWinnerDate');
-  const mBenefits = document.getElementById('mBenefits');
-  const mAgeCategories = document.getElementById('mAgeCategories');
-  const mClose = document.getElementById('mClose');
-  const mOk = document.getElementById('mOk');
-
+  // Modal
+  const modal=document.getElementById('modal');
   function openModal(card){
-    const title = card.dataset.title || '';
-    const price = Number(card.dataset.price || 0);
-    const registrationDeadline = card.dataset.registrationDeadline || '-';
-    const submissionDeadline = card.dataset.submissionDeadline || '-';
-    const winnerDate = card.dataset.winnerDate || '-';
-    const prize = card.dataset.prize || '';
-    const img = card.dataset.img || '';
-
-    let rules = [], benefits = [], ageCategories = [];
-    try { rules = JSON.parse(card.dataset.rules || '[]'); } catch(e){}
-    try { benefits = JSON.parse(card.dataset.benefits || '[]'); } catch(e){}
-    try { ageCategories = JSON.parse(card.dataset.ageCategories || '[]'); } catch(e){}
-
-    mTitle.textContent = title;
-    mPrice.textContent = `₹${price}`;
-    mRegistrationDeadline.textContent = `Registration: ${registrationDeadline}`;
-    mSubmissionDeadline.textContent = `Submission: ${submissionDeadline}`;
-    mWinnerDate.textContent = `Winners: ${winnerDate}`;
-    mPrize.textContent = prize || 'Prize details will be updated soon.';
-
-    if (img) {
-      mImg.src = img + '?v=20260320-1';
-      mImg.style.display = 'block';
-    } else {
-      mImg.removeAttribute('src');
-      mImg.style.display = 'none';
-    }
-
-    mRules.innerHTML = '';
-    (rules.length ? rules : ['Contest rules will be updated soon.']).forEach(r => {
-      const li = document.createElement('li');
-      li.textContent = String(r);
-      mRules.appendChild(li);
-    });
-
-    mBenefits.innerHTML = '';
-    (benefits.length ? benefits : ['Participant benefits will be updated soon.']).forEach(b => {
-      const li = document.createElement('li');
-      li.textContent = String(b);
-      mBenefits.appendChild(li);
-    });
-
-    mAgeCategories.innerHTML = '';
-    (ageCategories.length ? ageCategories : ['Age categories will be updated soon.']).forEach(a => {
-      const li = document.createElement('li');
-      li.textContent = String(a);
-      mAgeCategories.appendChild(li);
-    });
-
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
+    const title=card.dataset.title||'';const isCombo=title.toLowerCase().includes('combo');
+    document.getElementById('mTitle').textContent=title;
+    document.getElementById('mPrice').textContent='₹'+Number(card.dataset.price||0);
+    document.getElementById('mReg').textContent='Reg: '+(card.dataset.registrationDeadline||'-');
+    document.getElementById('mSub').textContent='Submit: '+(card.dataset.submissionDeadline||'-');
+    document.getElementById('mWin').textContent='Winners: '+(card.dataset.winnerDate||'-');
+    document.getElementById('mPrize').textContent=card.dataset.prize||'Prize details coming soon.';
+    const img=document.getElementById('mImg');
+    let src=card.dataset.img;
+    if(!src&&isCombo)src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Lord_Krishna_with_Radha.jpg/640px-Lord_Krishna_with_Radha.jpg';
+    if(src){img.src=src+'?v=1';img.style.display='block'}else{img.style.display='none'}
+    ['mBenefits','mAges','mRules'].forEach(id=>{document.getElementById(id).innerHTML=''});
+    let rules=[],benefits=[],ages=[];
+    try{rules=JSON.parse(card.dataset.rules||'[]')}catch{}
+    try{benefits=JSON.parse(card.dataset.benefits||'[]')}catch{}
+    try{ages=JSON.parse(card.dataset.ageCategories||'[]')}catch{}
+    [...(benefits.length?benefits:[]),...EXTRA_BENEFITS].forEach(b=>{const li=document.createElement('li');li.textContent=String(b);document.getElementById('mBenefits').appendChild(li)});
+    [...(rules.length?rules:[]),...EXTRA_RULES].forEach(r=>{const li=document.createElement('li');li.textContent=String(r);document.getElementById('mRules').appendChild(li)});
+    (ages.length?ages:['To be announced']).forEach(a=>{const li=document.createElement('li');li.textContent=String(a);document.getElementById('mAges').appendChild(li)});
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
   }
+  function closeModal(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');document.body.style.overflow=''}
+  document.querySelectorAll("[data-open-details='1']").forEach(btn=>{btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const card=btn.closest('.contest');if(card)openModal(card)})});
+  document.getElementById('mClose')?.addEventListener('click',closeModal);
+  document.getElementById('mOk')?.addEventListener('click',closeModal);
+  modal?.addEventListener('click',e=>{if(e.target===modal)closeModal()});
 
-  function closeModal(){
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
-  }
-
-  document.querySelectorAll("[data-open-details='1']").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const card = btn.closest(".contest");
-      if (card) openModal(card);
-    });
-  });
-
-  mClose?.addEventListener("click", closeModal);
-  mOk?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if(e.target === modal) closeModal();
-  });
-
-  document.querySelector(".logoutBtn")?.addEventListener("click", function(e){
-    if(!confirm("Are you sure you want to logout?")){
-      e.preventDefault();
-    }
-  });
-
-  updateCartBadge();
+  // Initial load
   syncCardStates();
 })();
 </script>

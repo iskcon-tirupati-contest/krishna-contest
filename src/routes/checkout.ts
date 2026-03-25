@@ -10,14 +10,20 @@ const BOOKS = [
   "Bhagavad Gita",
   "Krishna Book",
   "Ramayana",
-  "Bhagavatam",
-  "Science of Self Realization"
+  "Bhagavatam"
 ];
 
 const LANGUAGES = ["English", "Tamil", "Telugu", "Kannada", "Hindi"];
 
 const RZP_KEY_ID = process.env.RZP_KEY_ID || "";
 const RZP_KEY_SECRET = process.env.RZP_KEY_SECRET || "";
+
+function calcSsrCountFromRows(rows: Array<{ quantity?: number }>) {
+  const totalQty = rows.reduce((sum, row) => sum + Number(row.quantity || 0), 0);
+  return Math.floor(totalQty / 4);
+}
+
+
 
 function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -56,6 +62,7 @@ function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
 function renderReview(res: any, data: any) {
   return res.render("checkout-review", data);
 }
+
 
 
 router.get("/checkout/review", authMiddleware, async (req: any, res) => {
@@ -104,6 +111,8 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
+  const ssrCount = calcSsrCountFromRows(cartQ.rows || []);
+
   return renderReview(res, {
     paymentId: "",
     orders: expandedRows,
@@ -113,6 +122,8 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     shipment: null,
     deliveryMode: "deliver",
     error: null,
+    ssrCount,
+    ssrSelectedLanguages: [],
   });
 });
 
@@ -153,6 +164,8 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
     }
   }
 
+ const ssrCount = calcSsrCountFromRows(cartQ.rows || []);
+
   const userQ = await pool.query(
     `SELECT name, email, phone, phone_locked, address, city, state, pincode
      FROM users
@@ -162,9 +175,9 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   const user = userQ.rows[0] || null;
 
   const renderError = async (msg: string) => {
-    return renderReview(res, {
+     return renderReview(res, {
       paymentId: "",
-      orders: expandedRows,
+      orders: hydratedOrders,
       user: {
         ...(user || {}),
         name: req.body.fullName || user?.name || "",
@@ -179,13 +192,15 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
       shipment: null,
       deliveryMode: String(req.body.deliveryMode || "deliver"),
       error: msg,
+      ssrCount,
+      ssrSelectedLanguages: savedSsrLanguages,
     });
   };
 
-  const deliveryMode = String(req.body.deliveryMode || "").trim();
-  if (deliveryMode !== "deliver" && deliveryMode !== "donate") {
-    return renderError("Please choose Home Delivery or Donation.");
-  }
+const deliveryMode = String(req.body.deliveryMode || "").trim();
+if (!["deliver", "donate", "temple_pickup"].includes(deliveryMode)) {
+  return renderError("Please choose Home Delivery, Donation, or Collect directly from temple.");
+}
 
   const phoneStr = String(req.body.phone || "").trim();
   if (!/^[6-9]\d{9}$/.test(phoneStr)) {
@@ -193,19 +208,27 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   }
 
   const existingPhone = user?.phone ? String(user.phone).trim() : "";
-  if (existingPhone && existingPhone !== phoneStr) {
-    return renderError("Mobile number cannot be changed. Please use your registered mobile number.");
+if (!existingPhone) {
+  const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
+  if (clash.rows.length > 0) {
+    return renderError("This mobile number is already registered. Please login with that number.");
   }
-  if (!existingPhone) {
-    const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
-    if (clash.rows.length > 0) return renderError("This mobile number is already registered. Please login with that number.");
-  }
+}
 
   const fullName = String(req.body.fullName || user?.name || "").trim();
   if (fullName.length < 2) return renderError("Full name is required.");
 
   const bookTitleArr = ([] as any[]).concat(req.body.bookTitle || []);
   const bookLangArr = ([] as any[]).concat(req.body.bookLanguage || []);
+  const ssrLangArr = ([] as any[]).concat(req.body.ssrLanguage || []);
+
+  const hydratedOrders = expandedRows.map((row, i) => ({
+    ...row,
+    saved_book_title: String(bookTitleArr[i] || "").trim(),
+    saved_book_language: String(bookLangArr[i] || "").trim(),
+  }));
+
+  const savedSsrLanguages = ssrLangArr.map((x: any) => String(x || "").trim());
 
   if (deliveryMode === "deliver") {
     const address = String(req.body.address || "").trim();
@@ -224,6 +247,17 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
       return renderError("Please select Book + Language for each contest row.");
     }
 
+    if (ssrLangArr.length !== ssrCount) {
+      return renderError("Please select language for all free Science of Self Realization books.");
+    }
+
+    for (let i = 0; i < ssrCount; i++) {
+      const lang = String(ssrLangArr[i] || "").trim();
+      if (!lang) {
+        return renderError("Please select language for all free Science of Self Realization books.");
+      }
+    }
+
     for (let i = 0; i < expandedRows.length; i++) {
       const bt = String(bookTitleArr[i] || "").trim();
       const bl = String(bookLangArr[i] || "").trim();
@@ -236,12 +270,12 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
 
   await pool.query("BEGIN");
   try {
-    if (!existingPhone) {
+   /* if (!existingPhone) {
       await pool.query(`UPDATE users SET phone=$1, phone_locked=true WHERE id=$2`, [phoneStr, userId]);
     }
 
     await pool.query(`UPDATE users SET name=$1 WHERE id=$2`, [fullName, userId]);
-
+*/
     const createdOrderIds: string[] = [];
 
     for (let i = 0; i < expandedRows.length; i++) {
@@ -267,7 +301,7 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
       createdOrderIds.push(ins.rows[0].id);
     }
 
-    if (deliveryMode === "donate") {
+   /* if (deliveryMode === "donate") {
       await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
       await pool.query("COMMIT");
       return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
@@ -286,6 +320,37 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
     );
 
     const shipmentId = createdShipment.rows[0].id;
+*/
+
+      if (deliveryMode === "donate") {
+          await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
+          await pool.query("COMMIT");
+          return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
+        }
+
+        const address = String(req.body.address || "").trim();
+        const city = String(req.body.city || "").trim();
+        const state = String(req.body.state || "").trim();
+        const pincode = String(req.body.pincode || "").trim();
+
+        const shipmentInsert =
+          deliveryMode === "temple_pickup"
+            ? await pool.query(
+                `INSERT INTO shipments
+                 (payment_id, recipient_name, recipient_phone, delivery_mode, status, updated_at)
+                 VALUES ($1,$2,$3,'temple_pickup','pending',NOW())
+                 RETURNING id`,
+                [paymentId, fullName, phoneStr]
+              )
+            : await pool.query(
+                `INSERT INTO shipments
+                 (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,'home_delivery','pending',NOW())
+                 RETURNING id`,
+                [paymentId, fullName, phoneStr, address, city, state, pincode]
+              );
+
+    const shipmentId = shipmentInsert.rows[0].id;
 
     for (let i = 0; i < createdOrderIds.length; i++) {
       const orderId = createdOrderIds[i];
@@ -296,6 +361,16 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
         `INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
          VALUES ($1,$2,$3,$4)`,
         [shipmentId, orderId, bookTitle, bookLanguage]
+      );
+    }
+
+     for (let i = 0; i < ssrCount; i++) {
+      const ssrLanguage = String(ssrLangArr[i] || "").trim();
+
+      await pool.query(
+        `INSERT INTO shipment_bonus_items (shipment_id, book_title, book_language, quantity)
+         VALUES ($1,$2,$3,1)`,
+        [shipmentId, "Science of Self Realization", ssrLanguage]
       );
     }
 
@@ -317,9 +392,6 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   }
 });
 
-
-// Keep your old GET /checkout/bulk logic here if you still want dual inquiry/fallback,
-// or replace its final render with payment-success after paid.
 router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
   const paymentId = String(req.query.paymentId || "");
@@ -335,16 +407,53 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   );
   if (ordersQ.rows.length === 0) return res.status(404).send("Orders not found");
 
-    const paid = ordersQ.rows.every((o: any) => String(o.payment_status || "") === "paid");
+  const paid = ordersQ.rows.every((o: any) => String(o.payment_status || "") === "paid");
 
+  const shipQ = await pool.query(
+    `SELECT *
+     FROM shipments
+     WHERE payment_id=$1
+     LIMIT 1`,
+    [paymentId]
+  );
 
-    const shipQ = await pool.query(`SELECT * FROM shipments WHERE payment_id=$1 LIMIT 1`, [paymentId]);
+  const shipmentItemsQ = await pool.query(
+    `SELECT si.book_title, si.book_language, o.id AS order_id, c.title AS contest_title
+     FROM shipment_items si
+     JOIN orders o ON o.id = si.order_id
+     JOIN contests c ON c.id = o.contest_id
+     JOIN shipments sh ON sh.id = si.shipment_id
+     WHERE sh.payment_id=$1
+     ORDER BY c.title ASC`,
+    [paymentId]
+  );
+
+  const bonusItemsQ = await pool.query(
+    `SELECT book_title, book_language, quantity
+     FROM shipment_bonus_items sbi
+     JOIN shipments sh ON sh.id = sbi.shipment_id
+     WHERE sh.payment_id=$1
+     ORDER BY sbi.created_at ASC`,
+    [paymentId]
+  );
+
+  const userQ = await pool.query(
+    `SELECT name, phone
+     FROM users
+     WHERE id=$1
+     LIMIT 1`,
+    [userId]
+  );
 
   return res.render("payment-success", {
     paid,
     paymentId,
     orders: ordersQ.rows,
     shipment: shipQ.rows[0] || null,
+    shipmentItems: shipmentItemsQ.rows,
+    bonusItems: bonusItemsQ.rows,
+    user: userQ.rows[0] || null,
+    payment_session_id:ordersQ.rows[0].payment_session_id,
   });
 });
 

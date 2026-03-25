@@ -1,580 +1,584 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile - Krishna Wisdom Contest 2026</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile - Iskcon Tirupati Essay Contest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#f6f7fb;--card:#fff;--ink:#132238;--muted:#64748b;--line:#e7ecf3;
-      --primary:#1a237e;--primary2:#283593;--shadow:0 10px 26px rgba(15,23,42,.07);
-      --safe-bottom:calc(96px + env(safe-area-inset-bottom));
-    }
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:var(--safe-bottom)}
-    a{text-decoration:none;color:inherit}
-    input,textarea,select,button{font:inherit}
+    :root{--navy:#1a237e;--navy-mid:#283593;--navy-lt:#3949ab;--navy-ghost:#eef2ff;--green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;--red:#ef4444;--red-lt:#fee2e2;--red-dark:#991b1b;--bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;--text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;--text-faint:#94a3b8;--sh-sm:0 4px 16px rgba(26,35,126,.10);--sh-md:0 10px 30px rgba(26,35,126,.16);--safe-bottom:calc(76px + env(safe-area-inset-bottom))}
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding-bottom:var(--safe-bottom);-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}input,textarea,select,button{font:inherit}
     .app{max-width:560px;margin:0 auto;min-height:100vh}
-    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding-top:max(10px, env(safe-area-inset-top))}
-    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 14px}
-    .brand{display:flex;align-items:center;gap:10px}
-    .logo{width:40px;height:40px;border-radius:14px;overflow:hidden;background:#fff1;border:1px solid rgba(255,255,255,.18)}
-    .logo img{width:100%;height:100%;object-fit:cover}
-    .brandTitle{font-size:16px;font-weight:900;line-height:1.15}
-    .iconBtn{min-width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.12);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-    .page{padding:14px 12px 22px}
-    .hero{background:#fff;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
-    .hero h1{margin:0 0 6px;font-size:21px;color:#111827}
-    .hero p{margin:0;font-size:13px;color:#475569;line-height:1.6}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-    .tab{display:flex;align-items:center;justify-content:center;border:1px solid #dbe4ef;background:#fff;color:#334155;border-radius:14px;padding:12px;font-weight:900;cursor:pointer}
-    .tab.active{background:linear-gradient(135deg,var(--primary),#3949ab);color:#fff;border-color:transparent}
-    .card{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
-    .sectionCard{border:1px solid #e7edf6;border-radius:18px;padding:14px;background:#fbfdff}
-    .sectionCard + .sectionCard{margin-top:14px}
-    .sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-    .sectionTitle h3{margin:0;font-size:15px;color:#0f172a}
-    .sectionSub{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:12px}
-    .muted{color:var(--muted)}
-    .sep{height:1px;background:rgba(15,27,61,.10);margin:14px 0}
+    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);color:#fff;padding-top:max(10px,env(safe-area-inset-top));box-shadow:0 6px 24px rgba(26,35,126,.3)}
+    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px 13px;min-height:66px}
+.fieldHint{
+  min-height:16px;
+  margin-top:5px;
+  font-size:12px;
+  font-weight:600;
+  color:#dc2626;
+}
+    .brand{flex:1;min-width:0;display:flex;align-items:center;gap:8px;overflow:hidden}
+    .topbar-logo-wrap{flex-shrink:0;width:clamp(36px,9vw,46px);height:clamp(36px,9vw,46px);display:flex;align-items:center;justify-content:center}
+.topbar-logo-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35))}
+    .topbar-title{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.2}
+    .topbar-title-line1{font-family:'Sora',sans-serif;font-size:clamp(12px,3.2vw,16px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+    .topbar-title-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2.4vw,12px);font-weight:600;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+
+
+    .logoWrap{width:36px;height:36px;border-radius:11px;overflow:hidden;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);flex-shrink:0}
+    .logoWrap img{width:100%;height:100%;object-fit:cover}
+    .brandTitle{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;line-height:1.2;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .iconBtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:13px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.13);color:#fff;cursor:pointer;transition:background .16s,transform .12s}
+    .iconBtn:hover{background:rgba(255,255,255,.22)}.iconBtn:active{transform:scale(.93)}
+    .iconBtn svg{width:20px;height:20px;fill:currentColor}.iconBtn.danger svg{fill:#fca5a5}
+    .page {
+  padding: 14px 12px calc(var(--safe-bottom) + 20px);
+}
+    .hero{background:linear-gradient(135deg,#eef4ff 0%,#fff 60%,#fff8e6 100%);border:1.5px solid #d8e0f8;border-radius:24px;padding:16px;box-shadow:var(--sh-sm);margin-bottom:14px}
+    .hero h1{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text-h);margin-bottom:4px}
+    .hero p{font-size:13px;color:var(--text-muted);line-height:1.6}
+    .alert{padding:12px 14px;border-radius:12px;font-weight:600;font-size:14px;margin-bottom:12px}
+    .alert.err{background:var(--red-lt);border:1.5px solid #fecaca;color:var(--red-dark)}
+    .alert.ok{background:var(--green-lt);border:1.5px solid #a7f3d0;color:var(--green-dark)}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .tab{display:flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid var(--border-lt);background:#fff;color:var(--text-mid);border-radius:14px;padding:12px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:var(--sh-sm)}
+    .tab:hover{border-color:var(--navy-lt);color:var(--navy)}
+    .tab.active{background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(26,35,126,.25)}
+    .card{background:#fff;border:1.5px solid var(--border-lt);border-radius:22px;padding:0;box-shadow:0 6px 22px rgba(26,35,126,.12);overflow:hidden}
+    .sectionCard{padding:14px 16px;border-bottom:1.5px solid var(--border-lt)}
+    .sectionCard:last-child{border-bottom:none}
+    .sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .sectionHead h3{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);display:flex;align-items:center;gap:7px}
+    .sectionSub{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;margin-top:-6px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:600px){.grid2{grid-template-columns:1fr}}
-    label{display:block;font-size:12px;color:#64748b;font-weight:800;margin-bottom:6px}
-    .labelRow{display:flex;align-items:center;gap:6px}
-    .lockIcon{font-size:13px;line-height:1;color:#64748b}
-    .inputWrap{position:relative}
-    input,textarea,select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid rgba(15,23,42,.14);background:#fff;color:#132238}
-    input[readonly]{background:#f8fafc;color:#475569}
+    @media(max-width:440px){.grid2{grid-template-columns:1fr}}
+    .sep{height:1px;background:var(--border-lt);margin:12px 0}
+    label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;letter-spacing:.2px}
+    .labelRow{display:flex;align-items:center;gap:5px}
+    .lockIcon{font-size:12px;color:var(--text-faint)}
+    input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid #d1d8f0;border-radius:12px;background:#fff;color:var(--text-b);font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s}
+    input:focus,select:focus,textarea:focus{border-color:var(--navy-lt);box-shadow:0 0 0 3px rgba(92,107,192,.16)}
+    input[readonly]{background:#f1f5f9;color:var(--text-muted);cursor:default}
     textarea{min-height:72px;resize:vertical}
-    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer}
-    .btn.primary{background:var(--primary);color:#fff;width:100%}
-    .btn.ghost{background:#fff;border:1px solid #dbe4ef;color:#1e293b}
-    .alert{padding:12px;border-radius:12px;font-weight:800;margin-bottom:12px}
-    .alert.err{background:rgba(244,67,54,.10);border:1px solid rgba(244,67,54,.24);color:#b42318}
-    .alert.ok{background:rgba(76,175,80,.10);border:1px solid rgba(76,175,80,.24);color:#027a48}
-    .hint{font-size:12px;color:var(--muted);margin-top:6px}
-    .passwordRow{display:flex;gap:8px;align-items:center}
-    .passwordRow .inputWrap{flex:1}
-    .toggleEye{
-      position:absolute;right:10px;top:50%;transform:translateY(-50%);
-      width:34px;height:34px;border:none;background:transparent;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;color:#64748b;padding:0;
-    }
-    .inputWithIcon{padding-right:42px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:12px;padding:12px 16px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s,opacity .15s}
+    .btn:hover{transform:translateY(-1px)}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .btn-primary{background:linear-gradient(135deg,var(--navy),var(--navy-lt));color:#fff;box-shadow:0 5px 16px rgba(26,35,126,.25);width:100%}
+    .btn-primary:hover{box-shadow:0 8px 22px rgba(26,35,126,.35)}
+    .btn-ghost{background:#fff;border:1.5px solid var(--border);color:var(--text-b)}
+    .btn-ghost:hover{background:var(--navy-ghost);border-color:var(--navy-lt)}
+    /* STANDARD eye icon via SVG only, no emoji */
+    .inputWrap{position:relative}
+    .inputWithIcon{padding-right:44px}
+    .toggleEye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;transition:color .14s}
+    .toggleEye:hover{color:var(--navy)}
+    .toggleEye svg{width:18px;height:18px;fill:currentColor}
     .hiddenBlock{display:none}
-    .paymentCard{border:1px solid #e7edf6;border-radius:18px;padding:14px;margin-bottom:12px;background:#fbfdff}
+    .pwMsg{padding:10px 12px;border-radius:10px;font-weight:600;font-size:13px;margin-bottom:10px}
+    .pwMsg.err{background:var(--red-lt);border:1px solid #fecaca;color:var(--red-dark)}
+    .pwMsg.ok{background:var(--green-lt);border:1px solid #a7f3d0;color:var(--green-dark)}
+    .fieldError{border-color:#ef4444 !important;box-shadow:0 0 0 3px rgba(239,68,68,.12) !important}
+    .hint{font-size:12px;color:var(--text-faint);margin-top:5px}
+    /* payments */
+    .paymentCard{border-bottom:1.5px solid var(--border-lt);padding:14px 16px}
+    .paymentCard:last-child{border-bottom:none}
     .paymentHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .paymentRef{font-weight:900;color:#0f172a;font-size:14px}
-    .paymentMeta{font-size:12px;color:#64748b;line-height:1.6}
-    .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid #dbe4ef;background:#f8fafc;color:#334155}
-    .pill.ok{background:#ecfdf3;color:#166534;border-color:#bbf7d0}
-    .pill.fail{background:#fef2f2;color:#991b1b;border-color:#fecaca}
-    .pill.pending{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .miniBtn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;font-weight:900;border:1px solid #dbe4ef;background:#fff;color:#1e293b}
-    .miniBtn.primary{background:linear-gradient(135deg,var(--primary),#3949ab);border:none;color:#fff}
-    .inlineForm{margin-top:12px;padding:12px;border:1px solid #e6edf5;border-radius:16px;background:#fff}
-    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px, 100%);background:#fff;border-top:1px solid #e6edf6;box-shadow:0 -10px 24px rgba(15,23,42,.08);padding-bottom:max(10px, env(safe-area-inset-bottom));z-index:98}
-    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 0}
-    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#64748b;font-size:10px;font-weight:800;border-radius:14px;text-align:center}
-    .navBtn svg{width:20px;height:20px;fill:currentColor}
-    .navBtn.active{color:var(--primary);background:#eef2ff}
-
-
-
-
-    .sectionCard{border:1px solid #e7edf6;border-radius:18px;padding:14px;background:#fbfdff}
-.sectionCard + .sectionCard{margin-top:14px}
-.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-.sectionTitle h3{margin:0;font-size:15px;color:#0f172a}
-.sectionSub{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:12px}
-
-
-.passwordRow{display:flex;gap:8px;align-items:center}
-.passwordRow .inputWrap{flex:1}
-.inputWrap{position:relative}
-.inputWithIcon{padding-right:44px}
-.hiddenBlock{display:none}
-.toggleEye{
-  position:absolute;
-  right:10px;
-  top:50%;
-  transform:translateY(-50%);
-  width:32px;
-  height:32px;
-  border:none;
-  background:transparent;
-  color:#64748b;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-}
-.toggleEye:hover{color:#1a237e}
-.passwordInlineMsg{
-  padding:12px;
-  border-radius:12px;
-  font-weight:800;
-  margin-bottom:12px;
-}
-.passwordInlineMsg.err{
-  background:rgba(244,67,54,.10);
-  border:1px solid rgba(244,67,54,.24);
-  color:#b42318;
-}
-.passwordInlineMsg.ok{
-  background:rgba(76,175,80,.10);
-  border:1px solid rgba(76,175,80,.24);
-  color:#027a48;
-}
+    .paymentRef{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);margin-bottom:3px}
+    .paymentMeta{font-size:12px;color:var(--text-muted);line-height:1.7}
+    .pill{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700}
+    .pill-green{background:var(--green-lt);color:var(--green-dark);border:1px solid #a7f3d0}
+    .pill-red{background:var(--red-lt);color:var(--red-dark);border:1px solid #fecaca}
+    .pill-navy{background:var(--navy-ghost);color:var(--navy);border:1px solid var(--border)}
+    .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .miniBtn{display:inline-flex;align-items:center;justify-content:center;padding:9px 13px;border-radius:11px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:#fff;color:var(--text-b);cursor:pointer;transition:all .14s}
+    .miniBtn:hover{border-color:var(--navy-lt);color:var(--navy)}
+    .miniBtn.primary{background:linear-gradient(135deg,var(--navy),var(--navy-lt));border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(26,35,126,.22)}
+    .inlineForm{margin-top:10px;padding:12px;border:1.5px solid var(--border-lt);border-radius:14px;background:#fafbff}
+    .emptyMsg{padding:20px 16px;text-align:center;color:var(--text-muted);font-size:14px}
+    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);background:#fff;border-top:1.5px solid var(--border-lt);box-shadow:0 -6px 24px rgba(26,35,126,.09);padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:98}
+    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px 0}
+    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;color:var(--text-faint);font-size:10px;font-weight:700;border-radius:12px;text-align:center;transition:color .15s,background .15s}
+    .navBtn svg{width:20px;height:20px;fill:currentColor}.navBtn.active{color:var(--navy);background:var(--navy-ghost)}
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="topbarInner">
-        <div class="brand">
-          <div class="logo"><img src="/images/icon.png" alt="" onerror="this.style.display='none'"></div>
-          <div class="brandTitle">Krishna Wisdom Contest 2026</div>
+<div class="app">
+  <header class="topbar">
+    <div class="topbarInner">
+      <div class="brand">
+        <div class="topbar-logo-wrap">
+          <img src="/images/logo_new.png" alt="Iskcon Tirupati" class="topbar-logo-img" onerror="this.style.display='none'">
         </div>
-        <a class="iconBtn" href="/logout" title="Logout" aria-label="Logout">
-          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg>
-        </a>
-      </div>
-    </header>
-
-    <main class="page">
-      <section class="hero">
-        <h1>Profile & Account Settings</h1>
-        <p>View your registered details, update your contact information, and manage your password from one place.</p>
-      </section>
-
-      <% if (error) { %><div class="alert err"><%= error %></div><% } %>
-      <% if (success) { %><div class="alert ok"><%= success %></div><% } %>
-
-      <div class="tabs">
-        <a class="tab <%= profileTab === 'profile' ? 'active' : '' %>" href="/dashboard/profile?tab=profile">Profile</a>
-        <a class="tab <%= profileTab === 'payments' ? 'active' : '' %>" href="/dashboard/profile?tab=payments">My Payments</a>
+        <div class="topbar-title">
+          <span class="topbar-title-line1">Iskcon Tirupati</span>
+          <span class="topbar-title-line2">Essay Writing Contest</span>
+        </div>
       </div>
 
-      <% if (profileTab === 'profile') { %>
-        <div class="card">
-
-          <form method="POST" action="/dashboard/profile" id="profileForm" novalidate>
-            <div class="sectionCard">
-              <div class="sectionTitle">
-                <h3>Registered Identity</h3>
-              </div>
-
-              <div class="grid2">
-                <div>
-                  <label class="labelRow">
-                    <span>Full Name</span>
-                    <span class="lockIcon" aria-hidden="true">🔒</span>
-                  </label>
-                  <input value="<%= user.name || '' %>" readonly />
-                </div>
-                <div>
-                  <label class="labelRow">
-                    <span>Mobile Number</span>
-                    <span class="lockIcon" aria-hidden="true">🔒</span>
-                  </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    value="<%= user.phone || '' %>"
-                    readonly
-                    inputmode="numeric"
-                    maxlength="10"
-                  />
-                </div>
-              </div>
+      <a class="iconBtn danger" href="/logout" id="logoutBtn" title="Logout"><svg viewBox="0 0 24 24"><path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg></a>
+    </div>
+  </header>
+  <main class="page">
+    <section class="hero"><h1>My Profile 👤</h1><p>View registered details, update contact info, and manage your password.</p></section>
+    <% if(error){%><div class="alert err"><%= error %></div><%}%>
+    <% if(success){%><div class="alert ok"><%= success %></div><%}%>
+    <div class="tabs">
+      <a class="tab <%= profileTab==='profile'?'active':'' %>" href="/dashboard/profile?tab=profile"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg>Profile</a>
+      <a class="tab <%= profileTab==='payments'?'active':'' %>" href="/dashboard/profile?tab=payments"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2Zm0 14H4v-6h16v6Zm0-10H4V6h16v2Z"/></svg>My Payments</a>
+    </div>
+    <% if(profileTab==='profile'){ %>
+      <div class="card">
+        <form method="POST" action="/dashboard/profile" id="profileForm" novalidate>
+          <div class="sectionCard">
+            <div class="sectionHead"><h3>🔒 Registered Identity</h3></div>
+            <div class="grid2">
+              <div><label class="labelRow"><span>Full Name</span><span class="lockIcon">🔒</span></label><input value="<%= user.name||'' %>" readonly></div>
+              <div><label class="labelRow"><span>Mobile Number</span><span class="lockIcon">🔒</span></label><input id="phone" name="phone" value="<%= user.phone||'' %>" readonly inputmode="numeric" maxlength="10"></div>
             </div>
+          </div>
+          <div class="sectionCard">
+  <div class="sectionHead"><h3>📍 Contact & Address</h3></div>
 
-            <div class="sectionCard">
-              <div class="sectionTitle">
-                <h3>Contact & Address</h3>
-              </div>
+  <div class="grid2">
+    <div>
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        value="<%= (old&&old.email)||user.email||'' %>"
+        placeholder="Enter your email"
+        maxlength="150"
+      >
+      <div class="fieldHint" id="emailError"></div>
+    </div>
+
+    <div>
+      <label for="address">Address</label>
+      <textarea
+        id="address"
+        name="address"
+        placeholder="House no, Street, Area"
+        maxlength="500"
+      ><%= (old&&old.address)||(addr&&addr.address)||'' %></textarea>
+      <div class="fieldHint" id="addressError"></div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="grid2">
+    <div>
+      <label for="city">City</label>
+      <input
+        id="city"
+        name="city"
+        value="<%= (old&&old.city)||(addr&&addr.city)||'' %>"
+        placeholder="City"
+        maxlength="100"
+      >
+      <div class="fieldHint" id="cityError"></div>
+    </div>
+
+    <div>
+      <label for="state">State</label>
+      <select id="state" name="state">
+        <option value="">Select State</option>
+        <% const states=["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"]; %>
+        <% states.forEach(s=>{%>
+          <option value="<%= s %>" <%=(((old&&old.state)||(addr&&addr.state)||'')===s)?'selected':''%>><%= s %></option>
+        <%})%>
+      </select>
+      <div class="fieldHint" id="stateError"></div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <div style="max-width:180px">
+    <label for="pincode">Pincode</label>
+    <input
+      name="pincode"
+      id="pincode"
+      inputmode="numeric"
+      maxlength="6"
+      value="<%= (old&&old.pincode)||(addr&&addr.pincode)||'' %>"
+      placeholder="6-digit"
+    >
+    <div class="hint">6-digit Indian pincode</div>
+    <div class="fieldHint" id="pincodeError"></div>
+  </div>
+
+  <div id="profileFormMsg" class="pwMsg err" style="display:none;margin-top:12px"></div>
+
+  <div class="sep"></div>
+
+  <button class="btn btn-primary" type="submit" id="saveProfileBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V7l-4-4Zm2 16H5V5h11.17L19 7.83V19Zm-7-7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-5-5h8v4H7V7Z"/></svg>
+    Save Profile
+  </button>
+</div>
+        </form>
+        <!-- Password reset - always visible, not hidden behind scroll -->
+        <div class="sectionCard">
+          <div class="sectionHead"><h3>🔑 Reset Password</h3><button class="btn btn-ghost" type="button" id="showResetFieldsBtn" style="padding:8px 12px;font-size:12px">Reset</button></div>
+          <div class="sectionSub">Password must be at least 6 characters.</div>
+          <div id="passwordMsg" style="display:none"></div>
+          <form id="passwordForm" novalidate>
+            <div id="resetFields" class="hiddenBlock">
               <div class="grid2">
                 <div>
-                  <label class="labelRow">
-                    <span>Email</span>
-                    <% if (user.email) { %>
-                      <span class="lockIcon" style="visibility:hidden;">🔒</span>
-                    <% } %>
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value="<%= (old && old.email) || user.email || '' %>"
-                    placeholder="Enter your email address"
-                    autocomplete="email"
-                  />
+                  <label>New Password</label>
+                  <div class="inputWrap">
+                    <input id="newPassword" class="inputWithIcon" type="password" name="newPassword" placeholder="Min 6 characters" autocomplete="new-password">
+                    <!-- Standard eye icon: closed eye SVG = hide, open eye SVG = show -->
+                    <button class="toggleEye" type="button" data-target="newPassword" aria-label="Show/hide password">
+                      <svg class="eye-closed" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78 3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                      <svg class="eye-open" viewBox="0 0 24 24" style="display:none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    </button>
+                  </div>
                 </div>
                 <div>
-                  <label>Address</label>
-                  <textarea name="address" placeholder="House no, Street, Area"><%= (old && old.address) || (addr && addr.address) || '' %></textarea>
+                  <label>Re-enter Password</label>
+                  <div class="inputWrap">
+                    <input id="confirmNewPassword" class="inputWithIcon" type="password" name="confirmNewPassword" placeholder="Re-enter password" autocomplete="new-password">
+                    <button class="toggleEye" type="button" data-target="confirmNewPassword" aria-label="Show/hide password">
+                      <svg class="eye-closed" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78 3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+                      <svg class="eye-open" viewBox="0 0 24 24" style="display:none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
-
               <div class="sep"></div>
-
-              <div class="grid2">
-                <div>
-                  <label>City</label>
-                  <input name="city" value="<%= (old && old.city) || (addr && addr.city) || '' %>" />
-                </div>
-                <div>
-                  <label>State</label>
-                  <select name="state">
-                    <option value="">Select State</option>
-                    <% const states = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"]; %>
-                    <% states.forEach(s => { %>
-                      <option value="<%= s %>" <%= (((old && old.state) || (addr && addr.state) || '') === s) ? 'selected' : '' %>><%= s %></option>
-                    <% }) %>
-                  </select>
-                </div>
-              </div>
-
-              <div class="sep"></div>
-
-              <div class="grid2">
-                <div>
-                  <label>Pincode</label>
-                  <input name="pincode" id="pincode" inputmode="numeric" maxlength="6" value="<%= (old && old.pincode) || (addr && addr.pincode) || '' %>" />
-                  <div class="hint">6-digit Indian pincode</div>
-                </div>
-              </div>
-
-              <div class="sep"></div>
-              <button class="btn primary" type="submit">Save Profile</button>
+              <button class="btn btn-primary" type="submit" id="savePasswordBtn">Save New Password</button>
             </div>
           </form>
-
-
-          <div class="sectionCard">
-  <div class="sectionTitle">
-    <h3>Reset Password</h3>
-  </div>
-  <div class="sectionSub">Choose a new password for your account. It must be at least 6 characters.</div>
-
-  <div id="passwordMsg" style="display:none;"></div>
-
-  <form id="passwordForm" novalidate>
-    <div class="passwordRow" style="justify-content:flex-end;">
-      <button class="btn ghost" type="button" id="showResetFieldsBtn">Reset Password</button>
-    </div>
-
-    <div id="resetFields" class="hiddenBlock">
-      <div class="sep"></div>
-
-      <div class="grid2">
-        <div>
-          <label>New Password</label>
-          <div class="inputWrap">
-            <input
-              id="newPassword"
-              class="inputWithIcon"
-              type="password"
-              name="newPassword"
-              value=""
-              placeholder="Minimum 6 characters"
-              autocomplete="new-password"
-            />
-            <button class="toggleEye" type="button" data-target="newPassword" aria-label="Show or hide new password">
-              <span class="eyeIcon eyeOff" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M2.1 3.51 3.51 2.1l18.39 18.39-1.41 1.41-3.08-3.08A11.77 11.77 0 0 1 12 20C6.5 20 2 16 0 12c1.02-2.04 2.54-3.78 4.39-5.08L2.1 3.51Zm7.56 7.56A3 3 0 0 0 12.93 14.34l-3.27-3.27ZM12 6c5.5 0 10 4 12 8a12.7 12.7 0 0 1-3.59 4.35l-2.9-2.9A5 5 0 0 0 8.55 6.49L6.6 4.54A12.37 12.37 0 0 1 12 6Zm0 2a3.02 3.02 0 0 1 3 3c0 .35-.06.69-.17 1.01l-3.84-3.84c.32-.11.66-.17 1.01-.17Z"/>
-                </svg>
-              </span>
-              <span class="eyeIcon eyeOn" aria-hidden="true" style="display:none;">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M12 5c5.5 0 10 4 12 7-2 3-6.5 7-12 7S2 15 0 12c2-3 6.5-7 12-7Zm0 2C8 7 4.73 9.11 2.4 12 4.73 14.89 8 17 12 17s7.27-2.11 9.6-5C19.27 9.11 16 7 12 7Zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z"/>
-                </svg>
-              </span>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label>Re-enter New Password</label>
-          <div class="inputWrap">
-            <input
-              id="confirmNewPassword"
-              class="inputWithIcon"
-              type="password"
-              name="confirmNewPassword"
-              value=""
-              placeholder="Re-enter new password"
-              autocomplete="new-password"
-            />
-            <button class="toggleEye" type="button" data-target="confirmNewPassword" aria-label="Show or hide confirm password">
-              <span class="eyeIcon eyeOff" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M2.1 3.51 3.51 2.1l18.39 18.39-1.41 1.41-3.08-3.08A11.77 11.77 0 0 1 12 20C6.5 20 2 16 0 12c1.02-2.04 2.54-3.78 4.39-5.08L2.1 3.51Zm7.56 7.56A3 3 0 0 0 12.93 14.34l-3.27-3.27ZM12 6c5.5 0 10 4 12 8a12.7 12.7 0 0 1-3.59 4.35l-2.9-2.9A5 5 0 0 0 8.55 6.49L6.6 4.54A12.37 12.37 0 0 1 12 6Zm0 2a3.02 3.02 0 0 1 3 3c0 .35-.06.69-.17 1.01l-3.84-3.84c.32-.11.66-.17 1.01-.17Z"/>
-                </svg>
-              </span>
-              <span class="eyeIcon eyeOn" aria-hidden="true" style="display:none;">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                  <path fill="currentColor" d="M12 5c5.5 0 10 4 12 7-2 3-6.5 7-12 7S2 15 0 12c2-3 6.5-7 12-7Zm0 2C8 7 4.73 9.11 2.4 12 4.73 14.89 8 17 12 17s7.27-2.11 9.6-5C19.27 9.11 16 7 12 7Zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z"/>
-                </svg>
-              </span>
-            </button>
-          </div>
         </div>
       </div>
-
-      <div class="hint" style="margin-top:10px;">Password must be at least 6 characters.</div>
-      <div class="sep"></div>
-      <button class="btn primary" type="submit" id="savePasswordBtn">Save New Password</button>
-    </div>
-  </form>
-</div>
-
-
-
-        </div>
-      <% } else { %>
-        <div class="card">
-          <% if (!payments || !payments.length) { %>
-            <div class="muted">No payment attempts found yet.</div>
-          <% } else { %>
-            <% payments.forEach((p) => { %>
-              <div class="paymentCard">
-                <div class="paymentHead">
-                  <div>
-                    <div class="paymentRef">Reference: <%= p.internal_payment_id %></div>
-                    <div class="paymentMeta"><%= p.contest_titles %></div>
-                    <div class="paymentMeta"><%= p.created_at ? new Date(p.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '-' %></div>
-                    <div class="paymentMeta">Total: ₹<%= Number(p.total_amount || 0) %></div>
-                  </div>
-                  <div>
-                    <% if (String(p.status) === 'paid') { %>
-                      <span class="pill ok">Success</span>
-                    <% } else if (String(p.status) === 'failed') { %>
-                      <span class="pill fail">Failed</span>
-                    <% } else { %>
-                      <span class="pill pending">Pending</span>
-                    <% } %>
-                  </div>
-                </div>
-
-                <div class="actions">
-                  <% if (String(p.status) === 'pending') { %>
-                    <a class="miniBtn primary" href="/payment/embedded?paymentId=<%= encodeURIComponent(p.internal_payment_id) %>">Resume Payment</a>
-                  <% } %>
-
-                  <% if (String(p.status) === 'failed') { %>
-                    <a class="miniBtn primary" href="/payment/embedded?paymentId=<%= encodeURIComponent(p.internal_payment_id) %>">Retry Payment</a>
-                  <% } %>
-
-                  <% if (String(p.status) !== 'paid') { %>
-                    <button class="miniBtn" type="button" onclick="toggleComplaint('<%= p.internal_payment_id %>')">Raise Complaint</button>
-                  <% } %>
-                </div>
-
-                <% if (String(p.status) !== 'paid') { %>
-                  <div class="inlineForm" id="complaint-<%= p.internal_payment_id %>" style="display:none;">
-                    <form method="POST" action="/dashboard/help/ticket">
-                      <input type="hidden" name="category" value="payment">
-                      <input type="hidden" name="transactionRef" value="<%= p.internal_payment_id %>">
-                      <label>Message</label>
-                      <textarea name="message" placeholder="Describe the issue, transaction reference, or amount problem" required></textarea>
-                      <div class="sep"></div>
-                      <button class="miniBtn primary" type="submit">Submit Complaint</button>
-                    </form>
-                  </div>
-                <% } %>
+    <% }else{ %>
+      <div class="card">
+        <% if(!payments||!payments.length){ %>
+          <div class="emptyMsg">No payment history found yet.</div>
+        <% }else{ %>
+          <% payments.forEach(p=>{ %>
+            <div class="paymentCard">
+              <div class="paymentHead">
+                <div><div class="paymentRef">Ref: <%= p.internal_payment_id %></div><div class="paymentMeta"><%= p.contest_titles %></div><div class="paymentMeta"><%= p.created_at?new Date(p.created_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}):'-' %></div><div class="paymentMeta" style="font-weight:600;color:var(--text-mid)">₹<%= Number(p.total_amount||0) %></div></div>
+                <div><% if(String(p.status)==='paid'){%><span class="pill pill-green">✓ Success</span><%}else if(String(p.status)==='failed'){%><span class="pill pill-red">✗ Failed</span><%}else{%><span class="pill pill-navy">⏳ Pending</span><%}%></div>
               </div>
-            <% }) %>
-          <% } %>
-        </div>
-      <% } %>
-    </main>
-
-    <nav class="bottomNav">
-      <div class="bottomNavInner">
-        <a class="navBtn" href="/dashboard">
-          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span>
-        </a>
-        <a class="navBtn" href="/dashboard/my-contests">
-          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span>
-        </a>
-        <a class="navBtn active" href="/dashboard/profile">
-          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span>
-        </a>
-        <a class="navBtn" href="/dashboard/delivery">
-          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span>
-        </a>
-        <a class="navBtn" href="/dashboard/help">
-          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span>
-        </a>
+              <div class="actions">
+                <% if(String(p.status)==='pending'){%><a class="miniBtn primary" href="/payment/embedded?paymentId=<%= encodeURIComponent(p.internal_payment_id) %>">Resume Payment</a><%}%>
+                <% if(String(p.status)==='failed'){%><a class="miniBtn primary" href="/payment/embedded?paymentId=<%= encodeURIComponent(p.internal_payment_id) %>">Retry Payment</a><%}%>
+                <% if(String(p.status)!=='paid'){%><button class="miniBtn" type="button" onclick="toggleComplaint('<%= p.internal_payment_id %>')">Raise Complaint</button><%}%>
+              </div>
+              <% if(String(p.status)!=='paid'){%>
+                <div class="inlineForm" id="complaint-<%= p.internal_payment_id %>" style="display:none">
+                  <form method="POST" action="/dashboard/help/ticket">
+                    <input type="hidden" name="category" value="payment">
+                    <input type="hidden" name="transactionRef" value="<%= p.internal_payment_id %>">
+                    <label>Describe the issue</label>
+                    <textarea name="message" placeholder="Transaction reference, amount problem, etc." required></textarea>
+                    <div style="margin-top:10px"><button class="miniBtn primary" type="submit">Submit Complaint</button></div>
+                  </form>
+                </div>
+              <%}%>
+            </div>
+          <% }) %>
+        <% } %>
       </div>
-    </nav>
-  </div>
-
+    <% } %>
+  </main>
+  <nav class="bottomNav">
+    <div class="bottomNavInner">
+      <a class="navBtn" href="/dashboard"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
+      <a class="navBtn" href="/dashboard/my-contests"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span></a>
+      <a class="navBtn active" href="/dashboard/profile"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span></a>
+      <a class="navBtn" href="/dashboard/delivery"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span></a>
+      <a class="navBtn" href="/dashboard/help"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span></a>
+    </div>
+  </nav>
+</div>
 <script>
-(function () {
-  const pin = document.getElementById("pincode");
-  const showResetFieldsBtn = document.getElementById("showResetFieldsBtn");
-  const resetFields = document.getElementById("resetFields");
-  const passwordForm = document.getElementById("passwordForm");
-  const passwordMsg = document.getElementById("passwordMsg");
-  const newPassword = document.getElementById("newPassword");
-  const confirmNewPassword = document.getElementById("confirmNewPassword");
-  const savePasswordBtn = document.getElementById("savePasswordBtn");
+(function(){
+  const pin=document.getElementById('pincode');
+  const showBtn=document.getElementById('showResetFieldsBtn');
+  const resetFields=document.getElementById('resetFields');
+  const pwForm=document.getElementById('passwordForm');
+  const pwMsg=document.getElementById('passwordMsg');
+  const newPw=document.getElementById('newPassword');
+  const confirmPw=document.getElementById('confirmNewPassword');
+  const savePwBtn=document.getElementById('savePasswordBtn');
 
-  function digitsOnly(el, max){
-    if(!el) return;
-    el.addEventListener("input", () => {
-      el.value = el.value.replace(/\D/g,"").slice(0,max);
+  const profileForm=document.getElementById('profileForm');
+  const profileMsg=document.getElementById('profileFormMsg');
+  const saveProfileBtn=document.getElementById('saveProfileBtn');
+
+  const email=document.getElementById('email');
+  const address=document.getElementById('address');
+  const city=document.getElementById('city');
+  const state=document.getElementById('state');
+
+  const emailError=document.getElementById('emailError');
+  const addressError=document.getElementById('addressError');
+  const cityError=document.getElementById('cityError');
+  const stateError=document.getElementById('stateError');
+  const pincodeError=document.getElementById('pincodeError');
+
+  if(pin){
+    pin.addEventListener('input',()=>{
+      pin.value=pin.value.replace(/\D/g,'').slice(0,6);
+      clearInvalid(pin, pincodeError);
     });
   }
 
-  function showPasswordMessage(type, text) {
-    if (!passwordMsg) return;
-    passwordMsg.className = "passwordInlineMsg " + (type === "ok" ? "ok" : "err");
-    passwordMsg.textContent = text;
-    passwordMsg.style.display = "block";
+  function showPwMsg(type,text){
+    if(!pwMsg)return;
+    pwMsg.className='pwMsg '+type;
+    pwMsg.textContent=text;
+    pwMsg.style.display='block';
   }
 
-  function clearPasswordMessage() {
-    if (!passwordMsg) return;
-    passwordMsg.style.display = "none";
-    passwordMsg.className = "";
-    passwordMsg.textContent = "";
+  function clearPwMsg(){
+    if(!pwMsg)return;
+    pwMsg.style.display='none';
+    pwMsg.textContent='';
   }
 
-  function openResetFields() {
-    if (!resetFields || !showResetFieldsBtn) return;
-    resetFields.style.display = "block";
-    showResetFieldsBtn.textContent = "Cancel";
+  function showProfileMsg(text){
+    if(!profileMsg)return;
+    profileMsg.textContent=text;
+    profileMsg.style.display='block';
   }
 
-  function closeResetFields() {
-    if (!resetFields || !showResetFieldsBtn) return;
-    resetFields.style.display = "none";
-    showResetFieldsBtn.textContent = "Reset Password";
+  function clearProfileMsg(){
+    if(!profileMsg)return;
+    profileMsg.style.display='none';
+    profileMsg.textContent='';
   }
 
-  function updateEyeState(btn, input) {
-    const eyeOff = btn.querySelector(".eyeOff");
-    const eyeOn = btn.querySelector(".eyeOn");
-    const isHidden = input.type === "password";
-    if (eyeOff) eyeOff.style.display = isHidden ? "inline-flex" : "none";
-    if (eyeOn) eyeOn.style.display = isHidden ? "none" : "inline-flex";
+  function markInvalid(el, hintEl, text){
+    if(el) el.classList.add('fieldError');
+    if(hintEl) hintEl.textContent=text || '';
   }
 
-  digitsOnly(pin, 6);
+  function clearInvalid(el, hintEl){
+    if(el) el.classList.remove('fieldError');
+    if(hintEl) hintEl.textContent='';
+  }
 
-  if (showResetFieldsBtn && resetFields) {
-    showResetFieldsBtn.addEventListener("click", function () {
-      clearPasswordMessage();
-      const isOpen = resetFields.style.display === "block";
-      if (isOpen) {
-        closeResetFields();
-        if (newPassword) newPassword.value = "";
-        if (confirmNewPassword) confirmNewPassword.value = "";
-      } else {
-        openResetFields();
-        if (newPassword) newPassword.focus();
+  function clearAllProfileErrors(){
+    clearProfileMsg();
+    clearInvalid(email, emailError);
+    clearInvalid(address, addressError);
+    clearInvalid(city, cityError);
+    clearInvalid(state, stateError);
+    clearInvalid(pin, pincodeError);
+  }
+
+  function isValidEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim().toLowerCase());
+  }
+
+  function isValidIndianPincode(v){
+    return /^[1-9]\d{5}$/.test(String(v||'').trim());
+  }
+
+  email?.addEventListener('input',()=>clearInvalid(email,emailError));
+  address?.addEventListener('input',()=>clearInvalid(address,addressError));
+  city?.addEventListener('input',()=>clearInvalid(city,cityError));
+  state?.addEventListener('change',()=>clearInvalid(state,stateError));
+  pin?.addEventListener('input',()=>clearInvalid(pin,pincodeError));
+
+  if(profileForm){
+    profileForm.addEventListener('submit',function(e){
+      clearAllProfileErrors();
+
+      const emailVal=(email?.value||'').trim();
+      const addressVal=(address?.value||'').trim();
+      const cityVal=(city?.value||'').trim();
+      const stateVal=(state?.value||'').trim();
+      const pinVal=(pin?.value||'').trim();
+
+      if(!emailVal){
+        e.preventDefault();
+        markInvalid(email,emailError,'Email is required');
+        showProfileMsg('Please enter your email address.');
+        email?.focus();
+        return;
+      }
+
+      if(!isValidEmail(emailVal)){
+        e.preventDefault();
+        markInvalid(email,emailError,'Enter a valid email address');
+        showProfileMsg('Please enter a valid email address.');
+        email?.focus();
+        return;
+      }
+
+      if(!addressVal){
+        e.preventDefault();
+        markInvalid(address,addressError,'Address is required');
+        showProfileMsg('Please enter your address.');
+        address?.focus();
+        return;
+      }
+
+      if(addressVal.length < 5){
+        e.preventDefault();
+        markInvalid(address,addressError,'Address is too short');
+        showProfileMsg('Please enter a valid address.');
+        address?.focus();
+        return;
+      }
+
+      if(!cityVal){
+        e.preventDefault();
+        markInvalid(city,cityError,'City is required');
+        showProfileMsg('Please enter your city.');
+        city?.focus();
+        return;
+      }
+
+      if(cityVal.length < 2){
+        e.preventDefault();
+        markInvalid(city,cityError,'City name is too short');
+        showProfileMsg('Please enter a valid city.');
+        city?.focus();
+        return;
+      }
+
+      if(!stateVal){
+        e.preventDefault();
+        markInvalid(state,stateError,'Please select a state');
+        showProfileMsg('Please select your state.');
+        state?.focus();
+        return;
+      }
+
+      if(!pinVal){
+        e.preventDefault();
+        markInvalid(pin,pincodeError,'Pincode is required');
+        showProfileMsg('Please enter your pincode.');
+        pin?.focus();
+        return;
+      }
+
+      if(!isValidIndianPincode(pinVal)){
+        e.preventDefault();
+        markInvalid(pin,pincodeError,'Enter a valid 6-digit Indian pincode');
+        showProfileMsg('Please enter a valid 6-digit Indian pincode.');
+        pin?.focus();
+        return;
+      }
+
+      if(saveProfileBtn){
+        saveProfileBtn.disabled=true;
+        saveProfileBtn.innerHTML='Saving...';
       }
     });
   }
 
-  document.querySelectorAll(".toggleEye").forEach(function (btn) {
-    const targetId = btn.getAttribute("data-target");
-    const input = targetId ? document.getElementById(targetId) : null;
-    if (!input) return;
+  if(showBtn&&resetFields){
+    showBtn.addEventListener('click',()=>{
+      clearPwMsg();
+      const open=resetFields.style.display==='block';
+      resetFields.style.display=open?'none':'block';
+      showBtn.textContent=open?'Reset':'Cancel';
+      if(!open&&newPw)newPw.focus();
+      if(open){
+        if(newPw)newPw.value='';
+        if(confirmPw)confirmPw.value='';
+      }
+    });
+  }
 
-    updateEyeState(btn, input);
-
-    btn.addEventListener("click", function () {
-      input.type = input.type === "password" ? "text" : "password";
-      updateEyeState(btn, input);
+  document.querySelectorAll('.toggleEye').forEach(btn=>{
+    const targetId=btn.getAttribute('data-target');
+    const input=targetId?document.getElementById(targetId):null;
+    if(!input)return;
+    btn.addEventListener('click',()=>{
+      const isPass=input.type==='password';
+      input.type=isPass?'text':'password';
+      btn.querySelector('.eye-closed').style.display=isPass?'none':'block';
+      btn.querySelector('.eye-open').style.display=isPass?'block':'none';
     });
   });
 
-  if (passwordForm) {
-    passwordForm.addEventListener("submit", async function (e) {
+  if(pwForm){
+    pwForm.addEventListener('submit',async e=>{
       e.preventDefault();
-      clearPasswordMessage();
-      openResetFields();
+      clearPwMsg();
+      if(resetFields)resetFields.style.display='block';
+      const newVal=newPw?newPw.value.trim():'';
+      const confirmVal=confirmPw?confirmPw.value.trim():'';
 
-      const newVal = newPassword ? newPassword.value.trim() : "";
-      const confirmVal = confirmNewPassword ? confirmNewPassword.value.trim() : "";
-
-      if (!newVal || !confirmVal) {
-        showPasswordMessage("err", "Please enter and confirm your new password.");
-        if (newPassword) newPassword.focus();
+      if(!newVal||!confirmVal){
+        showPwMsg('err','Please enter and confirm your new password.');
+        if(newPw)newPw.focus();
+        return;
+      }
+      if(newVal.length<6){
+        showPwMsg('err','Password must be at least 6 characters.');
+        if(newPw)newPw.focus();
+        return;
+      }
+      if(newVal!==confirmVal){
+        showPwMsg('err','Passwords do not match.');
+        if(confirmPw)confirmPw.focus();
         return;
       }
 
-      if (newVal.length < 6) {
-        showPasswordMessage("err", "New password must be at least 6 characters.");
-        if (newPassword) newPassword.focus();
-        return;
-      }
-
-      if (newVal !== confirmVal) {
-        showPasswordMessage("err", "New passwords do not match.");
-        if (confirmNewPassword) confirmNewPassword.focus();
-        return;
-      }
-
-      try {
-        if (savePasswordBtn) {
-          savePasswordBtn.disabled = true;
-          savePasswordBtn.textContent = "Saving...";
+      try{
+        if(savePwBtn){
+          savePwBtn.disabled=true;
+          savePwBtn.textContent='Saving...';
         }
+        const formData=new URLSearchParams();
+        formData.append('newPassword',newVal);
+        formData.append('confirmNewPassword',confirmVal);
 
-        const formData = new URLSearchParams();
-        formData.append("newPassword", newVal);
-        formData.append("confirmNewPassword", confirmVal);
-
-        const response = await fetch("/dashboard/profile/password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "X-Requested-With": "XMLHttpRequest"
+        const response=await fetch('/dashboard/profile/password',{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With':'XMLHttpRequest'
           },
-          body: formData.toString()
+          body:formData.toString()
         });
 
-        const data = await response.json();
+        const data=await response.json();
 
-        if (!response.ok || !data.ok) {
-          showPasswordMessage("err", data.message || "Unable to reset password.");
-          openResetFields();
+        if(!response.ok||!data.ok){
+          showPwMsg('err',data.message||'Unable to reset password.');
           return;
         }
 
-        showPasswordMessage("ok", data.message || "Password reset successfully.");
-        if (newPassword) newPassword.value = "";
-        if (confirmNewPassword) confirmNewPassword.value = "";
-        closeResetFields();
-      } catch (err) {
-        showPasswordMessage("err", "Unable to reset password right now. Please try again.");
-        openResetFields();
-      } finally {
-        if (savePasswordBtn) {
-          savePasswordBtn.disabled = false;
-          savePasswordBtn.textContent = "Save New Password";
+        showPwMsg('ok',data.message||'Password reset successfully.');
+        if(newPw)newPw.value='';
+        if(confirmPw)confirmPw.value='';
+        if(resetFields)resetFields.style.display='none';
+        if(showBtn)showBtn.textContent='Reset';
+      }catch{
+        showPwMsg('err','Unable to reset right now. Please try again.');
+      }finally{
+        if(savePwBtn){
+          savePwBtn.disabled=false;
+          savePwBtn.textContent='Save New Password';
         }
       }
     });
   }
-})();
 
+  document.getElementById('logoutBtn')?.addEventListener('click',function(e){
+    if(!confirm('Are you sure you want to logout?'))e.preventDefault()
+  });
+})();
 function toggleComplaint(id){
-  const el = document.getElementById("complaint-" + id);
-  if (!el) return;
-  el.style.display = el.style.display === "none" ? "block" : "none";
+  const el=document.getElementById('complaint-'+id);
+  if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none'
 }
 </script>
-
-
-
 </body>
 </html>

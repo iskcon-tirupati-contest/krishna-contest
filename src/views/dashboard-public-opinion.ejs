@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Public Opinion – Iskcon Tirupati Essay Contest</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#1a237e;--navy2:#283593;--navy3:#3949ab;
+      --gold:#f59e0b;--gold-lt:#fef3c7;--gold-dark:#92400e;
+      --green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;
+      --bg:#eef1fb;--surface:#fff;
+      --border:#c5cae9;--border-lt:#e8eaf6;
+      --text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;
+      --sh:0 8px 28px rgba(26,35,126,.12);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);-webkit-font-smoothing:antialiased;padding-bottom:60px}
+    a{text-decoration:none;color:inherit}
+
+    /* ── TOPBAR ── */
+    .topbar{background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);padding:0 20px;box-shadow:0 4px 18px rgba(26,35,126,.25);position:sticky;top:0;z-index:100}
+    .topbar-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px;height:56px;justify-content:space-between}
+    .topbar-brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+    .topbar-logo{width:36px;height:36px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#283593,#3949ab);border:1.5px solid rgba(255,215,0,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .topbar-logo img{width:100%;height:100%;object-fit:contain}
+    .topbar-logo svg{width:18px;height:18px;fill:#ffd700}
+    .topbar-line1{font-family:'Sora',sans-serif;font-size:clamp(11px,3vw,14px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2vw,11px);font-weight:600;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* ── HERO ── */
+    .hero{background:linear-gradient(135deg,#1a237e 0%,#283593 60%,#3949ab 100%);padding:28px 20px 36px;text-align:center;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+    .hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:28px;background:var(--bg);border-radius:28px 28px 0 0}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);border-radius:999px;padding:5px 14px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:#fde68a;margin-bottom:14px;letter-spacing:.3px;text-transform:uppercase}
+    .hero h1{font-family:'Sora',sans-serif;font-size:clamp(20px,5vw,30px);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.2;position:relative;z-index:1}
+    .hero p{font-size:13px;color:rgba(255,255,255,.75);max-width:480px;margin:0 auto;line-height:1.6;position:relative;z-index:1}
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap{max-width:680px;margin:0 auto;padding:20px 16px 0}
+    .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .progress-label{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--text-muted)}
+    .progress-count{font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:var(--navy)}
+    .progress-track{height:8px;background:var(--border-lt);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy),var(--navy3));transition:width .4s cubic-bezier(.4,0,.2,1);width:0%}
+
+    /* ── FORM WRAP ── */
+    .form-wrap{max-width:680px;margin:0 auto;padding:16px 16px 0}
+
+    /* ── SECTION HEADER ── */
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--border-lt)}
+    .section-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--navy3));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .section-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--text-h)}
+    .section-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+
+    /* ── QUESTION CARD ── */
+    .q-card{
+      background:var(--surface);border:1.5px solid var(--border-lt);
+      border-radius:20px;box-shadow:var(--sh);overflow:hidden;
+      margin-bottom:12px;
+      transition:border-color .2s,box-shadow .2s;
+      display:none;/* hidden until active */
+    }
+    .q-card.visible{display:block;animation:slideUp .28s ease both}
+    .q-card.answered{border-color:rgba(16,185,129,.35);background:linear-gradient(135deg,#f0fdf4,#fff)}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+    .q-head{padding:14px 16px 0;display:flex;align-items:flex-start;gap:10px}
+    .q-num{
+      width:28px;height:28px;border-radius:8px;flex-shrink:0;
+      background:linear-gradient(135deg,var(--navy),var(--navy3));
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:#fff;
+      margin-top:1px;
+    }
+    .q-card.answered .q-num{background:linear-gradient(135deg,var(--green),#059669)}
+    .q-text{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text-h);line-height:1.45;flex:1}
+
+    /* Options */
+    .q-options{padding:12px 16px 14px;display:flex;flex-wrap:wrap;gap:8px}
+    .opt-btn{
+      border:1.5px solid var(--border);background:#fff;
+      border-radius:12px;padding:9px 16px;
+      font-family:'Sora',sans-serif;font-size:13px;font-weight:700;
+      color:var(--text-mid);cursor:pointer;transition:all .15s;
+      display:flex;align-items:center;gap:6px;
+    }
+    .opt-btn:hover{border-color:var(--navy3);color:var(--navy);background:#f0f4ff;transform:translateY(-1px)}
+    .opt-btn.selected{border-color:transparent;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;box-shadow:0 4px 14px rgba(26,35,126,.25)}
+    .opt-btn.ok.selected{background:linear-gradient(135deg,var(--green),#059669);box-shadow:0 4px 14px rgba(16,185,129,.25)}
+    .opt-btn svg{width:14px;height:14px;fill:currentColor}
+
+    /* Text answer */
+    .q-textarea{
+      margin:0 16px 14px;
+      width:calc(100% - 32px);
+      border:1.5px solid var(--border);border-radius:13px;
+      padding:11px 13px;font-family:'DM Sans',system-ui,sans-serif;
+      font-size:14px;color:var(--text-b);resize:vertical;min-height:80px;
+      outline:none;transition:border-color .18s,box-shadow .18s;background:#fff;
+    }
+    .q-textarea:focus{border-color:var(--navy3);box-shadow:0 0 0 3px rgba(26,35,126,.1)}
+
+    /* answered tick */
+    .q-answered-badge{display:none;align-items:center;gap:5px;padding:0 16px 10px;font-size:12px;font-weight:700;color:var(--green-dark)}
+    .q-answered-badge svg{width:14px;height:14px;fill:var(--green)}
+    .q-card.answered .q-answered-badge{display:flex}
+    .q-card.answered .q-options{opacity:.7;pointer-events:none}
+    .q-card.answered .q-textarea{opacity:.7;pointer-events:none}
+
+    /* NEXT button */
+    .next-btn{
+      display:none;margin:0 16px 14px;
+      border:0;border-radius:13px;padding:11px 20px;
+      background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;
+      font-family:'Sora',sans-serif;font-size:13px;font-weight:800;
+      cursor:pointer;box-shadow:0 5px 16px rgba(26,35,126,.25);
+      transition:all .18s;display:inline-flex;align-items:center;gap:6px;
+    }
+    .next-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(26,35,126,.35)}
+    .next-btn svg{width:14px;height:14px;fill:currentColor}
+    .q-card.show-next .next-btn{display:inline-flex}
+
+    /* ── SUBMIT SECTION ── */
+    .submit-section{display:none;text-align:center;padding:24px 16px;background:var(--surface);border:1.5px solid var(--border-lt);border-radius:22px;box-shadow:var(--sh);margin-bottom:20px}
+    .submit-section.visible{display:block;animation:slideUp .3s ease both}
+    .submit-section h3{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text-h);margin-bottom:8px}
+    .submit-section p{font-size:14px;color:var(--text-muted);margin-bottom:20px;line-height:1.6}
+    .submit-btn{
+      border:0;border-radius:14px;padding:15px 36px;
+      background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;
+      font-family:'Sora',sans-serif;font-size:16px;font-weight:800;
+      cursor:pointer;box-shadow:0 8px 24px rgba(217,119,6,.38);
+      transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+    }
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(217,119,6,.5)}
+    .submit-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
+    .submit-btn svg{width:18px;height:18px;fill:currentColor}
+
+    /* ── THANK YOU ── */
+    .thankyou{display:none;text-align:center;padding:40px 20px;max-width:480px;margin:0 auto}
+    .thankyou.visible{display:block;animation:slideUp .4s ease both}
+    .ty-icon{font-size:72px;margin-bottom:16px;display:block}
+    .thankyou h2{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--navy);margin-bottom:8px}
+    .thankyou p{font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:20px}
+    .ty-home{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:999px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;font-family:'Sora',sans-serif;font-size:14px;font-weight:800;box-shadow:0 6px 18px rgba(26,35,126,.3);transition:all .2s}
+    .ty-home:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(26,35,126,.4)}
+    .ty-home svg{width:16px;height:16px;fill:currentColor}
+
+    /* ── SECTION DIVIDER ── */
+    .sec-divider{height:4px;background:linear-gradient(90deg,var(--navy),var(--navy3),transparent);border-radius:4px;margin:22px 0 18px;opacity:.18}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:480px){.topbar-line2{display:none}.opt-btn{padding:8px 12px;font-size:12px}}
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <img src="/images/logo.png" alt="Iskcon Tirupati" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <svg style="display:none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+      </div>
+      <div>
+        <div class="topbar-line1">Iskcon Tirupati</div>
+        <div class="topbar-line2">Essay Writing Contest</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🙏 Your Opinion Matters</div>
+  <h1>Public Opinion Form</h1>
+  <p>Help us improve! Share your honest experience with our website. Takes just 3–4 minutes.</p>
+  <div style="margin-top:14px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+  <a href="/dashboard"
+     style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;">
+    ← Back to Dashboard
+  </a>
+
+  <a href="/dashboard/help"
+     style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.35);color:#fde68a;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;">
+    Help Page
+  </a>
+</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-header">
+    <div class="progress-label">Your Progress</div>
+    <div class="progress-count" id="progressCount">0 of 28 answered</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap" id="formWrap">
+
+  <!-- ══ SECTION 3: LOGIN & REGISTRATION ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🔑</div>
+    <div><div class="section-title">Login & Registration</div><div class="section-sub">Questions 1–3</div></div>
+  </div>
+
+  <div class="q-card" id="q1">
+    <div class="q-head"><div class="q-num">1</div><div class="q-text">How was your registration experience?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="1" data-val="Easy">😊 Easy</button>
+      <button class="opt-btn" data-q="1" data-val="Moderate">😐 Moderate</button>
+      <button class="opt-btn" data-q="1" data-val="Difficult">😟 Difficult</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q2">
+    <div class="q-head"><div class="q-num">2</div><div class="q-text">Were the instructions clear during registration?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="2" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="2" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q3">
+    <div class="q-head"><div class="q-num">3</div><div class="q-text">Did you face any login issues?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="3" data-val="None">✅ None</button>
+      <button class="opt-btn" data-q="3" data-val="Minor">⚠️ Minor</button>
+      <button class="opt-btn" data-q="3" data-val="Major">🚫 Major</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 4: DASHBOARD ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🏠</div>
+    <div><div class="section-title">Dashboard & Navigation</div><div class="section-sub">Questions 4–6</div></div>
+  </div>
+
+  <div class="q-card" id="q4">
+    <div class="q-head"><div class="q-num">4</div><div class="q-text">How easy was it to navigate the website?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="4" data-val="Easy">😊 Easy</button>
+      <button class="opt-btn" data-q="4" data-val="OK">😐 OK</button>
+      <button class="opt-btn" data-q="4" data-val="Confusing">😕 Confusing</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q5">
+    <div class="q-head"><div class="q-num">5</div><div class="q-text">Was the bottom menu (Home/My Contests/Profile/Track/Help) clear to you?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="5" data-val="Yes">✅ Yes, very clear</button>
+      <button class="opt-btn" data-q="5" data-val="No">❌ Not clear</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q6">
+    <div class="q-head"><div class="q-num">6</div><div class="q-text">Did you feel lost or confused at any point?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="6" data-val="No">✅ Not at all</button>
+      <button class="opt-btn" data-q="6" data-val="Yes">😕 Yes, a bit</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 5: CONTEST SELECTION ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">📖</div>
+    <div><div class="section-title">Contest Selection</div><div class="section-sub">Questions 7–10</div></div>
+  </div>
+
+  <div class="q-card" id="q7">
+    <div class="q-head"><div class="q-num">7</div><div class="q-text">Were the contest details (prizes, rules, dates) clear?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="7" data-val="Clear">✅ Very Clear</button>
+      <button class="opt-btn" data-q="7" data-val="OK">😐 OK</button>
+      <button class="opt-btn" data-q="7" data-val="Confusing">😕 Confusing</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q8">
+    <div class="q-head"><div class="q-num">8</div><div class="q-text">Was the "Join" button easy to find and click?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="8" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="8" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q9">
+    <div class="q-head"><div class="q-num">9</div><div class="q-text">Were the contest images and visuals helpful?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="9" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="9" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q10">
+    <div class="q-head"><div class="q-num">10</div><div class="q-text">Did you understand the Combo Contest (all 4 contests together)?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="10" data-val="Yes">✅ Yes, understood</button>
+      <button class="opt-btn" data-q="10" data-val="No">❌ No, confusing</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 6: CART & CHECKOUT ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🛒</div>
+    <div><div class="section-title">Cart & Checkout</div><div class="section-sub">Questions 11–15</div></div>
+  </div>
+
+  <div class="q-card" id="q11">
+    <div class="q-head"><div class="q-num">11</div><div class="q-text">Did you understand how the cart works?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="11" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="11" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q12">
+    <div class="q-head"><div class="q-num">12</div><div class="q-text">Was the checkout process (review → address → payment) clear?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="12" data-val="Clear">✅ Clear</button>
+      <button class="opt-btn" data-q="12" data-val="OK">😐 OK</button>
+      <button class="opt-btn" data-q="12" data-val="Confusing">😕 Confusing</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q13">
+    <div class="q-head"><div class="q-num">13</div><div class="q-text">Were the delivery options (home delivery / donate / temple pickup) clear?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="13" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="13" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q14">
+    <div class="q-head"><div class="q-num">14</div><div class="q-text">Was filling the address easy?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="14" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="14" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 7: PAYMENT ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">💳</div>
+    <div><div class="section-title">Payment</div><div class="section-sub">Questions 15–17</div></div>
+  </div>
+
+  <div class="q-card" id="q15">
+    <div class="q-head"><div class="q-num">15</div><div class="q-text">Was the payment process clear and easy to complete?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="15" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="15" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q16">
+    <div class="q-head"><div class="q-num">16</div><div class="q-text">Did you feel the payment was safe and trustworthy?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="16" data-val="Yes">✅ Yes, fully trusted</button>
+      <button class="opt-btn" data-q="16" data-val="Not sure">🤔 Not sure</button>
+      <button class="opt-btn" data-q="16" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q17">
+    <div class="q-head"><div class="q-num">17</div><div class="q-text">Was the payment confirmation message clear?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="17" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="17" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 8: TRACKING ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">📦</div>
+    <div><div class="section-title">Order Tracking</div><div class="section-sub">Questions 18–19</div></div>
+  </div>
+
+  <div class="q-card" id="q18">
+    <div class="q-head"><div class="q-num">18</div><div class="q-text">Was the order/book tracking section clear?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="18" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="18" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q19">
+    <div class="q-head"><div class="q-num">19</div><div class="q-text">Were the delivery status messages easy to understand?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="19" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="19" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 9: PROFILE & HELP ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">👤</div>
+    <div><div class="section-title">Profile & Help</div><div class="section-sub">Questions 20–22</div></div>
+  </div>
+
+  <div class="q-card" id="q20">
+    <div class="q-head"><div class="q-num">20</div><div class="q-text">Was your profile page easy to use?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="20" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="20" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q21">
+    <div class="q-head"><div class="q-num">21</div><div class="q-text">Was the Help/Support section useful?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="21" data-val="Yes">✅ Yes</button>
+      <button class="opt-btn" data-q="21" data-val="No">❌ No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 10: PERFORMANCE ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">⚡</div>
+    <div><div class="section-title">Performance</div><div class="section-sub">Questions 22–23</div></div>
+  </div>
+
+  <div class="q-card" id="q22">
+    <div class="q-head"><div class="q-num">22</div><div class="q-text">How was the website speed?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="22" data-val="Fast">⚡ Fast</button>
+      <button class="opt-btn" data-q="22" data-val="Normal">😐 Normal</button>
+      <button class="opt-btn" data-q="22" data-val="Slow">🐢 Slow</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q23">
+    <div class="q-head"><div class="q-num">23</div><div class="q-text">Did any page have loading or display issues?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="23" data-val="No">✅ No issues</button>
+      <button class="opt-btn" data-q="23" data-val="Yes">⚠️ Yes, had issues</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 11: OVERALL ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">⭐</div>
+    <div><div class="section-title">Overall Experience</div><div class="section-sub">Questions 24–25</div></div>
+  </div>
+
+  <div class="q-card" id="q24">
+    <div class="q-head"><div class="q-num">24</div><div class="q-text">Overall rating for the website?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="24" data-val="5">⭐⭐⭐⭐⭐ Excellent</button>
+      <button class="opt-btn" data-q="24" data-val="4">⭐⭐⭐⭐ Good</button>
+      <button class="opt-btn" data-q="24" data-val="3">⭐⭐⭐ Average</button>
+      <button class="opt-btn" data-q="24" data-val="2">⭐⭐ Below Average</button>
+      <button class="opt-btn" data-q="24" data-val="1">⭐ Poor</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q25">
+    <div class="q-head"><div class="q-num">25</div><div class="q-text">Did you clearly understand the deadline, prizes, and next steps?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="25" data-val="Yes">✅ Yes, all clear</button>
+      <button class="opt-btn" data-q="25" data-val="No">❌ Not fully clear</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q26">
+    <div class="q-head"><div class="q-num">26</div><div class="q-text">Would you recommend this website to others?</div></div>
+    <div class="q-options">
+      <button class="opt-btn ok" data-q="26" data-val="Yes">👍 Yes, definitely!</button>
+      <button class="opt-btn" data-q="26" data-val="No">👎 No</button>
+    </div>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- ══ SECTION 12: SUGGESTIONS ══ -->
+  <div class="sec-divider"></div>
+  <div class="section-header">
+    <div class="section-icon">💡</div>
+    <div><div class="section-title">Your Suggestions</div><div class="section-sub">Questions 27–28 · Optional but very helpful!</div></div>
+  </div>
+
+  <div class="q-card" id="q27">
+    <div class="q-head"><div class="q-num">27</div><div class="q-text">What did you like the most? What should we improve?</div></div>
+    <textarea class="q-textarea" id="q27-text" placeholder="Share what worked well and what we can do better..."></textarea>
+    <button class="next-btn" id="q27-next" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+      Next
+    </button>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <div class="q-card" id="q28">
+    <div class="q-head"><div class="q-num">28</div><div class="q-text">Any features or changes you'd like to see on this website?</div></div>
+    <textarea class="q-textarea" id="q28-text" placeholder="Your ideas and feature requests are welcome..."></textarea>
+    <button class="next-btn" id="q28-next" type="button">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      Done — Submit My Feedback
+    </button>
+    <div class="q-answered-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Answered</div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-section" id="submitSection">
+    <div style="font-size:48px;margin-bottom:10px">🎉</div>
+    <h3>All Done! Ready to Submit?</h3>
+    <p>Thank you for taking the time to share your feedback. Your opinion will help us improve the experience for thousands of participants.</p>
+    <button class="submit-btn" id="submitBtn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      Submit My Feedback
+    </button>
+  </div>
+
+  <!-- THANK YOU -->
+  <div class="thankyou" id="thankyou">
+    <span class="ty-icon">🙏</span>
+    <h2>Hare Krishna! Thank You!</h2>
+    <p>Your feedback has been recorded successfully. We truly value your opinion and will use it to make the Iskcon Tirupati Essay Contest website even better for everyone.</p>
+    <a class="ty-home" href="/dashboard">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Go to Home
+    </a>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<script>
+(function(){
+  const TOTAL = 28;
+  const answers = {};
+  const textQ = [27, 28]; // text input questions
+
+  // Show first question on load
+  showCard(1);
+
+  function showCard(n) {
+    const card = document.getElementById('q' + n);
+    if (card) {
+      card.classList.add('visible');
+      // For text questions, show next button immediately
+      if (textQ.includes(n)) {
+        const nextBtn = document.getElementById('q' + n + '-next');
+        if (nextBtn) nextBtn.style.display = 'inline-flex';
+      }
+    }
+  }
+
+  function updateProgress() {
+    const answered = Object.keys(answers).length;
+    const pct = Math.round((answered / TOTAL) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = answered + ' of ' + TOTAL + ' answered';
+  }
+
+  function markAnswered(qNum) {
+    const card = document.getElementById('q' + qNum);
+    if (card) card.classList.add('answered');
+    updateProgress();
+  }
+
+  function scrollToNext(nextNum) {
+    setTimeout(() => {
+      const nextCard = document.getElementById('q' + nextNum);
+      if (nextCard) {
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        // Show submit
+        const sub = document.getElementById('submitSection');
+        sub.classList.add('visible');
+        sub.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 180);
+  }
+
+  // Handle option button clicks (auto-advance)
+  document.querySelectorAll('.opt-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const qNum = parseInt(this.dataset.q);
+      const val = this.dataset.val;
+
+      // Already answered? skip
+      if (answers[qNum]) return;
+
+      // Mark selected
+      this.closest('.q-options').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+
+      // Save answer
+      answers[qNum] = val;
+
+      // Mark card answered after short delay (so user sees selection)
+      setTimeout(() => {
+        markAnswered(qNum);
+        const next = qNum + 1;
+        if (next <= TOTAL) {
+          showCard(next);
+          scrollToNext(next);
+        } else {
+          const sub = document.getElementById('submitSection');
+          sub.classList.add('visible');
+          sub.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 320);
+    });
+  });
+
+  // Handle text question next buttons
+  [27, 28].forEach(n => {
+    const btn = document.getElementById('q' + n + '-next');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      if (answers[n]) return;
+      const ta = document.getElementById('q' + n + '-text');
+      answers[n] = (ta ? ta.value.trim() : '') || '(skipped)';
+      markAnswered(n);
+
+      if (n < TOTAL) {
+        showCard(n + 1);
+        scrollToNext(n + 1);
+      } else {
+        const sub = document.getElementById('submitSection');
+        sub.classList.add('visible');
+        sub.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+
+  // Submit
+  document.getElementById('submitBtn').addEventListener('click', async function() {
+  this.disabled = true;
+  this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Submitting...';
+
+  try {
+    const resp = await fetch('/dashboard/public-opinion/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        answers,
+        submittedAt: new Date().toISOString()
+      })
+    });
+
+    const data = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !data.ok) {
+      throw new Error(data.error || 'Unable to save feedback');
+    }
+
+    document.getElementById('submitSection').style.display = 'none';
+    document.getElementById('progressWrap').style.display = 'none';
+    document.querySelectorAll('.q-card, .section-header, .sec-divider').forEach(el => el.style.display = 'none');
+
+    const ty = document.getElementById('thankyou');
+    ty.classList.add('visible');
+    ty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  } catch (e) {
+    alert('Sorry buddy, feedback could not be saved. Please try again.');
+    this.disabled = false;
+    this.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Submit My Feedback';
+  }
+});
+
+})();
+</script>
+</body>
+</html>

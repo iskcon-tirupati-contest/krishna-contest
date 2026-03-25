@@ -80,26 +80,38 @@ router.post(
   authMiddleware,
   [
     body("email")
-      .optional({ checkFalsy: true })
+      .trim()
+      .notEmpty()
+      .withMessage("Please enter your email address.")
+      .bail()
       .custom((v) => isValidEmail(v))
       .withMessage("Please enter a valid email address."),
     body("address")
-      .optional({ checkFalsy: true })
       .trim()
-      .isLength({ max: 500 })
-      .withMessage("Address is too long."),
+      .notEmpty()
+      .withMessage("Please enter your address.")
+      .bail()
+      .isLength({ min: 5, max: 500 })
+      .withMessage("Address must be between 5 and 500 characters."),
     body("city")
-      .optional({ checkFalsy: true })
       .trim()
-      .isLength({ max: 100 })
-      .withMessage("City is too long."),
+      .notEmpty()
+      .withMessage("Please enter your city.")
+      .bail()
+      .isLength({ min: 2, max: 100 })
+      .withMessage("City must be between 2 and 100 characters."),
     body("state")
-      .optional({ checkFalsy: true })
       .trim()
+      .notEmpty()
+      .withMessage("Please select your state.")
+      .bail()
       .isLength({ max: 100 })
-      .withMessage("State is too long."),
+      .withMessage("State is invalid."),
     body("pincode")
-      .optional({ checkFalsy: true })
+      .trim()
+      .notEmpty()
+      .withMessage("Please enter your pincode.")
+      .bail()
       .custom((v) => isValidPincode(v))
       .withMessage("Please enter a valid 6-digit Indian pincode."),
   ],
@@ -144,36 +156,34 @@ router.post(
     }
 
     try {
-      if (emailStr) {
-        const clash = await pool.query(
+      const clash = await pool.query(
           `SELECT id FROM users WHERE LOWER(email)=LOWER($1) AND id<>$2 LIMIT 1`,
           [emailStr, userId]
         );
 
-        if (clash.rows.length > 0) {
-          return renderProfile(res, {
-            activeTab: "profile",
-            profileTab: "profile",
-            user,
-            addr: {
-              address: addressStr,
-              city: cityStr,
-              state: stateStr,
-              pincode: pinStr,
-            },
-            payments,
-            error: "This email address is already used by another account.",
-            success: null,
-            old,
-          });
-        }
+      if (clash.rows.length > 0) {
+        return renderProfile(res, {
+          activeTab: "profile",
+          profileTab: "profile",
+          user,
+          addr: {
+            address: addressStr,
+            city: cityStr,
+            state: stateStr,
+            pincode: pinStr,
+          },
+          payments,
+          error: "This email address is already used by another account.",
+          success: null,
+          old,
+        });
       }
 
       await pool.query(
         `UPDATE users
          SET email=$1, address=$2, city=$3, state=$4, pincode=$5
          WHERE id=$6`,
-        [emailStr || null, addressStr || null, cityStr || null, stateStr || null, pinStr || null, userId]
+        [emailStr, addressStr, cityStr, stateStr, pinStr, userId]
       );
 
       const updatedUser = await getUserById(userId);

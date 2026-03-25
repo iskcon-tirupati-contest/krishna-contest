@@ -1,163 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Checkout Review</title>
+  <title>Checkout Review - Iskcon Tirupati Essay Writing Contest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --navy:#1a237e;--navy-mid:#283593;--navy-lt:#3949ab;--navy-ghost:#eef2ff;
+      --gold:#f59e0b;--gold-lt:#fef3c7;--gold-dark:#92400e;
+      --green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;
+      --red:#ef4444;--red-lt:#fee2e2;--red-dark:#991b1b;
+      --bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;
+      --text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;
+      --sh-sm:0 4px 12px rgba(26,35,126,.08);--sh-md:0 8px 24px rgba(26,35,126,.11);
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:18px}
-    .wrap{max-width:980px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
-    .top{padding:18px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
-    .top h1{font-size:20px;margin-bottom:6px}
-    .top p{opacity:.92;font-size:13px;line-height:1.4}
-    .content{padding:18px}
-    .back{display:inline-block;margin:12px 0;color:#1a237e;text-decoration:none;font-weight:900}
-    .err{background:#fee2e2;color:#991b1b;padding:12px 14px;border-radius:12px;margin-bottom:14px}
-    .box{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .col{flex:1;min-width:220px}
-    label{font-size:12px;color:#334155;font-weight:800;display:block;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px}
-    textarea{min-height:96px;resize:vertical}
-    .contestRow{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-top:12px}
-    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-    .contestTitle{font-weight:1000;color:#0f172a}
-    .price{font-weight:1000;color:#1a237e;white-space:nowrap}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#243b8b;font-size:12px;font-weight:900;margin-top:8px}
-    .radioWrap{display:flex;gap:14px;flex-wrap:wrap}
-    .radioCard{flex:1;min-width:260px;border:1px solid #e5e7eb;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer}
-    .radioCard input{width:auto;margin-top:3px}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding:16px 12px 40px;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+
+    .backLink{
+      display:inline-flex;align-items:center;gap:6px;color:var(--navy);
+      font-size:13px;font-weight:700;margin-bottom:14px;padding:7px 12px;
+      background:#fff;border:1.5px solid var(--border-lt);border-radius:10px;
+      box-shadow:var(--sh-sm);transition:background .14s;max-width:fit-content;
+    }
+    .backLink:hover{background:var(--navy-ghost)}
+
+    .wrap{max-width:980px;margin:0 auto;background:var(--surface);border-radius:26px;box-shadow:var(--sh-md);overflow:hidden;border:1.5px solid var(--border-lt)}
+
+    .top{
+      padding:22px 22px 18px;
+      background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);color:#fff;
+      position:relative;overflow:hidden;
+    }
+    .top::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.07) 0%,transparent 55%);pointer-events:none}
+    .top h1{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;margin-bottom:5px;position:relative}
+    .top p{font-size:13px;opacity:.88;line-height:1.5;position:relative}
+
+    .content{padding:20px}
+
+    /* step indicator */
+    .steps{display:flex;gap:0;margin-bottom:20px;border-radius:14px;overflow:hidden;border:1.5px solid var(--border-lt)}
+    .step{flex:1;padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);background:#fafbff;border-right:1.5px solid var(--border-lt)}
+    .step:last-child{border-right:none}
+    .step.done{background:var(--green-lt);color:var(--green-dark)}
+    .step.active{background:var(--navy-ghost);color:var(--navy)}
+    .stepNum{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;display:block;margin-bottom:2px}
+
+    .err{background:var(--red-lt);border:1.5px solid #fecaca;color:var(--red-dark);padding:12px 14px;border-radius:12px;margin-bottom:16px;font-weight:600;font-size:14px}
+
+    /* bonus */
+    .bonusCard{
+      background:linear-gradient(135deg,#eff6ff,#fff);border:1.5px solid #bfdbfe;
+      border-radius:18px;padding:14px 16px;margin-bottom:16px;
+      display:flex;gap:12px;align-items:flex-start;
+    }
+    .bonusCard .icon{font-size:22px;flex-shrink:0}
+    .bonusCard h3{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#1e3a8a;margin-bottom:4px}
+    .bonusCard p{font-size:13px;color:#1d4ed8;line-height:1.55}
+
+    /* delivery mode */
+    .modeLabel{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);margin-bottom:10px}
+    .radioWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
+    .radioCard{
+      border:1.5px solid var(--border-lt);border-radius:16px;padding:13px 14px;
+      display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer;
+      transition:border-color .16s,box-shadow .16s,background .16s;
+    }
+    .radioCard:hover{border-color:var(--navy-lt);background:var(--navy-ghost)}
+    .radioCard input[type=radio]{margin-top:3px;accent-color:var(--navy);flex-shrink:0;width:16px;height:16px}
+    .radioCard input[type=radio]:checked+div .radioTitle{color:var(--navy)}
+    .radioCard:has(input:checked){border-color:var(--navy);background:var(--navy-ghost);box-shadow:0 0 0 3px rgba(92,107,192,.15)}
+    .radioTitle{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);margin-bottom:3px}
+    .radioText{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+    /* form sections */
+    .formSection{border:1.5px solid var(--border-lt);border-radius:20px;padding:16px;margin-bottom:14px;background:#fafbff}
+    .formSectionTitle{
+      font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);
+      margin-bottom:14px;display:flex;align-items:center;gap:8px;
+    }
+    .formSectionTitle .icon{
+      width:28px;height:28px;border-radius:8px;background:var(--navy-ghost);
+      display:grid;place-items:center;font-size:14px;flex-shrink:0;
+    }
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row.col3{grid-template-columns:1fr 1fr 1fr}
+    .row.full{grid-template-columns:1fr}
+    @media(max-width:560px){.row,.row.col3{grid-template-columns:1fr}}
+
+    label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;letter-spacing:.2px}
+    input,select,textarea{
+      width:100%;padding:11px 13px;border:1.5px solid #d1d8f0;border-radius:12px;
+      background:#fff;color:var(--text-b);font-size:14px;outline:none;
+      transition:border-color .18s,box-shadow .18s;font-family:'DM Sans',system-ui,sans-serif;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--navy-lt);box-shadow:0 0 0 3px rgba(92,107,192,.16);background:#fff}
+    textarea{min-height:88px;resize:vertical}
+
+    /* contest book rows */
+    .contestRow{
+      border:1.5px solid var(--border-lt);border-radius:16px;
+      padding:14px;margin-bottom:10px;background:#fff;
+      transition:border-color .16s;
+    }
+    .contestRow:last-child{margin-bottom:0}
+    .contestRow:hover{border-color:var(--border)}
+    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .contestTitle{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h)}
+    .agePill{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--navy-ghost);color:var(--navy);border:1px solid var(--border);font-size:11px;font-weight:700;margin-top:4px}
+    .priceTag{font-family:'Sora',sans-serif;font-weight:800;color:var(--navy);font-size:15px;white-space:nowrap}
+    .freeBadge{
+      display:inline-block;padding:4px 10px;border-radius:999px;
+      background:var(--green-lt);color:var(--green-dark);border:1px solid #a7f3d0;
+      font-size:11px;font-weight:700;
+    }
+    .ssrRow{border-color:#a7f3d0;background:#f0fdf9}
+    .fixedBook{
+      width:100%;padding:11px 13px;border:1.5px solid #a7f3d0;border-radius:12px;
+      background:#f0fdf9;font-size:14px;font-weight:600;color:var(--green-dark);
+    }
+
     .hide{display:none}
-    .btn{width:100%;border:0;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;font-weight:1000;font-size:16px;cursor:pointer}
+
+    /* submit button */
+    .submitBtn{
+      width:100%;border:none;border-radius:14px;padding:15px 20px;
+      background:linear-gradient(135deg,#d97706 0%,#f59e0b 50%,#d97706 100%);
+      color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:800;
+      cursor:pointer;box-shadow:0 8px 22px rgba(245,158,11,.35);
+      transition:transform .15s,box-shadow .15s;margin-top:16px;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .submitBtn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(245,158,11,.45)}
+    .submitBtn:active{transform:scale(.97)}
   </style>
 </head>
 <body>
-<a class="back" href="/cart-review">← Back to Cart</a>
+<a class="backLink" href="/cart-review">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+  Back to Cart
+</a>
 
 <div class="wrap">
   <div class="top">
     <h1>Checkout Review</h1>
-    <p>Choose delivery mode and book/language details before payment.</p>
+    <p>Choose delivery mode, then add address and book preferences before payment.</p>
   </div>
 
   <div class="content">
-    <% if (error) { %>
-      <div class="err"><%= error %></div>
+    <div class="steps">
+      <div class="step done"><span class="stepNum">✓</span>Cart</div>
+      <div class="step active"><span class="stepNum">2</span>Review</div>
+      <div class="step"><span class="stepNum">3</span>Payment</div>
+    </div>
+
+    <% if(error){ %><div class="err"><%= error %></div><% } %>
+
+    <% if(Number(ssrCount||0)>0){ %>
+      <div class="bonusCard">
+        <div class="icon">🎁</div>
+        <div>
+          <h3>Free Bonus Books Included!</h3>
+          <p>You have earned <b><%= Number(ssrCount||0) %></b> free copy<%= Number(ssrCount||0)>1?'s':'' %> of <b>Science of Self Realization</b>. Please choose the language for each below.</p>
+        </div>
+      </div>
     <% } %>
 
     <form method="POST" action="/checkout/review">
       <input type="hidden" name="paymentId" value="<%= paymentId %>">
 
-      <div class="box">
-        <div class="radioWrap">
-          <label class="radioCard">
-            <input type="radio" name="deliveryMode" value="deliver" <%= deliveryMode !== 'donate' ? 'checked' : '' %>>
-            <div>
-              <b>Home Delivery</b>
-              <div>Collect address and choose books/languages for dispatch.</div>
-            </div>
-          </label>
-
-          <label class="radioCard">
-            <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode === 'donate' ? 'checked' : '' %>>
-            <div>
-              <b>Donation</b>
-              <div>Temple will donate the books. No address or book options needed.</div>
-            </div>
-          </label>
-        </div>
+      <!-- Delivery mode -->
+      <div class="modeLabel">📦 How would you like to receive your books?</div>
+      <div class="radioWrap">
+        <label class="radioCard">
+          <input type="radio" name="deliveryMode" value="deliver" <%= deliveryMode!=='donate'&&deliveryMode!=='temple_pickup'?'checked':'' %>>
+          <div>
+            <div class="radioTitle">🏠 Home Delivery</div>
+            <div class="radioText">Books delivered to your address.</div>
+          </div>
+        </label>
+        <label class="radioCard">
+          <input type="radio" name="deliveryMode" value="temple_pickup" <%= deliveryMode==='temple_pickup'?'checked':'' %>>
+          <div>
+            <div class="radioTitle">🛕 Temple Pickup</div>
+            <div class="radioText">Collect books from the contest stall at temple.</div>
+          </div>
+        </label>
+        <label class="radioCard">
+          <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode==='donate'?'checked':'' %>>
+          <div>
+            <div class="radioTitle">🙏 Donation</div>
+            <div class="radioText">Temple donates books on your behalf.</div>
+          </div>
+        </label>
       </div>
 
-      <div class="box" id="addressBox">
+      <!-- Address section -->
+      <div class="formSection" id="addressBox">
+        <div class="formSectionTitle"><span class="icon">👤</span> Recipient Details</div>
         <div class="row">
-          <div class="col">
-            <label>Full Name</label>
-            <input name="fullName" value="<%= user?.name || '' %>" required>
+          <div>
+            <label>Receiver Name</label>
+            <input name="fullName" value="<%= user?.name||'' %>" placeholder="Full name" required>
           </div>
-          <div class="col">
-            <label>Phone</label>
-            <input name="phone" value="<%= user?.phone || '' %>" required>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <div class="col" style="min-width:100%">
-            <label>Address</label>
-            <textarea name="address"><%= shipment?.address || user?.address || '' %></textarea>
+          <div>
+            <label>Receiver Phone</label>
+            <input name="phone" value="<%= user?.phone||'' %>" placeholder="10-digit mobile" required inputmode="numeric">
           </div>
         </div>
-
-        <div class="row" style="margin-top:12px">
-          <div class="col">
-            <label>City</label>
-            <input name="city" value="<%= shipment?.city || user?.city || '' %>">
-          </div>
-          <div class="col">
-            <label>State</label>
-            <input name="state" value="<%= shipment?.state || user?.state || '' %>">
-          </div>
-          <div class="col">
-            <label>Pincode</label>
-            <input name="pincode" value="<%= shipment?.pincode || user?.pincode || '' %>">
-          </div>
+        <div style="margin-top:12px">
+          <label>Address</label>
+          <textarea name="address" placeholder="House no., Street, Area, Locality"><%= shipment?.address||user?.address||'' %></textarea>
+        </div>
+        <div class="row col3" style="margin-top:12px">
+          <div><label>City</label><input name="city" value="<%= shipment?.city||user?.city||'' %>" placeholder="City"></div>
+          <div><label>State</label><input name="state" value="<%= shipment?.state||user?.state||'' %>" placeholder="State"></div>
+          <div><label>Pincode</label><input name="pincode" value="<%= shipment?.pincode||user?.pincode||'' %>" placeholder="6-digit" inputmode="numeric"></div>
         </div>
       </div>
 
-      <div class="box" id="booksBox">
-        <% (orders || []).forEach((o) => { %>
+      <!-- Books section -->
+      <div class="formSection" id="booksBox">
+        <div class="formSectionTitle"><span class="icon">📚</span> Book & Language Preferences</div>
+
+        <% (orders||[]).forEach(o=>{ %>
           <div class="contestRow">
             <div class="contestHead">
-              <div style="min-width:0">
+              <div>
                 <div class="contestTitle"><%= o.contest_title %></div>
-                <span class="pill">Age Category: <%= o.age_category === 'above-25' ? 'Above 25 years' : '0 to 25 years' %></span>
+                <span class="agePill">Age: <%= o.age_category==='above-25'?'Above 25 years':'0 to 25 years' %></span>
               </div>
-              <div class="price">₹<%= Number(o.amount || 0) %></div>
+              <div class="priceTag">₹<%= Number(o.amount||0) %></div>
             </div>
-
-            <div class="row" style="margin-top:12px">
-              <div class="col">
-                <label>Book</label>
-                <select name="bookTitle">
+            <div class="row">
+              <div>
+                <label>Book Title</label>
+                <select name="bookTitle" class="book-title">
                   <option value="">Select book</option>
-                  <% (books || []).forEach((b) => { %>
-                    <option value="<%= b %>" <%= (o.saved_book_title === b || o.book_title === b) ? 'selected' : '' %>><%= b %></option>
-                  <% }) %>
+                  <% (books||[]).forEach(b=>{ %><option value="<%= b %>" <%= (o.saved_book_title===b||o.book_title===b)?'selected':'' %>><%= b %></option><% }) %>
                 </select>
               </div>
-
-              <div class="col">
+              <div>
                 <label>Language</label>
-                <select name="bookLanguage">
+                <select name="bookLanguage" class="book-language">
                   <option value="">Select language</option>
-                  <% (languages || []).forEach((l) => { %>
-                    <option value="<%= l %>" <%= (o.saved_book_language === l) ? 'selected' : '' %>><%= l %></option>
-                  <% }) %>
+                  <% (languages||[]).forEach(l=>{ %><option value="<%= l %>" <%= o.saved_book_language===l?'selected':'' %>><%= l %></option><% }) %>
                 </select>
               </div>
             </div>
           </div>
         <% }) %>
+
+        <% for(let i=0;i<Number(ssrCount||0);i++){ %>
+          <div class="contestRow ssrRow">
+            <div class="contestHead">
+              <div>
+                <div class="contestTitle">Science of Self Realization</div>
+                <span class="freeBadge">🎁 Free Bonus Book #<%= i+1 %></span>
+              </div>
+              <span class="freeBadge">FREE</span>
+            </div>
+            <div class="row">
+              <div>
+                <label>Book</label>
+                <div class="fixedBook">Science of Self Realization</div>
+              </div>
+              <div>
+                <label>Language</label>
+                <select name="ssrLanguage" class="ssr-language">
+                  <option value="">Select language</option>
+                  <% (languages||[]).forEach(l=>{ %><option value="<%= l %>" <%= ((ssrSelectedLanguages||[])[i]===l)?'selected':'' %>><%= l %></option><% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+        <% } %>
       </div>
 
-      <button class="btn" type="submit">Save Details & Continue to Payment</button>
+      <button class="submitBtn" type="submit">
+        Save Details & Continue to Payment
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+      </button>
     </form>
   </div>
 </div>
 
 <script>
-  const addressBox = document.getElementById('addressBox');
-  const booksBox = document.getElementById('booksBox');
+(function(){
+  const addressBox=document.getElementById('addressBox');
+  const booksBox=document.getElementById('booksBox');
+  const errBox=document.querySelector('.err');
 
   function toggleByMode(){
-    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-    const isDonate = mode === 'donate';
-    addressBox.classList.toggle('hide', isDonate);
-    booksBox.classList.toggle('hide', isDonate);
+    const mode=document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    addressBox.classList.toggle('hide',mode==='donate'||mode==='temple_pickup');
+    booksBox.classList.toggle('hide',mode==='donate');
+  }
+  document.querySelectorAll('input[name="deliveryMode"]').forEach(r=>r.addEventListener('change',toggleByMode));
+  toggleByMode();
+
+  function showError(msg){ if(errBox){errBox.textContent=msg;errBox.style.display='block';}else alert(msg); }
+  function clearError(){ if(errBox)errBox.style.display='none'; }
+  function focusField(el){ if(!el)return; el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>el.focus(),120); }
+
+  function validate(){
+    const mode=document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    if(mode==='donate'){clearError();return true;}
+    const get=n=>document.querySelector(`[name="${n}"]`);
+    const fullName=get('fullName'),phone=get('phone'),address=get('address'),city=get('city'),state=get('state'),pincode=get('pincode');
+    if(!String(fullName?.value||'').trim()){showError('Please enter full name.');focusField(fullName);return false;}
+    if(!/^[6-9]\d{9}$/.test(String(phone?.value||'').trim())){showError('Please enter a valid 10-digit mobile number.');focusField(phone);return false;}
+    if(mode!=='temple_pickup'){
+      if(!String(address?.value||'').trim()){showError('Please enter address.');focusField(address);return false;}
+      if(!String(city?.value||'').trim()){showError('Please enter city.');focusField(city);return false;}
+      if(!String(state?.value||'').trim()){showError('Please enter state.');focusField(state);return false;}
+      if(!/^[1-9][0-9]{5}$/.test(String(pincode?.value||'').trim())){showError('Please enter a valid 6-digit pincode.');focusField(pincode);return false;}
+    }
+    for(const el of document.querySelectorAll('.book-title')){ if(!String(el.value||'').trim()){showError('Please select book for every contest.');focusField(el);return false;} }
+    for(const el of document.querySelectorAll('.book-language')){ if(!String(el.value||'').trim()){showError('Please select language for every contest.');focusField(el);return false;} }
+    for(const el of document.querySelectorAll('.ssr-language')){ if(!String(el.value||'').trim()){showError('Please select language for all bonus books.');focusField(el);return false;} }
+    clearError();return true;
   }
 
-  document.querySelectorAll('input[name="deliveryMode"]').forEach(r => r.addEventListener('change', toggleByMode));
-  toggleByMode();
+  document.querySelector('form')?.addEventListener('submit',e=>{if(!validate())e.preventDefault();});
+})();
 </script>
 </body>
 </html>

@@ -12,12 +12,14 @@ const normPhone = (v: string) => String(v || "").replace(/\D/g, "").slice(-10);
 const normName = (v: string) => String(v || "").trim().replace(/\s+/g, " ");
 
 function setAuthCookie(res: Response, token: string) {
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookie("token", token, {
     httpOnly: true,
+    secure: isProd,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
 
@@ -118,7 +120,13 @@ router.post(
 );
 
 /* ---------- Login page ---------- */
-router.get("/login", (_req: Request, res: Response) => {
+router.get("/login", (req: Request, res: Response) => {
+  const token = (req as any).cookies?.token;
+
+  if (token) {
+    return res.redirect("/dashboard");
+  }
+
   return res.render("login", { error: null, old: {} });
 });
 
@@ -182,13 +190,28 @@ router.post(
         });
       }
 
-      const token = generateToken(user.id);
-      setAuthCookie(res, token);
+        const token = generateToken(user.id);
+            setAuthCookie(res, token);
+            const redirectTo =
+              String(user.role || "").toLowerCase() === "admin"
+                ? "/admin"
+                : "/dashboard";
 
-      return res.json({
-        ok: true,
-        redirect: String(user.role || "").toLowerCase() === "admin" ? "/admin" : "/dashboard",
-      });
+            console.log("✅ LOGIN SUCCESS", {
+              userId: user.id,
+              role: user.role,
+              phone,
+              ua: req.headers["user-agent"],
+              ip: req.ip,
+              secureCookie: process.env.NODE_ENV === "production",
+              redirectTo,
+            });
+
+            return res.json({
+              ok: true,
+              redirect: redirectTo,
+            });
+
     } catch (e: any) {
       console.error("Login error:", e);
       return res.status(500).json({
@@ -199,15 +222,25 @@ router.post(
   }
 );
 
-/* ---------- Logout ---------- */
-router.get("/logout", (_req, res) => {
+router.get("/logout", (_req: Request, res: Response) => {
   res.clearCookie("token", {
+    path: "/",
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: "/",
   });
   return res.redirect("/login");
 });
+
+router.post("/logout", (_req: Request, res: Response) => {
+  res.clearCookie("token", {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return res.redirect("/login");
+});
+
 
 export default router;

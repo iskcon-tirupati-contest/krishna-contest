@@ -1,274 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Contact Us - BhakthiVedanta Wisdom Contest 2026</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <title>Contact Us - Iskcon Tirupati Essay Writing Contest 2026</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0e1a5e;--navy2:#1a237e;--navy3:#283593;--navy4:#3949ab;--gold:#f59e0b;--gold2:#fbbf24;--gold3:#fef3c7;--gold-dark:#78350f;--green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;--red-lt:#fee2e2;--red-dark:#991b1b;--bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;--text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;--sh:0 8px 32px rgba(14,26,94,.14)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1340;color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
+    /* ── NAV ── */
+    .topnav{position:sticky;top:0;z-index:200;background:rgba(14,26,94,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,215,0,.1);padding:0 20px}
+    .topnav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
+    .tnav-brand{display:flex;align-items:center;gap:9px}
+    .tnav-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--navy3),var(--navy4));display:grid;place-items:center;border:1px solid rgba(255,215,0,.22);flex-shrink:0}
+    .tnav-logo svg{width:18px;height:18px;fill:#ffd700}
+    .tnav-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;background:linear-gradient(90deg,#ffd700,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+    .tnav-btns{display:flex;gap:8px;flex-shrink:0}
+    .tnav-btn{padding:7px 16px;border-radius:999px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;transition:all .18s;border:none;cursor:pointer}
+    .tnav-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff}
+    .tnav-ghost:hover{background:rgba(255,255,255,.14)}
+    .tnav-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;box-shadow:0 4px 14px rgba(217,119,6,.28)}
+    .tnav-gold:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(217,119,6,.4)}
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 25px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+    /* ── PAGE WRAPPER ── */
+    .page-wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:32px 20px 60px}
 
-        .header {
-            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-            color: white;
-            padding: 60px 40px;
-            text-align: center;
-            position: relative;
-        }
+    /* ── BACK BUTTON ── */
+    .back-btn{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.7);font-family:'Sora',sans-serif;font-size:13px;font-weight:700;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);margin-bottom:22px;transition:all .18s}
+    .back-btn:hover{color:#ffd700;border-color:rgba(255,215,0,.35);background:rgba(255,215,0,.07);transform:translateX(-3px)}
+    .back-btn svg{width:15px;height:15px;fill:currentColor}
 
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 30px;
-            background: white;
-            border-radius: 50% 50% 0 0;
-        }
+    /* ── PAGE HEADER ── */
+    .page-header{background:linear-gradient(135deg,rgba(26,35,126,.7),rgba(40,53,147,.5));border:1.5px solid rgba(255,215,0,.18);border-radius:24px;padding:40px 32px;text-align:center;margin-bottom:28px;position:relative;overflow:hidden}
+    .page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.1) 0%,transparent 60%);pointer-events:none}
+    .page-header-icon{font-size:48px;margin-bottom:14px;display:block}
+    .page-header h1{font-family:'Sora',sans-serif;font-size:clamp(22px,4vw,34px);font-weight:800;background:linear-gradient(135deg,#ffd700,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+    .page-header p{font-size:14px;color:rgba(255,255,255,.6)}
 
-        .header-icon {
-            font-size: 56px;
-            margin-bottom: 20px;
-            animation: bounce 2s ease-in-out infinite;
-        }
+    /* ── CARD ── */
+    .card{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,215,0,.12);border-radius:20px;padding:28px 26px;margin-bottom:20px}
+    .card-blue{background:rgba(26,35,126,.25);border-color:rgba(92,107,192,.3)}
+    .card-gold{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.28)}
+    .card-red{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.28)}
+    .card-green{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.28)}
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    /* ── SECTION ── */
+    .sec{margin-bottom:28px}
+    .sec-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#ffd700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,215,0,.18);display:flex;align-items:center;gap:8px}
+    .sec-title span{font-size:20px}
 
-        .header h1 {
-            font-size: 36px;
-            margin-bottom: 12px;
-        }
+    /* ── TEXT ── */
+    .body-text{font-size:14px;color:rgba(255,255,255,.78);line-height:1.82;margin-bottom:14px}
+    .body-text strong{color:#fde68a}
+    .body-text a{color:#fbbf24;font-weight:600;transition:color .15s}
+    .body-text a:hover{color:#ffd700}
 
-        .header p {
-            font-size: 18px;
-            opacity: 0.9;
-        }
+    /* ── LISTS ── */
+    .styled-list{padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+    .styled-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(255,255,255,.78);line-height:1.65}
+    .styled-list li::before{content:'';width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;margin-top:6px}
+    .styled-list li strong{color:#fde68a}
 
-        .content {
-            padding: 50px 50px 60px;
-        }
+    /* ── INFO ROWS ── */
+    .info-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .info-row:last-child{border-bottom:none;padding-bottom:0}
+    .info-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .info-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+    .info-val{font-size:14px;color:rgba(255,255,255,.85);font-weight:500}
+    .info-val a{color:#fbbf24;font-weight:600}
+    .info-val a:hover{color:#ffd700}
 
-        .intro-text {
-            text-align: center;
-            color: #37474f;
-            font-size: 16px;
-            line-height: 1.7;
-            margin-bottom: 40px;
-        }
+    /* ── ALERT BOXES ── */
+    .alert-warn{background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#fca5a5;font-weight:600;display:flex;gap:10px;align-items:flex-start}
+    .alert-info{background:rgba(59,130,246,.1);border:1.5px solid rgba(59,130,246,.28);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#93c5fd;font-weight:600;display:flex;gap:10px;align-items:flex-start}
+    .alert-success{background:rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.28);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#6ee7b7;font-weight:600;display:flex;gap:10px;align-items:flex-start}
 
-        .contact-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
+    /* ── CONTACT CARDS ── */
+    .contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+    .ccontact{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,215,0,.18);border-radius:18px;padding:22px 16px;text-align:center;transition:transform .2s,border-color .2s}
+    .ccontact:hover{transform:translateY(-4px);border-color:#ffd700}
+    .ccontact-icon{font-size:36px;margin-bottom:10px}
+    .ccontact-label{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+    .ccontact-val{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:#ffd700}
+    .ccontact-val a{color:#ffd700;transition:color .15s}
+    .ccontact-val a:hover{color:#fff}
 
-        .contact-card {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
+    /* ── FOOTER ── */
+    .page-footer{background:rgba(6,14,48,.8);border-top:1px solid rgba(255,215,0,.1);padding:22px 20px;text-align:center;margin-top:40px}
+    .page-footer-inner{max-width:900px;margin:0 auto}
+    .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:14px}
+    .footer-links a{font-size:13px;color:rgba(255,255,255,.45);padding:4px 10px;border-radius:6px;transition:all .18s}
+    .footer-links a:hover{color:#ffd700;background:rgba(255,215,0,.07)}
+    .footer-copy{font-size:12px;color:rgba(255,255,255,.28)}
 
-        .contact-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
-        }
+    /* ── PILLARS GRID ── */
+    .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:4px}
+    .pillar{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.12);border-radius:14px;padding:14px;display:flex;gap:10px;align-items:flex-start}
+    .pillar .pi{font-size:20px;flex-shrink:0}
+    .pillar .ptitle{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#ffd700;margin-bottom:3px}
+    .pillar .pdesc{font-size:12px;color:rgba(255,255,255,.58);line-height:1.5}
 
-        .contact-card-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
+    /* ── STATS ROW ── */
+    .stats-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:6px}
+    .stat-box{flex:1;min-width:120px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:14px;text-align:center}
+    .stat-box strong{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#ffd700;display:block;margin-bottom:3px}
+    .stat-box span{font-size:11px;color:rgba(255,255,255,.55)}
 
-        .contact-card h3 {
-            color: #1a237e;
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-
-        .contact-card p {
-            color: #37474f;
-            font-size: 16px;
-            word-break: break-word;
-        }
-
-        .contact-card a {
-            color: #1a237e;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .contact-card a:hover {
-            color: #ffd700;
-        }
-
-        .info-section {
-            background: rgba(33, 150, 243, 0.08);
-            border-left: 4px solid #2196f3;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
-        .info-section h3 {
-            color: #1a237e;
-            font-size: 20px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-section h3::before {
-            content: '⏱️';
-            font-size: 24px;
-        }
-
-        .info-section p {
-            color: #37474f;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 30px;
-            color: #1a237e;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 12px 25px;
-            background: rgba(26, 35, 126, 0.08);
-            border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(26, 35, 126, 0.15);
-            transform: translateX(-5px);
-        }
-
-        .footer-note {
-            text-align: center;
-            color: #78909c;
-            font-size: 14px;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        @media (max-width: 768px) {
-            .content, .header {
-                padding: 40px 30px;
-            }
-
-            .header h1 {
-                font-size: 28px;
-            }
-
-            .contact-cards {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 20px 15px;
-            }
-
-            .content, .header {
-                padding: 30px 25px;
-            }
-
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .header-icon {
-                font-size: 42px;
-            }
-        }
-    </style>
+    @media(max-width:600px){.page-wrap{padding:24px 14px 48px}.page-header{padding:28px 20px}.card{padding:20px 16px}.tnav-title{max-width:150px;font-size:12px}}
+  .wa-float{position:fixed;bottom:24px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,.45);z-index:99;transition:transform .18s,box-shadow .18s;border:3px solid rgba(255,255,255,.3)}
+  .wa-float:hover{transform:scale(1.1);box-shadow:0 10px 28px rgba(37,211,102,.6)}
+  .wa-float svg{width:28px;height:28px;fill:#fff}
+  .wa-pulse{position:absolute;inset:-4px;border-radius:50%;background:rgba(37,211,102,.3);animation:wap 2s ease-out infinite}
+  @keyframes wap{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+  .hours-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  @media(max-width:480px){.hours-grid{grid-template-columns:1fr}}
+  .hour-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 14px}
+  .hour-box .hb-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+  .hour-box .hb-val{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#fde68a}
+  </style>
 </head>
 <body>
-
-    <a href="/" class="back-btn">← Back to Home</a>
-
-    <div class="container">
-        <div class="header">
-            <div class="header-icon">📞</div>
-            <h1>Contact Us</h1>
-            <p>We're here to help you</p>
-        </div>
-
-        <div class="content">
-            <div class="intro-text">
-                <p>
-                    Have questions about registration, payment, or submission? 
-                    Our support team is ready to assist you with any queries regarding the Krishna National Contest.
-                </p>
-            </div>
-
-            <div class="contact-cards">
-                <div class="contact-card">
-                    <div class="contact-card-icon">📧</div>
-                    <h3>Email Support</h3>
-                    <p><a href="mailto:support@iskconcontest.org">support@iskconcontest.org</a></p>
-                </div>
-
-                <div class="contact-card">
-                    <div class="contact-card-icon">📱</div>
-                    <h3>Phone Support</h3>
-                    <p><a href="tel:+919493805059">+91-9493805059</a></p>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <h3>Response Time</h3>
-                <p>
-                    We strive to respond to all inquiries within <strong>24-48 hours</strong> during business days. 
-                    For urgent matters, please mention "URGENT" in your email subject line.
-                </p>
-            </div>
-
-            <div class="info-section" style="border-left-color: #4caf50; background: rgba(76, 175, 80, 0.08);">
-                <h3 style="color: #2e7d32;">Best Time to Reach</h3>
-                <p>
-                    Our support team is available <strong>Monday to Saturday</strong>, from 
-                    <strong>9:00 AM to 6:00 PM IST</strong>. We're closed on Sundays and public holidays.
-                </p>
-            </div>
-
-            <div class="footer-note">
-                <p>© 2026 BhakthiVedanta Wisdom Contest. All Rights Reserved.</p>
-            </div>
-        </div>
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="tnav-brand">
+      <div class="tnav-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg></div>
+      <div class="tnav-title">Iskcon Tirupati Essay Writing Contest 2026</div>
     </div>
+    <div class="tnav-btns">
+      <a class="tnav-btn tnav-ghost" href="/login">Login</a>
+      <a class="tnav-btn tnav-gold" href="/register">Register</a>
+    </div>
+  </div>
+</nav>
 
+<div class="page-wrap">
+  <a href="/" class="back-btn"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg> Back to Home</a>
+
+  <div class="page-header">
+    <span class="page-header-icon">💬</span>
+    <h1>Contact Us</h1>
+    <p>We're here to help you 24×7 — reach us anytime</p>
+  </div>
+
+  <!-- Quick contact cards -->
+  <div class="contact-grid sec">
+    <div class="ccontact">
+      <div class="ccontact-icon">📱</div>
+      <div class="ccontact-label">Phone / WhatsApp</div>
+      <div class="ccontact-val"><a href="tel:+919493805059">+91-9493805059</a></div>
+    </div>
+    <div class="ccontact">
+      <div class="ccontact-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      </div>
+      <div class="ccontact-label">WhatsApp — Send "Hi"</div>
+      <div class="ccontact-val"><a href="https://wa.me/919493805059?text=Hi" target="_blank">Chat Now →</a></div>
+    </div>
+    <div class="ccontact">
+      <div class="ccontact-icon">📧</div>
+      <div class="ccontact-label">Email Support</div>
+      <div class="ccontact-val"><a href="mailto:support@iskconcontest.org">support@iskconcontest.org</a></div>
+    </div>
+  </div>
+
+  <!-- Address -->
+  <div class="card sec">
+    <div class="sec-title"><span>📍</span>Visit / Write to Us</div>
+    <div class="info-row">
+      <div class="info-icon">🏛️</div>
+      <div><div class="info-label">Organisation</div><div class="info-val"><strong>International Society for Krishna Consciousness (ISKCON), Tirupati</strong></div></div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📍</div>
+      <div><div class="info-label">Registered Address</div><div class="info-val">Hare Krishna Land, Hare Krishna Road, Vinayaka Nagar, Tirupati – 517501, Andhra Pradesh, India</div></div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📞</div>
+      <div><div class="info-label">Phone / WhatsApp</div><div class="info-val"><a href="tel:+919493805059">+91-9493805059</a></div></div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📧</div>
+      <div><div class="info-label">Email</div><div class="info-val"><a href="mailto:support@iskconcontest.org">support@iskconcontest.org</a></div></div>
+    </div>
+  </div>
+
+  <!-- Support hours -->
+  <div class="card card-blue sec">
+    <div class="sec-title"><span>⏰</span>Support Hours</div>
+    <p class="body-text">Our support team is available and ready to assist you with any queries about registration, payment, or submission.</p>
+    <div class="hours-grid">
+      <div class="hour-box"><div class="hb-label">WhatsApp Support</div><div class="hb-val">24 × 7 Available</div></div>
+      <div class="hour-box"><div class="hb-label">Email Response</div><div class="hb-val">Within 24–48 hours</div></div>
+      <div class="hour-box"><div class="hb-label">Office Hours</div><div class="hb-val">Mon – Sat, 9 AM – 6 PM IST</div></div>
+      <div class="hour-box"><div class="hb-label">Urgent Queries</div><div class="hb-val">Mark email "URGENT"</div></div>
+    </div>
+  </div>
+
+  <!-- Common queries -->
+  <div class="card sec">
+    <div class="sec-title"><span>❓</span>Common Questions</div>
+    <ul class="styled-list">
+      <li>For <strong>payment issues</strong> — open Profile → My Payments in your dashboard, or WhatsApp us</li>
+      <li>For <strong>essay submission</strong> — go to My Contests in dashboard and upload your PDF/DOCX</li>
+      <li>For <strong>registration help</strong> — send "Hi" on WhatsApp to +91-9493805059</li>
+      <li>For <strong>refund requests</strong> — email us with your payment reference number</li>
+      <li>For <strong>technical issues</strong> — use the Help section inside your dashboard</li>
+    </ul>
+  </div>
+
+  <!-- CTA -->
+  <div style="text-align:center;padding:8px 0 16px">
+    <a href="https://wa.me/919493805059?text=Hi" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;padding:13px 28px;border-radius:999px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;font-family:'Sora',sans-serif;font-size:14px;font-weight:800;box-shadow:0 7px 22px rgba(37,211,102,.35);transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      WhatsApp Us Now
+    </a>
+  </div>
+</div>
+
+<!-- Floating WhatsApp -->
+<a class="wa-float" href="https://wa.me/919493805059?text=Hi" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <div class="wa-pulse"></div>
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+</a>
+
+<footer class="page-footer">
+  <div class="page-footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a><a href="/about">About</a><a href="/contact">Contact</a>
+      <a href="/privacy-policy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a>
+      <a href="/refund-policy">Refund Policy</a><a href="/register">Register</a><a href="/login">Login</a>
+    </div>
+    <p class="footer-copy">© 2026 ISKCON Tirupati · Hare Krishna Road, Vinayaka Nagar, Tirupati – 517501 · +91-9493805059 · Hare Krishna 🙏</p>
+  </div>
+</footer>
 </body>
 </html>

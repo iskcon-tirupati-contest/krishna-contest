@@ -57,6 +57,13 @@ app.use("/login",sensitiveLimiter);
 app.use("/register",sensitiveLimiter);
 app.use("/dashboard/help/ticket",sensitiveLimiter);
 
+
+app.use("/register/send-otp", sensitiveLimiter);
+app.use("/register/verify-otp", sensitiveLimiter);
+app.use("/forgot-password/send-otp", sensitiveLimiter);
+app.use("/forgot-password/verify-otp", sensitiveLimiter);
+app.use("/forgot-password/reset", sensitiveLimiter);
+
 /* Middleware */
 // Razorpay webhooks need the raw body for signature verification
 app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }));

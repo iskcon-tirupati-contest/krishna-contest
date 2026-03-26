@@ -3,6 +3,7 @@ import express from "express";
 import { authMiddleware } from "../middleware/auth";
 import { pool } from "../config/db";
 import https from "https";
+import { sendContestRegistrationMessageOnce } from "../services/contestConfirmation";
 
 const router = express.Router();
 
@@ -444,6 +445,29 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
      LIMIT 1`,
     [userId]
   );
+
+  // Send contest registration WhatsApp confirmation only once per paymentId
+  try {
+    if (paid) {
+      const userRow = userQ.rows[0] || null;
+      const paymentSessionId =
+        ordersQ.rows[0]?.payment_session_id
+          ? String(ordersQ.rows[0].payment_session_id)
+          : null;
+
+      await sendContestRegistrationMessageOnce({
+        paymentId,
+        paymentSessionId,
+        userId: String(userId),
+        phone: String(userRow?.phone || ""),
+        userName: String(userRow?.name || "Participant"),
+        contestTitles: ordersQ.rows.map((o: any) => String(o.contest_title || "").trim()).filter(Boolean),
+      });
+    }
+  } catch (e) {
+    console.error("contest registration confirmation send error:", e);
+    // Do not block success page if message sending fails
+  }
 
   return res.render("payment-success", {
     paid,

@@ -2,6 +2,8 @@ BEGIN;
 
 TRUNCATE TABLE
   auth_otps,
+  public_opinion_feedback,
+  user_otps,
   cart_items,
   feedback_tickets,
   india_post_bookings,

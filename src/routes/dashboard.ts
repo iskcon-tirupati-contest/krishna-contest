@@ -14,7 +14,13 @@ const router = express.Router();
  */
 
 const ALLOWED_EXT = new Set([
-  "pdf", "doc", "docx"
+  "pdf",
+  "doc",
+  "docx",
+  "jpg",
+  "jpeg",
+  "png",
+  "webp"
 ]);
 
 const ALLOWED_MIME = new Set([
@@ -23,7 +29,10 @@ const ALLOWED_MIME = new Set([
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 
-
+  // images
+  "image/jpeg",
+  "image/png",
+  "image/webp"
 ]);
 
 const MAX_ATTEMPTS = 3;
@@ -108,14 +117,11 @@ function isAllowed(contentType: string, fileName: string) {
 
 function isAllowedMime(mime: string) {
   if (!mime) return false;
-  if (mime === "application/pdf") return true;
-  if (mime === "application/msword") return true;
-  if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return true;
-  return false;
+  return ALLOWED_MIME.has(mime);
 }
 
-const MAX_BYTES = (Number(process.env.MAX_UPLOAD_MB || 500) * 1024 * 1024);
-
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 5);
+const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 /**
  * IST deadline enforcement (server-side, mandatory)
  * We treat contests.submission_deadline as IST time.
@@ -187,16 +193,20 @@ router.post("/dashboard/upload/start", authMiddleware, async (req: any, res) => 
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
-  const size = Number(fileSize);
-  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-    return res.status(400).json({ error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
-  }
+
+
+const size = Number(fileSize);
+if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+  return res.status(400).json({
+    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+  });
+}
 
   if (!isAllowed(String(contentType), String(fileName))) {
-    return res.status(400).json({
-      error: `File type not allowed. Please check Rules.`
-    });
-  }
+  return res.status(400).json({
+    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+  });
+}
 
   // verify paid order belongs to this user
   const orderRes = await pool.query(
@@ -262,18 +272,22 @@ router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) 
   }
 
   // basic validation
-  const size = Number(fileSize);
-  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-    return res.status(400).json({ error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
-  }
+ const size = Number(fileSize);
+if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+  return res.status(400).json({
+    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+  });
+}
 
   if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
     return res.status(403).json({ error: "Invalid upload key." });
   }
 
   if (!isAllowed(String(contentType || ""), String(originalName || ""))) {
-    return res.status(400).json({ error: "File type not allowed. Please check Rules." });
-  }
+  return res.status(400).json({
+    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+  });
+}
 
   // verify paid order belongs to this user
   const orderRes = await pool.query(

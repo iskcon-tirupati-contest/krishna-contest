@@ -112,6 +112,50 @@
     .terms-note{margin-top:12px;text-align:center;font-size:11px;color:#94a3b8;line-height:1.6}
     .terms-note a{color:#1a237e;font-weight:600;text-decoration:none}
 
+
+            .otp-box{
+      display:none;
+      margin-top:2px;
+      margin-bottom:14px;
+      padding:12px;
+      border:1.5px solid #e2e8f0;
+      border-radius:14px;
+      background:#f8fafc;
+    }
+    .otp-box.active{display:block}
+    .otp-sub{
+      font-size:12px;
+      color:#64748b;
+      margin-bottom:8px;
+      line-height:1.5;
+    }
+    .otp-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .otp-row .input-wrap{flex:1}
+    .otp-mini-btn{
+      border:none;
+      background:#1a237e;
+      color:#fff;
+      border-radius:10px;
+      padding:10px 12px;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .otp-mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+    .otp-note{
+      margin-top:7px;
+      font-size:11px;
+      color:#64748b;
+    }
+
+
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -188,6 +232,37 @@
             <div class="match-hint" id="matchHint"></div>
           </div>
 
+                    <div id="otpSection" class="otp-box">
+            <div class="otp-sub" id="otpSubtext">
+              We’ve sent a 6-digit OTP to your mobile number.
+            </div>
+
+            <div class="otp-row">
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24">
+                  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+                <input
+                  id="otp"
+                  name="otp"
+                  placeholder="Enter 6-digit OTP"
+                  inputmode="numeric"
+                  maxlength="6"
+                  autocomplete="one-time-code"
+                />
+              </div>
+
+              <button type="button" id="resendOtpBtn" class="otp-mini-btn" disabled>
+                Resend
+              </button>
+            </div>
+
+            <div class="otp-note">
+              Didn’t receive it? Wait <span id="otpCountdown">30</span>s and resend.
+            </div>
+          </div>
+
+
           <button type="submit" id="registerBtn" class="submit-btn">
             <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             Create My Account
@@ -212,27 +287,154 @@
   const phoneEl = document.getElementById("phone");
   const passwordEl = document.getElementById("password");
   const confirmPasswordEl = document.getElementById("confirmPassword");
+  const otpEl = document.getElementById("otp");
+
   const regForm = document.getElementById("regForm");
   const registerBtn = document.getElementById("registerBtn");
+  const resendOtpBtn = document.getElementById("resendOtpBtn");
+
   const errBox = document.getElementById("errBox");
   const okBox = document.getElementById("okBox");
   const strengthFill = document.getElementById("strengthFill");
   const strengthLabel = document.getElementById("strengthLabel");
   const matchHint = document.getElementById("matchHint");
 
+  const otpSection = document.getElementById("otpSection");
+  const otpSubtext = document.getElementById("otpSubtext");
+  const otpCountdown = document.getElementById("otpCountdown");
+
   const eyeOpen = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
   const eyeClosed = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>`;
 
+  let otpSent = false;
+  let lastOtpPayloadKey = "";
+  let resendTimer = null;
+  let resendSecs = 30;
+
   function toggleEye(inputEl, iconEl) {
-    const isPw = inputEl.type === 'password';
-    inputEl.type = isPw ? 'text' : 'password';
+    const isPw = inputEl.type === "password";
+    inputEl.type = isPw ? "text" : "password";
     iconEl.innerHTML = isPw ? eyeClosed : eyeOpen;
   }
-  document.getElementById('eyeBtn1').addEventListener('click', () => toggleEye(passwordEl, document.getElementById('eyeIcon1')));
-  document.getElementById('eyeBtn2').addEventListener('click', () => toggleEye(confirmPasswordEl, document.getElementById('eyeIcon2')));
 
-  // Password strength
-  passwordEl.addEventListener('input', () => {
+  document.getElementById("eyeBtn1").addEventListener("click", () =>
+    toggleEye(passwordEl, document.getElementById("eyeIcon1"))
+  );
+  document.getElementById("eyeBtn2").addEventListener("click", () =>
+    toggleEye(confirmPasswordEl, document.getElementById("eyeIcon2"))
+  );
+
+  function norm(v){ return String(v || "").trim(); }
+  function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
+  function validOtp(v){ return /^\d{6}$/.test(String(v || "").trim()); }
+
+  function showError(msg) {
+    errBox.textContent = msg || "Something went wrong";
+    errBox.style.display = "block";
+    okBox.style.display = "none";
+  }
+
+  function showOk(msg) {
+    okBox.textContent = msg || "";
+    okBox.style.display = "block";
+    errBox.style.display = "none";
+  }
+
+  function clearMsg() {
+    errBox.style.display = "none";
+    okBox.style.display = "none";
+  }
+
+  function spinner(label) {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg>${label}`;
+  }
+
+  function registerDefaultBtn() {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Create My Account`;
+  }
+
+  function verifyDefaultBtn() {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Verify OTP & Create Account`;
+  }
+
+  function payloadKey() {
+    return JSON.stringify({
+      name: norm(nameEl.value),
+      phone: norm(phoneEl.value),
+      password: String(passwordEl.value || ""),
+      confirmPassword: String(confirmPasswordEl.value || ""),
+    });
+  }
+
+  function resetOtpFlow(silent) {
+    otpSent = false;
+    lastOtpPayloadKey = "";
+    otpEl.value = "";
+    otpSection.classList.remove("active");
+    registerBtn.innerHTML = registerDefaultBtn();
+    clearInterval(resendTimer);
+    resendOtpBtn.disabled = true;
+    otpCountdown.textContent = "30";
+    if (!silent) clearMsg();
+  }
+
+  function startResendTimer(seconds) {
+    resendSecs = Number(seconds || 30);
+    otpCountdown.textContent = String(resendSecs);
+    resendOtpBtn.disabled = true;
+    clearInterval(resendTimer);
+
+    resendTimer = setInterval(() => {
+      resendSecs -= 1;
+      otpCountdown.textContent = String(Math.max(resendSecs, 0));
+      if (resendSecs <= 0) {
+        clearInterval(resendTimer);
+        resendOtpBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function showOtpSection(phone, channel) {
+    otpSection.classList.add("active");
+    otpSubtext.textContent = `We’ve sent a 6-digit OTP via ${channel || "OTP"} to +91 ${phone}.`;
+    registerBtn.innerHTML = verifyDefaultBtn();
+    otpEl.focus();
+  }
+
+  function validateForm() {
+    const name = norm(nameEl.value);
+    const phone = norm(phoneEl.value);
+    const password = String(passwordEl.value || "");
+    const confirmPassword = String(confirmPasswordEl.value || "");
+
+    if (name.length < 2) throw new Error("Please enter your full name.");
+    if (!validPhone(phone)) throw new Error("Please enter a valid 10-digit mobile number.");
+    if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+    if (password !== confirmPassword) throw new Error("Passwords do not match.");
+
+    return { name, phone, password, confirmPassword };
+  }
+
+  phoneEl.addEventListener("input", () => {
+    phoneEl.value = phoneEl.value.replace(/\D/g, "").slice(0, 10);
+    clearMsg();
+    if (otpSent) resetOtpFlow(true);
+  });
+
+  otpEl.addEventListener("input", () => {
+    otpEl.value = otpEl.value.replace(/\D/g, "").slice(0, 6);
+  });
+
+  [nameEl, passwordEl, confirmPasswordEl].forEach((el) => {
+    el.addEventListener("input", () => {
+      clearMsg();
+      if (otpSent && payloadKey() !== lastOtpPayloadKey) {
+        resetOtpFlow(true);
+      }
+    });
+  });
+
+  passwordEl.addEventListener("input", () => {
     const v = passwordEl.value;
     let score = 0;
     if (v.length >= 6) score++;
@@ -240,14 +442,16 @@
     if (/[A-Z]/.test(v)) score++;
     if (/[0-9]/.test(v)) score++;
     if (/[^A-Za-z0-9]/.test(v)) score++;
+
     const levels = [
-      {w:'0%',c:'#e2e8f0',t:''},
-      {w:'25%',c:'#ef4444',t:'Weak'},
-      {w:'50%',c:'#f97316',t:'Fair'},
-      {w:'75%',c:'#eab308',t:'Good'},
-      {w:'90%',c:'#22c55e',t:'Strong'},
-      {w:'100%',c:'#10b981',t:'Very Strong'},
+      {w:"0%",c:"#e2e8f0",t:""},
+      {w:"25%",c:"#ef4444",t:"Weak"},
+      {w:"50%",c:"#f97316",t:"Fair"},
+      {w:"75%",c:"#eab308",t:"Good"},
+      {w:"90%",c:"#22c55e",t:"Strong"},
+      {w:"100%",c:"#10b981",t:"Very Strong"},
     ];
+
     const l = levels[Math.min(score, 5)];
     strengthFill.style.width = l.w;
     strengthFill.style.background = l.c;
@@ -256,54 +460,127 @@
     checkMatch();
   });
 
-  // Password match
-  confirmPasswordEl.addEventListener('input', checkMatch);
+  confirmPasswordEl.addEventListener("input", checkMatch);
+
   function checkMatch() {
     const pw = passwordEl.value;
     const cpw = confirmPasswordEl.value;
-    if (!cpw) { matchHint.textContent = ''; return; }
+    if (!cpw) {
+      matchHint.textContent = "";
+      return;
+    }
     if (pw === cpw) {
-      matchHint.textContent = '✓ Passwords match';
-      matchHint.style.color = '#16a34a';
+      matchHint.textContent = "✓ Passwords match";
+      matchHint.style.color = "#16a34a";
     } else {
-      matchHint.textContent = '✗ Passwords do not match';
-      matchHint.style.color = '#dc2626';
+      matchHint.textContent = "✗ Passwords do not match";
+      matchHint.style.color = "#dc2626";
     }
   }
 
-  function showError(msg) { errBox.textContent = msg||"Something went wrong"; errBox.style.display="block"; okBox.style.display="none"; }
-  function showOk(msg) { okBox.textContent = msg||""; okBox.style.display="block"; errBox.style.display="none"; }
-  function clearMsg() { errBox.style.display="none"; okBox.style.display="none"; }
-  function norm(v){ return String(v||"").trim(); }
-  function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
-
-  phoneEl.addEventListener("input", () => { phoneEl.value = phoneEl.value.replace(/\D/g,"").slice(0,10); clearMsg(); });
-
-  regForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); clearMsg();
-    const name = norm(nameEl.value);
-    const phone = norm(phoneEl.value);
-    const password = String(passwordEl.value||"");
-    const confirmPassword = String(confirmPasswordEl.value||"");
-    if (name.length < 2) return showError("Please enter your full name.");
-    if (!validPhone(phone)) return showError("Please enter a valid 10-digit mobile number.");
-    if (password.length < 6) return showError("Password must be at least 6 characters.");
-    if (password !== confirmPassword) return showError("Passwords do not match.");
+  async function sendOtpRequest() {
+    const form = validateForm();
     registerBtn.disabled = true;
-    registerBtn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Creating Account...';
+    registerBtn.innerHTML = spinner("Sending OTP...");
+
     try {
-      const r = await fetch("/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,phone,password,confirmPassword}) });
+      const r = await fetch("/register/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
       const data = await r.json();
-      if (!r.ok||!data.ok) throw new Error(data.message||"Registration failed");
-      showOk("Account created successfully! Redirecting...");
-      window.location.href = data.redirect||"/dashboard";
-    } catch(e) {
-      showError(e.message||"Registration failed");
+      if (!r.ok || !data.ok) throw new Error(data.message || "Failed to send OTP.");
+
+      otpSent = true;
+      lastOtpPayloadKey = payloadKey();
+      showOtpSection(form.phone, data.channel || "WhatsApp");
+      showOk(data.message || "OTP sent successfully.");
+      startResendTimer(Number(data.cooldownSeconds || 30));
+    } catch (e) {
+      showError(e.message || "Failed to send OTP.");
     } finally {
       registerBtn.disabled = false;
-      registerBtn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Create My Account';
+      registerBtn.innerHTML = otpSent ? verifyDefaultBtn() : registerDefaultBtn();
+    }
+  }
+
+  async function verifyOtpAndRegister() {
+    const form = validateForm();
+    const otp = norm(otpEl.value);
+
+    if (!validOtp(otp)) {
+      return showError("Please enter the 6-digit OTP.");
+    }
+
+    registerBtn.disabled = true;
+    registerBtn.innerHTML = spinner("Creating Account...");
+
+    try {
+      const r = await fetch("/register/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, otp }),
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.message || "Registration failed.");
+
+      showOk("Account created successfully! Redirecting...");
+      window.location.href = data.redirect || "/dashboard";
+    } catch (e) {
+      showError(e.message || "Registration failed.");
+      registerBtn.disabled = false;
+      registerBtn.innerHTML = verifyDefaultBtn();
+    }
+  }
+
+  resendOtpBtn.addEventListener("click", async () => {
+    try {
+      const form = validateForm();
+      resendOtpBtn.disabled = true;
+
+      const r = await fetch("/register/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.message || "Failed to resend OTP.");
+
+      otpEl.value = "";
+      otpEl.focus();
+      showOk(data.message || "OTP resent successfully.");
+      showOtpSection(form.phone, data.channel || "WhatsApp");
+      startResendTimer(Number(data.cooldownSeconds || 30));
+      otpSent = true;
+      lastOtpPayloadKey = payloadKey();
+    } catch (e) {
+      showError(e.message || "Failed to resend OTP.");
+      resendOtpBtn.disabled = false;
     }
   });
+
+  regForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsg();
+
+    if (!otpSent) {
+      await sendOtpRequest();
+      return;
+    }
+
+    if (payloadKey() !== lastOtpPayloadKey) {
+      resetOtpFlow(true);
+      return showError("Details changed. Please request a fresh OTP.");
+    }
+
+    await verifyOtpAndRegister();
+  });
+
+  registerBtn.innerHTML = registerDefaultBtn();
 })();
 </script>
 </body>

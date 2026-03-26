@@ -154,12 +154,12 @@
               </div>
               <div class="box">
                 <div class="boxTitle"><span class="dot"></span>Upload / Replace Essay</div>
-                <div class="rulesBox">PDF or DOCX only · Max 5 MB · Max 3 attempts</div>
+                <div class="rulesBox">PDF, DOC, DOCX, JPG, JPEG, PNG or WEBP · Max 5 MB · Max 3 attempts</div>
                 <% if(r.deadline_passed){ %>
                   <div class="status statusErr" style="margin-top:10px">Submission deadline has passed.</div>
                 <% }else{ %>
                   <div class="uploadRow">
-                    <input class="fileInput" type="file" accept=".pdf,.docx"/>
+                    <input class="fileInput" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
                     <button class="uploadBtn upload-btn" type="button" data-order-id="<%= r.order_id %>">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6Zm-4 2h14v2H5v-2Z"/></svg>
                       <%= r.file_url?'Replace Submission':'Upload Submission' %>
@@ -212,9 +212,46 @@
   /* custom dialog */
   function showDialog(title,msg){return new Promise(res=>{const overlay=document.getElementById('dialogOverlay');document.getElementById('dialogTitle').textContent=title;document.getElementById('dialogMsg').textContent=msg;overlay.classList.add('show');function cleanup(result){overlay.classList.remove('show');document.getElementById('dialogConfirm').removeEventListener('click',onOk);document.getElementById('dialogCancel').removeEventListener('click',onCancel);res(result)}function onOk(){cleanup(true)}function onCancel(){cleanup(false)}document.getElementById('dialogConfirm').addEventListener('click',onOk);document.getElementById('dialogCancel').addEventListener('click',onCancel)})}
 
-  const MAX_ATTEMPTS=3;const allowedExt=new Set(['pdf','docx']);const MAX_MB=500;const PART_SIZE=10*1024*1024;
-  function extOf(name){const m=String(name||'').toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:''}
-  function validateFile(file){if(!file)return{ok:false,msg:'Please choose a file first.'};if(file.size>MAX_MB*1024*1024)return{ok:false,msg:`Max file size is ${MAX_MB}MB.`};const mime=String(file.type||'').toLowerCase();const ext=extOf(file.name);const okMime=mime==='application/pdf'||mime==='application/vnd.openxmlformats-officedocument.wordprocessingml.document';if(!(okMime||allowedExt.has(ext)))return{ok:false,msg:'Only PDF or DOCX files are accepted.'};return{ok:true}}
+const MAX_ATTEMPTS = 3;
+const allowedExt = new Set(['pdf','doc','docx','jpg','jpeg','png','webp']);
+const MAX_MB = 5;
+const PART_SIZE = 5 * 1024 * 1024;
+
+function extOf(name){
+  const m = String(name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : '';
+}
+
+function validateFile(file){
+  if(!file){
+    return { ok:false, msg:'Please choose a file first.' };
+  }
+
+  if(file.size > MAX_MB * 1024 * 1024){
+    return { ok:false, msg:`File is too large. Maximum allowed size is ${MAX_MB} MB.` };
+  }
+
+  const mime = String(file.type || '').toLowerCase();
+  const ext = extOf(file.name);
+
+  const okMime =
+    mime === 'application/pdf' ||
+    mime === 'application/msword' ||
+    mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    mime === 'image/jpeg' ||
+    mime === 'image/png' ||
+    mime === 'image/webp';
+
+  if(!(okMime || allowedExt.has(ext))){
+    return {
+      ok:false,
+      msg:'Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are accepted.'
+    };
+  }
+
+  return { ok:true };
+}
+
   function formatLeft(seconds){const s=Math.max(0,Math.floor(Number(seconds||0)));const d=Math.floor(s/86400);const h=Math.floor((s%86400)/3600);if(s<=0)return'Deadline passed';if(d>0)return`${d}d ${h}h left`;return`${h}h left`}
   function setErr(el,msg){if(!el)return;el.textContent=msg;el.className='status statusErr'}
   function setOk(el,msg){if(!el)return;el.textContent=msg;el.className='status statusOk'}

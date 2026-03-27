@@ -152,39 +152,188 @@
     .trust-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-muted)}
     .trust-item svg{width:14px;height:14px;fill:var(--green)}
 
-    /* ── PAYMENT EMBED ── */
+        /* ── PAYMENT EMBED ── */
+
     .embed-card{
-      background:var(--surface);border:1.5px solid var(--border-lt);
-      border-radius:22px;box-shadow:var(--sh);overflow:hidden;
-    }
-    .embed-head{
-      background:linear-gradient(135deg,#eef2ff,#fff);
-      padding:14px 18px;border-bottom:1.5px solid var(--border-lt);
-      display:flex;align-items:center;gap:10px;
-    }
-    .embed-head-icon{
-      width:36px;height:36px;border-radius:10px;
-      background:linear-gradient(135deg,var(--navy),var(--navy3));
-      display:flex;align-items:center;justify-content:center;flex-shrink:0;
-    }
-    .embed-head-icon svg{width:18px;height:18px;fill:#fff}
-    .embed-head-text h3{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:var(--text-h);margin-bottom:2px}
-    .embed-head-text p{font-size:11px;color:var(--text-muted);line-height:1.5}
-    .embed-body{padding:14px}
-    iframe{
-      width:100%;height:620px;
-      border:1.5px solid var(--border-lt);border-radius:14px;
-      background:#fff;display:block;
+      background:var(--surface);
+      border:1.5px solid var(--border-lt);
+      border-radius:20px;
+      box-shadow:var(--sh);
+      overflow:hidden;
+      margin-top:4px;
     }
 
-    /* warning strip */
-    .warn-strip{
-      display:flex;align-items:flex-start;gap:8px;
-      background:#fffbeb;border:1px solid #fde68a;border-radius:12px;
-      padding:10px 13px;margin-top:12px;
-      font-size:12px;color:#78350f;line-height:1.55;
+    .payment-strip{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 14px;
+      background:linear-gradient(135deg,#eef2ff,#f8faff);
+      border-bottom:1px solid var(--border-lt);
+      font-size:12px;
+      color:var(--text-mid);
+      font-weight:700;
     }
-    .warn-strip svg{width:16px;height:16px;fill:#f59e0b;flex-shrink:0;margin-top:1px}
+
+    .payment-strip-left{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+
+    .payment-strip-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 0 4px rgba(16,185,129,.12);
+      flex-shrink:0;
+    }
+
+    .payment-strip-note{
+      color:var(--gold-dark);
+      font-size:11px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .embed-body.compact{
+      padding:10px;
+    }
+
+    .iframe-loader{
+      border:1px solid var(--border-lt);
+      border-radius:14px;
+      background:#fff;
+      padding:14px;
+      margin-bottom:10px;
+    }
+
+    .loader-top{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .loader-spinner{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      border:3px solid #e5e7eb;
+      border-top-color:var(--navy2);
+      animation:spin .8s linear infinite;
+      flex-shrink:0;
+      margin-top:2px;
+    }
+
+    .loader-title{
+      font-family:'Sora',sans-serif;
+      font-size:14px;
+      font-weight:800;
+      color:var(--text-h);
+      margin-bottom:3px;
+    }
+
+    .loader-subtitle{
+      font-size:12px;
+      color:var(--text-muted);
+      line-height:1.5;
+    }
+
+    .loader-skeleton{
+      display:grid;
+      gap:10px;
+    }
+
+    .sk{
+      border-radius:12px;
+      background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 37%,#f1f5f9 63%);
+      background-size:400% 100%;
+      animation:shimmer 1.2s ease infinite;
+    }
+
+    .sk1{height:54px}
+    .sk2{height:54px}
+    .sk3{height:120px}
+    .sk4{height:44px}
+
+    .payment-frame{
+      width:100%;
+      height:680px;
+      border:1px solid var(--border-lt);
+      border-radius:14px;
+      background:#fff;
+      display:block;
+      transition:opacity .2s ease;
+    }
+
+    .payment-frame.is-loading{
+      opacity:.02;
+      height:0;
+      border:0;
+      pointer-events:none;
+    }
+
+    .warn-strip{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      background:#fffbeb;
+      border:1px solid #fde68a;
+      border-radius:12px;
+      padding:9px 12px;
+      font-size:11px;
+      color:#78350f;
+      line-height:1.5;
+    }
+
+    .warn-strip svg{
+      width:15px;
+      height:15px;
+      fill:#f59e0b;
+      flex-shrink:0;
+      margin-top:1px;
+    }
+
+    .compact-warn{
+      margin-top:10px;
+    }
+
+    @keyframes shimmer{
+      0%{background-position:100% 0}
+      100%{background-position:0 0}
+    }
+
+    @media(max-width:480px){
+      .payment-strip{
+        padding:9px 12px;
+        font-size:11px;
+      }
+
+      .payment-strip-note{
+        font-size:10px;
+      }
+
+      .embed-body.compact{
+        padding:8px;
+      }
+
+      .payment-frame{
+        height:620px;
+      }
+
+      .loader-title{
+        font-size:13px;
+      }
+
+      .loader-subtitle,
+      .warn-strip{
+        font-size:11px;
+      }
+    }
 
     @media(max-width:480px){
       .topbar-line2{display:none}
@@ -192,6 +341,54 @@
       .step-label{font-size:9px}
       .total-amount{font-size:20px}
       .pay-btn{font-size:15px;padding:15px 18px}
+    }
+
+
+    .pay-hint{
+      margin-top:8px;
+      text-align:center;
+      font-size:12px;
+      color:var(--gold-dark);
+      font-weight:700;
+    }
+
+    .pulse-focus{
+      position:relative;
+      animation:payPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes payPulse{
+      0%{transform:scale(1);box-shadow:0 8px 24px rgba(217,119,6,.35)}
+      50%{transform:scale(1.015);box-shadow:0 12px 34px rgba(217,119,6,.52)}
+      100%{transform:scale(1);box-shadow:0 8px 24px rgba(217,119,6,.35)}
+    }
+
+    .is-hidden{
+      display:none !important;
+    }
+
+    .payment-live .steps,
+    .payment-live .secure-badge,
+    .payment-live .card,
+    .payment-live .pay-section{
+      display:none !important;
+    }
+
+    .payment-live .embed-card{
+      display:block !important;
+      animation:fadeLift .25s ease;
+    }
+
+    @keyframes fadeLift{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .embed-card iframe{
+      min-height:620px;
+    }
+
+    @media(max-width:480px){
+
     }
   </style>
 </head>
@@ -210,15 +407,14 @@
         <div class="topbar-line2">Essay Writing Contest</div>
       </div>
     </div>
-    <a class="back-btn" href="/dashboard">
+  <!-- <a class="back-btn" href="/dashboard">
       <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       Dashboard
-    </a>
+    </a>-->
   </div>
 </header>
 
-<div class="page">
-
+<div class="page" id="checkoutShell">
   <!-- Step indicator -->
   <div class="steps">
     <div class="step done">
@@ -242,6 +438,7 @@
     <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
     100% Secure · SSL Encrypted Payment
   </div>
+
 
   <!-- Order Summary Card -->
   <div class="card">
@@ -308,34 +505,59 @@
     </div>
   </div>
 
-  <!-- Pay Button -->
-  <div class="pay-section">
-    <button id="payBtn" class="pay-btn" type="button">
+   <!-- Pay Button -->
+  <div class="pay-section" id="paySection">
+    <button id="payBtn" class="pay-btn pulse-focus" type="button" aria-describedby="payHint">
       <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-      Pay ₹<%= Number(totalAmount||0) %> Securely
+      Pay Now ₹<%= Number(totalAmount||0) %>
     </button>
+    <div class="pay-hint" id="payHint">
+      Click here to continue to secure payment
+    </div>
   </div>
 
-  <!-- Payment Embed -->
-  <div class="embed-card" id="embedCard">
-    <div class="embed-head">
-      <div class="embed-head-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+     <!-- Payment Embed -->
+  <div class="embed-card is-hidden" id="embedCard" aria-hidden="true">
+    <div class="payment-strip">
+      <div class="payment-strip-left">
+        <span class="payment-strip-dot"></span>
+        <span>Step 3 of 3 · Secure Payment</span>
       </div>
-      <div class="embed-head-text">
-        <h3>HDFC CollectNow — Secure Checkout</h3>
-        <p>Complete your payment below. Do not close or refresh this page.</p>
-      </div>
+      <div class="payment-strip-note">Do not refresh</div>
     </div>
-    <div class="embed-body">
-      <iframe id="rzpFrame" name="rzp_iframe" title="HDFC Payment"></iframe>
 
-      <div class="warn-strip">
+    <div class="embed-body compact">
+      <div class="iframe-loader" id="iframeLoader" aria-live="polite">
+        <div class="loader-top">
+          <div class="loader-spinner"></div>
+          <div>
+            <div class="loader-title">Opening secure payment...</div>
+            <div class="loader-subtitle">Please wait a moment while the payment form loads.</div>
+          </div>
+        </div>
+
+        <div class="loader-skeleton">
+          <div class="sk sk1"></div>
+          <div class="sk sk2"></div>
+          <div class="sk sk3"></div>
+          <div class="sk sk4"></div>
+        </div>
+      </div>
+
+      <iframe
+        id="rzpFrame"
+        name="rzp_iframe"
+        title="HDFC Payment"
+        class="payment-frame is-loading"
+      ></iframe>
+
+      <div class="warn-strip compact-warn">
         <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-        <span>Please do not refresh this page while payment is processing. After successful payment you will be redirected automatically.</span>
+        <span>Do not refresh or close this page until payment completes.</span>
       </div>
     </div>
   </div>
+
 
 </div><!-- /page -->
 
@@ -348,40 +570,109 @@
   style="display:none"
 >
   <input type="hidden" name="key_id"       value="<%= rzpKeyId %>">
-  <input type="hidden" name="amount"        value="<%= rzpAmountPaise %>">
-  <input type="hidden" name="order_id"      value="<%= rzpOrderId %>">
-  <input type="hidden" name="callback_url"  value="<%= callbackUrl %>">
-  <input type="hidden" name="redirect"      value="true">
-  <input type="hidden" name="name"          value="Iskcon Tirupati EWC 2026">
-  <input type="hidden" name="description"   value="Essay Writing Contest Registration">
-  <input type="hidden" name="prefill[name]"    value="<%= prefillName %>">
-  <input type="hidden" name="prefill[email]"   value="<%= prefillEmail %>">
-  <input type="hidden" name="prefill[contact]" value="<%= prefillContact %>">
+  <input type="hidden" name="amount"       value="<%= rzpAmountPaise %>">
+  <input type="hidden" name="order_id"     value="<%= rzpOrderId %>">
+  <input type="hidden" name="callback_url" value="<%= callbackUrl %>">
+  <input type="hidden" name="redirect"     value="true">
+  <input type="hidden" name="name"         value="Iskcon Tirupati EWC 2026">
+  <input type="hidden" name="description"  value="Essay Writing Contest Registration">
+
+  <input type="hidden" name="prefill[name]" value="<%= prefillName || '' %>">
+  <input type="hidden" name="prefill[email]" value="<%= prefillEmail || '' %>">
+  <input
+    type="hidden"
+    name="prefill[contact]"
+    value="<%= prefillContact ? ('+91' + String(prefillContact).replace(/\D/g, '').replace(/^91/, '')) : '' %>"
+  >
+
   <input type="hidden" name="notes[payment_group]" value="<%= paymentId %>">
 </form>
 
 <script>
 (function(){
-  const payBtn   = document.getElementById('payBtn');
-  const form     = document.getElementById('rzpForm');
+  const payBtn = document.getElementById('payBtn');
+  const form = document.getElementById('rzpForm');
   const embedCard = document.getElementById('embedCard');
+  const rzpFrame = document.getElementById('rzpFrame');
+  const iframeLoader = document.getElementById('iframeLoader');
+  const steps = document.querySelector('.steps');
+  const secureBadge = document.querySelector('.secure-badge');
+  const summaryCard = document.querySelector('.card');
+  const paySection = document.querySelector('.pay-section');
+
+  function enterPaymentMode() {
+    if (steps) steps.style.display = 'none';
+    if (secureBadge) secureBadge.style.display = 'none';
+    if (summaryCard) summaryCard.style.display = 'none';
+    if (paySection) paySection.style.display = 'none';
+
+    if (embedCard) {
+      embedCard.classList.remove('is-hidden');
+      embedCard.setAttribute('aria-hidden', 'false');
+    }
+
+    if (iframeLoader) iframeLoader.style.display = 'block';
+    if (rzpFrame) rzpFrame.classList.add('is-loading');
+
+    setTimeout(() => {
+      if (embedCard) {
+        embedCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 120);
+  }
+
+  function revealIframe() {
+    if (iframeLoader) iframeLoader.style.display = 'none';
+    if (rzpFrame) rzpFrame.classList.remove('is-loading');
+  }
+
+  if (rzpFrame) {
+    rzpFrame.addEventListener('load', function () {
+      revealIframe();
+    });
+  }
 
   payBtn.addEventListener('click', () => {
     try {
       payBtn.disabled = true;
       payBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Opening secure checkout...';
+
+      enterPaymentMode();
       form.submit();
+
       setTimeout(() => {
-        embedCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 400);
-    } catch(e) {
+        if (iframeLoader && iframeLoader.style.display !== 'none') {
+          revealIframe();
+        }
+      }, 8000);
+    } catch (e) {
+      if (steps) steps.style.display = '';
+      if (secureBadge) secureBadge.style.display = '';
+      if (summaryCard) summaryCard.style.display = '';
+      if (paySection) paySection.style.display = '';
+
+      if (embedCard) {
+        embedCard.classList.add('is-hidden');
+        embedCard.setAttribute('aria-hidden', 'true');
+      }
+
+      if (iframeLoader) iframeLoader.style.display = 'block';
+      if (rzpFrame) rzpFrame.classList.add('is-loading');
+
       payBtn.disabled = false;
-      payBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg> Pay ₹<%= Number(totalAmount||0) %> Securely';
+      payBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg> Pay ₹<%= Number(totalAmount || 0) %> Securely';
       alert('Unable to open payment. Please try again.');
     }
   });
 })();
 </script>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<style>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+
 </body>
+
 </html>

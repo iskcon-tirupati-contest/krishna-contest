@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title || 'Admin' %> - ISKCON Contest</title>
+  <style>
+    :root{
+      --bg:#081120;
+      --panel:#101a33;
+      --panel-2:#0c1530;
+      --sidebar:#0a1022;
+      --line:rgba(255,255,255,.10);
+      --line-strong:rgba(255,255,255,.16);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.70);
+      --muted-2:rgba(255,255,255,.56);
+      --primary:#1a3cff;
+      --primary-soft:rgba(26,60,255,.18);
+      --success:#1db954;
+      --warning:#f5b301;
+      --danger:#e5484d;
+      --radius:18px;
+      --radius-sm:12px;
+      --shadow:0 12px 32px rgba(0,0,0,.22);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: Inter, Segoe UI, Tahoma, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(26,60,255,.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(255,196,0,.08), transparent 20%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    a{color:inherit;text-decoration:none}
+    button,input,select,textarea{font:inherit}
+
+    .admin-shell{
+      min-height:100vh;
+      display:flex;
+    }
+
+    .admin-sidebar{
+      width:270px;
+      flex:0 0 270px;
+      background:linear-gradient(180deg, rgba(10,16,34,.98), rgba(8,14,30,.98));
+      border-right:1px solid var(--line);
+      padding:20px 16px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
+
+    .admin-brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 10px 18px;
+      border-bottom:1px solid var(--line);
+      margin-bottom:16px;
+    }
+
+    .admin-brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, #1a3cff, #5a78ff);
+      color:#fff;
+      font-weight:800;
+      font-size:20px;
+      box-shadow:var(--shadow);
+      flex:0 0 42px;
+    }
+
+    .admin-brand-text{
+      min-width:0;
+    }
+
+    .admin-brand-title{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.2;
+      margin:0;
+    }
+
+    .admin-brand-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .admin-nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .admin-nav a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      color:rgba(255,255,255,.84);
+      border:1px solid transparent;
+      transition:.18s ease;
+      font-weight:700;
+    }
+
+    .admin-nav a:hover{
+      background:rgba(255,255,255,.06);
+      border-color:var(--line);
+      color:#fff;
+    }
+
+    .admin-nav a.active{
+      background:var(--primary-soft);
+      border-color:rgba(26,60,255,.38);
+      color:#fff;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    .admin-nav-spacer{
+      height:10px;
+    }
+
+    .admin-main{
+      min-width:0;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .admin-topbar{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:80;
+      backdrop-filter:blur(10px);
+      background:rgba(8,17,32,.86);
+      border-bottom:1px solid var(--line);
+      padding:12px 14px;
+    }
+
+    .admin-topbar-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .admin-topbar-title{
+      font-size:16px;
+      font-weight:800;
+      margin:0;
+      line-height:1.2;
+    }
+
+    .admin-topbar-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .menu-btn{
+      border:none;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:800;
+      flex:0 0 42px;
+    }
+
+    .admin-content{
+      width:100%;
+    }
+
+    .admin-wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:24px 18px 40px;
+      width:100%;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .page-head h1{
+      margin:0;
+      font-size:28px;
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:-0.02em;
+    }
+
+    .page-head .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:14px;
+    }
+
+    .page-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(17,27,53,.96), rgba(13,22,44,.96));
+      border:1px solid var(--line-strong);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+
+    .section-line{
+      height:1px;
+      background:var(--line);
+      margin:14px 0;
+    }
+
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px;color:var(--muted)}
+    .strong{font-weight:800}
+
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+    .stat{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .stat .label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
+
+    .stat .value{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      word-break:break-word;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:42px;
+      transition:.18s ease;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:var(--primary);color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+    .btn.success{background:rgba(29,185,84,.16);color:#fff;border:1px solid rgba(29,185,84,.28)}
+    .btn.danger{background:rgba(229,72,77,.16);color:#fff;border:1px solid rgba(229,72,77,.28)}
+
+    .input,
+    .select,
+    .textarea,
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    input[type="search"],
+    select,
+    textarea{
+      width:100%;
+      min-height:44px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line-strong);
+      background:rgba(10,18,37,.90);
+      color:#fff;
+      outline:none;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder{
+      color:rgba(255,255,255,.42);
+    }
+
+    label{
+      display:block;
+      margin-bottom:7px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      font-size:12px;
+      color:#fff;
+      font-weight:700;
+    }
+
+    .table-wrap{
+      width:100%;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.02);
+      -webkit-overflow-scrolling:touch;
+    }
+
+    table{
+      width:100%;
+      min-width:760px;
+      border-collapse:collapse;
+    }
+
+    th,td{
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#101a33;
+      color:#fff;
+      font-size:13px;
+      letter-spacing:.01em;
+    }
+
+    tr:hover td{
+      background:rgba(255,255,255,.02);
+    }
+
+    .mobile-only{display:none}
+    .desktop-only{display:block}
+
+    .drawer-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.5);
+      z-index:98;
+    }
+
+    .drawer{
+      display:none;
+      position:fixed;
+      inset:0 auto 0 0;
+      width:min(84vw, 300px);
+      background:linear-gradient(180deg, rgba(10,16,34,.99), rgba(8,14,30,.99));
+      border-right:1px solid var(--line);
+      z-index:99;
+      padding:16px;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      overflow:auto;
+    }
+
+    .drawer.open{transform:translateX(0)}
+
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .drawer-close{
+      border:none;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 1100px){
+      .admin-sidebar{display:none}
+      .admin-topbar{display:block}
+      .mobile-only{display:block}
+      .desktop-only{display:none}
+      .admin-wrap{padding:18px 14px 32px}
+      .page-head h1{font-size:24px}
+      .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .drawer.show,
+      .drawer-overlay.show{display:block}
+    }
+
+    @media (max-width: 760px){
+      .grid-4,
+      .grid-3,
+      .grid-2{grid-template-columns:1fr}
+      .card{padding:14px}
+      .btn{width:100%}
+      .page-actions{width:100%}
+      .page-actions > *{flex:1 1 100%}
+      .row.mobile-stack > *{width:100%}
+      th,td{padding:10px}
+    }
+  </style>
+</head>
+<body>
+  <div class="drawer-overlay" id="adminDrawerOverlay" onclick="closeAdminDrawer()"></div>
+
+  <aside class="drawer" id="adminDrawer">
+    <div class="drawer-head">
+      <div class="admin-brand-text">
+        <div class="admin-brand-title">ISKCON Admin</div>
+        <div class="admin-brand-sub">Contest control panel</div>
+      </div>
+      <button class="drawer-close" type="button" onclick="closeAdminDrawer()">✕</button>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="/admin" class="<%= activeTab === 'admin' ? 'active' : '' %>">Overview</a>
+      <a href="/admin/contests" class="<%= activeTab === 'contests' ? 'active' : '' %>">Contests</a>
+      <a href="/admin/user360" class="<%= activeTab === 'user360' ? 'active' : '' %>">View User</a>
+      <a href="/admin/orders" class="<%= activeTab === 'orders' ? 'active' : '' %>">Orders</a>
+      <a href="/admin/submissions" class="<%= activeTab === 'submissions' ? 'active' : '' %>">Submissions</a>
+      <a href="/admin/shipments" class="<%= activeTab === 'shipments' ? 'active' : '' %>">Shipments</a>
+      <a href="/admin/users" class="<%= activeTab === 'users' ? 'active' : '' %>">Users</a>
+      <a href="/admin/feedback" class="<%= activeTab === 'feedback' ? 'active' : '' %>">Feedback</a>
+      <div class="admin-nav-spacer"></div>
+      <a href="/logout">Logout</a>
+    </nav>
+  </aside>
+
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-brand-badge">ॐ</div>
+        <div class="admin-brand-text">
+          <div class="admin-brand-title">ISKCON Admin</div>
+          <div class="admin-brand-sub">Contest control panel</div>
+        </div>
+      </div>
+
+      <nav class="admin-nav">
+        <a href="/admin" class="<%= activeTab === 'admin' ? 'active' : '' %>">Overview</a>
+        <a href="/admin/contests" class="<%= activeTab === 'contests' ? 'active' : '' %>">Contests</a>
+        <a href="/admin/user360" class="<%= activeTab === 'user360' ? 'active' : '' %>">View User</a>
+        <a href="/admin/orders" class="<%= activeTab === 'orders' ? 'active' : '' %>">Orders</a>
+        <a href="/admin/submissions" class="<%= activeTab === 'submissions' ? 'active' : '' %>">Submissions</a>
+        <a href="/admin/shipments" class="<%= activeTab === 'shipments' ? 'active' : '' %>">Shipments</a>
+        <a href="/admin/users" class="<%= activeTab === 'users' ? 'active' : '' %>">Users</a>
+        <a href="/admin/feedback" class="<%= activeTab === 'feedback' ? 'active' : '' %>">Feedback</a>
+        <div class="admin-nav-spacer"></div>
+        <a href="/logout">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div class="admin-topbar-row">
+          <button class="menu-btn" type="button" onclick="openAdminDrawer()">☰</button>
+          <div style="min-width:0;flex:1">
+            <div class="admin-topbar-title"><%= mobileTitle || title || 'Admin' %></div>
+            <div class="admin-topbar-sub">ISKCON Contest Admin</div>
+          </div>
+        </div>
+      </div>
+
+      <section class="admin-content">
+        <div class="admin-wrap">

@@ -1,107 +1,95 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Users</title>
-  <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
-    .layout{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
-    .brand{font-weight:900;margin-bottom:18px}
-    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
-    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
-    .content{flex:1}
-    .wrap{max-width:1200px;margin:26px auto;padding:0 18px}
-    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
-    .muted{color:rgba(255,255,255,.7)}
-    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
-    .btn.primary{background:#1a3cff;color:#fff}
-    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
-    @media (max-width:1100px){ .sidebar{display:none} }
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="brand">Admin Panel</div>
-      <div class="nav">
-        <a href="/admin">Overview</a>
-        <a href="/admin/contests">Contests</a>
-        <a href="/admin/user360">View User</a>
-        <a href="/admin/orders">Orders</a>
-        <a href="/admin/submissions">Submissions</a>
-        <a href="/admin/shipments">Shipments</a>
-        <a href="/admin/users" class="active">Users</a>
-        <a href="/admin/feedback">Feedback</a>
-        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
-      </div>
-    </aside>
+<%- include('partials/admin-shell-start', {
+  title: 'Users',
+  mobileTitle: 'Users',
+  activeTab: 'users'
+}) %>
 
-    <main class="content">
-      <div class="wrap">
-        <div class="card">
-          <div class="row" style="justify-content:space-between">
-            <div>
-              <h1 style="margin:0 0 6px 0">Users</h1>
-              <div class="muted">Search + update roles</div>
-            </div>
-            <a class="btn ghost" href="/admin/users">Reset</a>
-            <a class="btn ghost" href="/admin/users/export.csv?<%= qs %>">Export CSV</a>
-
-          </div>
-
-          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
-
-          <form method="GET" action="/admin/users" class="row">
-            <input name="q" value="<%= q || '' %>" placeholder="Search name / email / phone" style="flex:1;min-width:260px"/>
-            <button class="btn primary" type="submit">Search</button>
-          </form>
-
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Update Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% users.forEach(u => { %>
-                <tr>
-                  <td>
-                    <div style="font-weight:900"><%= u.name %></div>
-                    <div class="muted" style="font-size:12px">UUID: <%= u.id %></div>
-                  </td>
-                  <td><%= u.email %></td>
-                  <td><%= u.phone || '-' %></td>
-                  <td><%= u.role || 'user' %></td>
-                  <td class="muted" style="font-size:12px"><%= u.created_at %></td>
-                  <td>
-                    <form method="POST" action="/admin/users/role" class="row" style="gap:8px">
-                      <input type="hidden" name="userId" value="<%= u.id %>" />
-                      <select name="role" style="min-width:140px">
-                        <option value="user" <%= (u.role||'user')==='user'?'selected':'' %>>user</option>
-                        <option value="admin" <%= (u.role||'')==='admin'?'selected':'' %>>admin</option>
-                      </select>
-                      <button class="btn ghost" type="submit">Save</button>
-                    </form>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-
-        </div>
-      </div>
-    </main>
+<div class="page-head">
+  <div>
+    <h1>Users</h1>
+    <div class="sub">Search users and update admin roles.</div>
   </div>
-</body>
-</html>
+
+  <div class="page-actions">
+    <a class="btn ghost" href="/admin/users">Reset</a>
+    <a class="btn ghost" href="/admin/users/export.csv?<%= qs %>">Export CSV</a>
+  </div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/admin/users" class="row mobile-stack">
+    <div style="flex:1;min-width:260px">
+      <label for="q">Search</label>
+      <input
+        id="q"
+        name="q"
+        value="<%= q || '' %>"
+        placeholder="Search name / email / phone"
+      />
+    </div>
+    <div style="display:flex;align-items:end">
+      <button class="btn primary" type="submit">Search</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div class="strong">Users List</div>
+      <div class="tiny">Desktop table with mobile scrolling support</div>
+    </div>
+    <span class="pill"><%= (users || []).length %> result(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Created</th>
+          <th>Update Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% (users || []).forEach(u => { %>
+          <tr>
+            <td>
+              <div class="strong"><%= u.name || '-' %></div>
+              <div class="tiny">UUID: <%= u.id %></div>
+            </td>
+            <td><%= u.email || '-' %></td>
+            <td><%= u.phone || '-' %></td>
+            <td>
+              <span class="pill"><%= u.role || 'user' %></span>
+            </td>
+            <td class="tiny"><%= u.created_at %></td>
+            <td>
+              <form method="POST" action="/admin/users/role" class="row mobile-stack" style="gap:8px">
+                <input type="hidden" name="userId" value="<%= u.id %>" />
+                <div style="min-width:150px;flex:1">
+                  <select name="role">
+                    <option value="user" <%= (u.role || 'user') === 'user' ? 'selected' : '' %>>user</option>
+                    <option value="admin" <%= (u.role || '') === 'admin' ? 'selected' : '' %>>admin</option>
+                  </select>
+                </div>
+                <button class="btn ghost" type="submit">Save</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+
+        <% if (!users || !users.length) { %>
+          <tr>
+            <td colspan="6" class="muted">No users found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin-shell-end') %>

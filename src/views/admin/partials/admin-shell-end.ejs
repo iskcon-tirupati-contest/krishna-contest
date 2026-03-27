@@ -1,0 +1,33 @@
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function openAdminDrawer(){
+      var drawer = document.getElementById('adminDrawer');
+      var overlay = document.getElementById('adminDrawerOverlay');
+      if(drawer) drawer.classList.add('show','open');
+      if(overlay) overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAdminDrawer(){
+      var drawer = document.getElementById('adminDrawer');
+      var overlay = document.getElementById('adminDrawerOverlay');
+      if(drawer) drawer.classList.remove('open');
+      if(overlay) overlay.classList.remove('show');
+      setTimeout(function(){
+        if(drawer) drawer.classList.remove('show');
+      }, 220);
+      document.body.style.overflow = '';
+    }
+
+    window.addEventListener('resize', function(){
+      if(window.innerWidth > 1100){
+        closeAdminDrawer();
+      }
+    });
+  </script>
+</body>
+</html>

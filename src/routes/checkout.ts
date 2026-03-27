@@ -24,8 +24,6 @@ function calcSsrCountFromRows(rows: Array<{ quantity?: number }>) {
   return Math.floor(totalQty / 4);
 }
 
-
-
 function rzpRequest(method: "GET" | "POST", path: string): Promise<any> {
   return new Promise((resolve, reject) => {
     const auth = Buffer.from(`${RZP_KEY_ID}:${RZP_KEY_SECRET}`).toString("base64");
@@ -64,8 +62,6 @@ function renderReview(res: any, data: any) {
   return res.render("checkout-review", data);
 }
 
-
-
 router.get("/checkout/review", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
 
@@ -76,7 +72,8 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
         ci.age_category,
         ci.quantity,
         c.title AS contest_title,
-        c.price
+        c.price,
+        c.default_book_title
      FROM cart_items ci
      JOIN contests c ON c.id = ci.contest_id
      WHERE ci.user_id=$1
@@ -98,7 +95,7 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
         age_category: row.age_category,
         contest_title: row.contest_title,
         amount: Number(row.price || 0),
-        saved_book_title: "",
+        default_book_title: String(row.default_book_title || "").trim(),
         saved_book_language: "",
       });
     }
@@ -118,7 +115,6 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     paymentId: "",
     orders: expandedRows,
     user: userQ.rows[0] || null,
-    books: BOOKS,
     languages: LANGUAGES,
     shipment: null,
     deliveryMode: "deliver",
@@ -127,7 +123,6 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     ssrSelectedLanguages: [],
   });
 });
-
 
 router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -139,7 +134,8 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
         ci.age_category,
         ci.quantity,
         c.title AS contest_title,
-        c.price
+        c.price,
+        c.default_book_title
      FROM cart_items ci
      JOIN contests c ON c.id = ci.contest_id
      WHERE ci.user_id=$1
@@ -161,22 +157,42 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
         age_category: row.age_category,
         contest_title: row.contest_title,
         amount: Number(row.price || 0),
+        default_book_title: String(row.default_book_title || "").trim(),
       });
     }
   }
 
- const ssrCount = calcSsrCountFromRows(cartQ.rows || []);
+  const ssrCount = calcSsrCountFromRows(cartQ.rows || []);
 
   const userQ = await pool.query(
-    `SELECT name, email, phone, phone_locked, address, city, state, pincode
+    `SELECT id, name, email, phone, phone_locked, address, city, state, pincode
      FROM users
      WHERE id=$1`,
     [userId]
   );
   const user = userQ.rows[0] || null;
 
+  const deliveryMode = String(req.body.deliveryMode || "").trim();
+  const isDonate = deliveryMode === "donate";
+  const isTemplePickup = deliveryMode === "temple_pickup";
+  const isDeliver = deliveryMode === "deliver";
+
+  const bookLangArr = ([] as any[]).concat(req.body.bookLanguage || []);
+  const ageCategoryArr = ([] as any[]).concat(req.body.ageCategory || []);
+  const ssrLangArr = ([] as any[]).concat(req.body.ssrLanguage || []);
+
+  const hydratedOrders = expandedRows.map((row, i) => ({
+    ...row,
+    age_category: String(
+      (isDonate ? row.age_category : ageCategoryArr[i]) || row.age_category || ""
+    ).trim(),
+    saved_book_language: String(isDonate ? "" : (bookLangArr[i] || "")).trim(),
+  }));
+
+  const savedSsrLanguages = ssrLangArr.map((x: any) => String(x || "").trim());
+
   const renderError = async (msg: string) => {
-     return renderReview(res, {
+    return renderReview(res, {
       paymentId: "",
       orders: hydratedOrders,
       user: {
@@ -188,7 +204,6 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
         state: req.body.state || user?.state || "",
         pincode: req.body.pincode || user?.pincode || "",
       },
-      books: BOOKS,
       languages: LANGUAGES,
       shipment: null,
       deliveryMode: String(req.body.deliveryMode || "deliver"),
@@ -198,40 +213,58 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
     });
   };
 
-const deliveryMode = String(req.body.deliveryMode || "").trim();
-if (!["deliver", "donate", "temple_pickup"].includes(deliveryMode)) {
-  return renderError("Please choose Home Delivery, Donation, or Collect directly from temple.");
-}
+  if (!["deliver", "donate", "temple_pickup"].includes(deliveryMode)) {
+    return renderError("Please choose Home Delivery, Donation, or Collect directly from temple.");
+  }
 
-  const phoneStr = String(req.body.phone || "").trim();
+  const phoneStr = String(req.body.phone || user?.phone || "").trim();
   if (!/^[6-9]\d{9}$/.test(phoneStr)) {
     return renderError("Please enter a valid 10-digit mobile number.");
   }
 
   const existingPhone = user?.phone ? String(user.phone).trim() : "";
-if (!existingPhone) {
-  const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
-  if (clash.rows.length > 0) {
-    return renderError("This mobile number is already registered. Please login with that number.");
+  if (!existingPhone) {
+    const clash = await pool.query(`SELECT id FROM users WHERE phone=$1`, [phoneStr]);
+    if (clash.rows.length > 0) {
+      return renderError("This mobile number is already registered. Please login with that number.");
+    }
   }
-}
 
   const fullName = String(req.body.fullName || user?.name || "").trim();
-  if (fullName.length < 2) return renderError("Full name is required.");
+  if (fullName.length < 2) {
+    return renderError("Full name is required.");
+  }
 
-  const bookTitleArr = ([] as any[]).concat(req.body.bookTitle || []);
-  const bookLangArr = ([] as any[]).concat(req.body.bookLanguage || []);
-  const ssrLangArr = ([] as any[]).concat(req.body.ssrLanguage || []);
+  if (!isDonate) {
+    if (ageCategoryArr.length !== expandedRows.length || bookLangArr.length !== expandedRows.length) {
+      return renderError("Please select age category and language for each contest row.");
+    }
 
-  const hydratedOrders = expandedRows.map((row, i) => ({
-    ...row,
-    saved_book_title: String(bookTitleArr[i] || "").trim(),
-    saved_book_language: String(bookLangArr[i] || "").trim(),
-  }));
+    for (let i = 0; i < expandedRows.length; i++) {
+      const age = String(ageCategoryArr[i] || "").trim();
+      const lang = String(bookLangArr[i] || "").trim();
+      const fixedBook = String(expandedRows[i].default_book_title || "").trim();
 
-  const savedSsrLanguages = ssrLangArr.map((x: any) => String(x || "").trim());
+      if (!["0-25", "above-25"].includes(age)) {
+        return renderError("Please choose valid age category for every contest row.");
+      }
+      if (!fixedBook) {
+        return renderError("One or more contests do not have default book configured.");
+      }
+      if (!lang) {
+        return renderError("Please select language for every row.");
+      }
+    }
+  } else {
+    for (let i = 0; i < expandedRows.length; i++) {
+      const finalAge = String(expandedRows[i].age_category || "").trim();
+      if (!["0-25", "above-25"].includes(finalAge)) {
+        return renderError("Please select age category in cart before continuing.");
+      }
+    }
+  }
 
-  if (deliveryMode === "deliver") {
+  if (isDeliver) {
     const address = String(req.body.address || "").trim();
     const city = String(req.body.city || "").trim();
     const state = String(req.body.state || "").trim();
@@ -244,10 +277,6 @@ if (!existingPhone) {
       return renderError("Please fill complete address (Address, City, State, Pincode).");
     }
 
-    if (bookTitleArr.length !== expandedRows.length || bookLangArr.length !== expandedRows.length) {
-      return renderError("Please select Book + Language for each contest row.");
-    }
-
     if (ssrLangArr.length !== ssrCount) {
       return renderError("Please select language for all free Science of Self Realization books.");
     }
@@ -258,29 +287,35 @@ if (!existingPhone) {
         return renderError("Please select language for all free Science of Self Realization books.");
       }
     }
-
-    for (let i = 0; i < expandedRows.length; i++) {
-      const bt = String(bookTitleArr[i] || "").trim();
-      const bl = String(bookLangArr[i] || "").trim();
-      if (!bt) return renderError("Please select book for every row.");
-      if (!bl) return renderError("Please select language for every row.");
-    }
   }
 
   const paymentId = "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
 
   await pool.query("BEGIN");
   try {
-   /* if (!existingPhone) {
-      await pool.query(`UPDATE users SET phone=$1, phone_locked=true WHERE id=$2`, [phoneStr, userId]);
+    if (!isDonate) {
+      for (let i = 0; i < expandedRows.length; i++) {
+        await pool.query(
+          `UPDATE cart_items
+           SET age_category=$1
+           WHERE id=$2 AND user_id=$3`,
+          [
+            String(ageCategoryArr[i] || "").trim(),
+            expandedRows[i].cart_item_id,
+            userId,
+          ]
+        );
+      }
     }
 
-    await pool.query(`UPDATE users SET name=$1 WHERE id=$2`, [fullName, userId]);
-*/
     const createdOrderIds: string[] = [];
 
     for (let i = 0; i < expandedRows.length; i++) {
       const row = expandedRows[i];
+      const finalAge = String(
+        isDonate ? row.age_category : (ageCategoryArr[i] || "")
+      ).trim();
+      const fixedBook = String(row.default_book_title || "").trim();
 
       const ins = await pool.query(
         `INSERT INTO orders
@@ -292,17 +327,17 @@ if (!existingPhone) {
           row.contest_id,
           Number(row.amount || 0),
           paymentId,
-          row.age_category,
-          deliveryMode === "donate" ? "donation" : "book",
+          finalAge,
+          isDonate ? "donation" : "book",
           fullName,
-          deliveryMode === "deliver" ? String(bookTitleArr[i] || "").trim() : null,
+          isDeliver ? fixedBook : null,
         ]
       );
 
       createdOrderIds.push(ins.rows[0].id);
     }
 
-   /* if (deliveryMode === "donate") {
+    if (isDonate) {
       await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
       await pool.query("COMMIT");
       return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
@@ -313,59 +348,38 @@ if (!existingPhone) {
     const state = String(req.body.state || "").trim();
     const pincode = String(req.body.pincode || "").trim();
 
-    const createdShipment = await pool.query(
-      `INSERT INTO shipments (payment_id, address, city, state, pincode, status, updated_at)
-       VALUES ($1,$2,$3,$4,$5,'pending',NOW())
-       RETURNING id`,
-      [paymentId, address, city, state, pincode]
-    );
-
-    const shipmentId = createdShipment.rows[0].id;
-*/
-
-      if (deliveryMode === "donate") {
-          await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
-          await pool.query("COMMIT");
-          return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
-        }
-
-        const address = String(req.body.address || "").trim();
-        const city = String(req.body.city || "").trim();
-        const state = String(req.body.state || "").trim();
-        const pincode = String(req.body.pincode || "").trim();
-
-        const shipmentInsert =
-          deliveryMode === "temple_pickup"
-            ? await pool.query(
-                `INSERT INTO shipments
-                 (payment_id, recipient_name, recipient_phone, delivery_mode, status, updated_at)
-                 VALUES ($1,$2,$3,'temple_pickup','pending',NOW())
-                 RETURNING id`,
-                [paymentId, fullName, phoneStr]
-              )
-            : await pool.query(
-                `INSERT INTO shipments
-                 (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,'home_delivery','pending',NOW())
-                 RETURNING id`,
-                [paymentId, fullName, phoneStr, address, city, state, pincode]
-              );
+    const shipmentInsert =
+      isTemplePickup
+        ? await pool.query(
+            `INSERT INTO shipments
+             (payment_id, recipient_name, recipient_phone, delivery_mode, status, updated_at)
+             VALUES ($1,$2,$3,'temple_pickup','pending',NOW())
+             RETURNING id`,
+            [paymentId, fullName, phoneStr]
+          )
+        : await pool.query(
+            `INSERT INTO shipments
+             (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,'home_delivery','pending',NOW())
+             RETURNING id`,
+            [paymentId, fullName, phoneStr, address, city, state, pincode]
+          );
 
     const shipmentId = shipmentInsert.rows[0].id;
 
     for (let i = 0; i < createdOrderIds.length; i++) {
       const orderId = createdOrderIds[i];
-      const bookTitle = String(bookTitleArr[i] || "").trim();
+      const fixedBook = String(expandedRows[i].default_book_title || "").trim();
       const bookLanguage = String(bookLangArr[i] || "").trim();
 
       await pool.query(
         `INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
          VALUES ($1,$2,$3,$4)`,
-        [shipmentId, orderId, bookTitle, bookLanguage]
+        [shipmentId, orderId, fixedBook, bookLanguage]
       );
     }
 
-     for (let i = 0; i < ssrCount; i++) {
+    for (let i = 0; i < ssrCount; i++) {
       const ssrLanguage = String(ssrLangArr[i] || "").trim();
 
       await pool.query(
@@ -375,12 +389,14 @@ if (!existingPhone) {
       );
     }
 
-    await pool.query(
-      `UPDATE users
-       SET address=$1, city=$2, state=$3, pincode=$4
-       WHERE id=$5`,
-      [address, city, state, pincode, userId]
-    );
+    if (isDeliver) {
+      await pool.query(
+        `UPDATE users
+         SET address=$1, city=$2, state=$3, pincode=$4
+         WHERE id=$5`,
+        [address, city, state, pincode, userId]
+      );
+    }
 
     await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
 
@@ -446,7 +462,6 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
-  // Send contest registration WhatsApp confirmation only once per paymentId
   try {
     if (paid) {
       const userRow = userQ.rows[0] || null;
@@ -461,12 +476,13 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
         userId: String(userId),
         phone: String(userRow?.phone || ""),
         userName: String(userRow?.name || "Participant"),
-        contestTitles: ordersQ.rows.map((o: any) => String(o.contest_title || "").trim()).filter(Boolean),
+        contestTitles: ordersQ.rows
+          .map((o: any) => String(o.contest_title || "").trim())
+          .filter(Boolean),
       });
     }
   } catch (e) {
     console.error("contest registration confirmation send error:", e);
-    // Do not block success page if message sending fails
   }
 
   return res.render("payment-success", {
@@ -477,7 +493,7 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
     shipmentItems: shipmentItemsQ.rows,
     bonusItems: bonusItemsQ.rows,
     user: userQ.rows[0] || null,
-    payment_session_id:ordersQ.rows[0].payment_session_id,
+    payment_session_id: ordersQ.rows[0].payment_session_id,
   });
 });
 

@@ -84,10 +84,44 @@
     .dialogBtn{border-radius:11px;padding:10px 18px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:opacity .14s}
     .dialogBtn.cancel{background:#f1f5f9;color:var(--text-mid)}.dialogBtn.cancel:hover{background:#e2e8f0}
     .dialogBtn.confirm{background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.28)}.dialogBtn.confirm:hover{opacity:.9}
-    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);background:#fff;border-top:1.5px solid var(--border-lt);box-shadow:0 -6px 24px rgba(26,35,126,.09);padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:98}
-    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px 0}
-    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;color:var(--text-faint);font-size:10px;font-weight:700;border-radius:12px;text-align:center;transition:color .15s,background .15s}
-    .navBtn svg{width:20px;height:20px;fill:currentColor}.navBtn.active{color:var(--navy);background:var(--navy-ghost)}
+    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);background:#fff;border-top:1.5px solid #e8eaf6;box-shadow:0 -6px 24px rgba(26,35,126,.09);padding-bottom:max(10px,env(safe-area-inset-bottom));z-index:98}
+    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:0 4px 0}
+    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;color:#64748b;font-size:10px;font-weight:700;text-align:center;transition:color .15s;position:relative;padding-top:6px}
+    .navBtn svg{width:21px;height:21px;fill:currentColor;transition:transform .2s}
+    .navBtn::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%) scaleX(0);width:32px;height:3px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,var(--navy),var(--navy-lt));transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .2s;opacity:0}
+    .navBtn.active{color:var(--navy)}
+    .navBtn.active::before{transform:translateX(-50%) scaleX(1);opacity:1}
+    .navBtn.active svg{transform:translateY(-1px)}
+    /* ── Rewards row ── */
+    .rewardsRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .rewardBtn{
+      display:flex;align-items:center;gap:8px;
+      border:1.5px solid var(--border-lt);border-radius:14px;
+      padding:11px 10px;background:#fff;cursor:pointer;
+      transition:border-color .16s,background .16s;
+      text-align:left;width:100%;min-width:0;overflow:hidden;
+    }
+    .rewardBtn:hover{border-color:var(--navy-lt);background:var(--navy-ghost)}
+    .rewardBtn:active{transform:scale(.97)}
+    .certBtn{border-color:#c7d2fe}.certBtn:hover{border-color:#818cf8;background:#eef2ff}
+    .courseBtn{border-color:#a7f3d0}.courseBtn:hover{border-color:#34d399;background:#f0fdf4}
+    .rewardBtnIcon{font-size:20px;flex-shrink:0;line-height:1}
+    .rewardBtnText{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+    .rewardBtnLabel{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--text-h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rewardBtnSub{font-size:10px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+    /* ── Coming soon modal ── */
+    .csOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:160;backdrop-filter:blur(4px)}
+    .csOverlay.show{display:flex}
+    .csModal{background:#fff;border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.25);width:min(340px,100%);padding:28px 22px 22px;text-align:center;transform:translateY(20px) scale(.97);transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+    .csOverlay.show .csModal{transform:translateY(0) scale(1)}
+    .csModalIcon{font-size:46px;margin-bottom:12px;display:block;animation:iconBounce .5s .1s cubic-bezier(.34,1.56,.64,1) both}
+    @keyframes iconBounce{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    .csModalTitle{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--text-h);margin-bottom:8px}
+    .csModalBadge{display:inline-flex;align-items:center;gap:6px;background:var(--navy-ghost);border:1.5px solid var(--border);border-radius:999px;padding:5px 14px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--navy);margin-bottom:14px}
+    .csModalBody{font-size:13px;color:var(--text-mid);line-height:1.65;margin-bottom:20px}
+    .csModalBody strong{color:var(--navy);font-weight:700}
+    .csModalClose{width:100%;border:none;border-radius:13px;padding:13px;background:linear-gradient(135deg,var(--navy),var(--navy-lt));color:#fff;font-family:'Sora',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(26,35,126,.22);transition:transform .14s}
+    .csModalClose:hover{transform:translateY(-1px)}
   </style>
 </head>
 <body>
@@ -132,7 +166,6 @@
             data-deadline-passed="<%= r.deadline_passed?'1':'0' %>">
             <div class="mineTop">
               <div class="mineTitle"><%= r.title %></div>
-              <div class="mineDesc"><%= r.description||'Contest details will be updated soon.' %></div>
               <div class="mineMeta">
                 <span class="pill pill-navy">Age: <%= r.age_category==='above-25'?'Above 25 yrs':'0–25 yrs' %></span>
                 <% if(r.submission_deadline){ %><span class="pill pill-gray">⏰ <%= formatDateTime(r.submission_deadline) %></span><% } %>
@@ -169,6 +202,23 @@
                   </div>
                 <% } %>
               </div>
+              <!-- Rewards -->
+              <div class="rewardsRow">
+                <button class="rewardBtn certBtn" type="button" onclick="openComingSoon('cert')">
+                  <span class="rewardBtnIcon">🎓</span>
+                  <span class="rewardBtnText">
+                    <span class="rewardBtnLabel">Download Certificate</span>
+                    <span class="rewardBtnSub">After results</span>
+                  </span>
+                </button>
+                <button class="rewardBtn courseBtn" type="button" onclick="openComingSoon('course')">
+                  <span class="rewardBtnIcon">📖</span>
+                  <span class="rewardBtnText">
+                    <span class="rewardBtnLabel">Free Course</span>
+                    <span class="rewardBtnSub">For participants</span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         <% }) %>
@@ -186,6 +236,16 @@
   </nav>
 </div>
 <div class="toast" id="toast"></div>
+<!-- Coming soon modal -->
+<div class="csOverlay" id="csOverlay" onclick="if(event.target===this)closeComingSoon()">
+  <div class="csModal">
+    <span class="csModalIcon" id="csModalIcon">🎓</span>
+    <div class="csModalTitle" id="csModalTitle">Coming Soon!</div>
+    <div class="csModalBadge">⏳ After Results Are Announced</div>
+    <div class="csModalBody" id="csModalBody"></div>
+    <button class="csModalClose" onclick="closeComingSoon()">Got it, I'll check back later</button>
+  </div>
+</div>
 <!-- Custom confirm dialog -->
 <div class="dialog-overlay" id="dialogOverlay">
   <div class="dialog">
@@ -297,6 +357,23 @@ function validateFile(file){
 
   document.getElementById('logoutBtn')?.addEventListener('click',function(e){if(!confirm('Are you sure you want to logout?'))e.preventDefault()});
 })();
+
+const CS_CONTENT={
+  cert:{icon:'🎓',title:'Certificate Coming Soon!',body:'Once the prizes are announced, you will be able to <strong>download your participation & winner certificate</strong> directly from this page.'},
+  course:{icon:'📖',title:'Free Course Coming Soon!',body:'After the results are announced, all participants will get exclusive access to <strong>attend the free course</strong>. We\'ll notify you as soon as it\'s available!'}
+};
+function openComingSoon(type){
+  const c=CS_CONTENT[type]||CS_CONTENT.cert;
+  document.getElementById('csModalIcon').textContent=c.icon;
+  document.getElementById('csModalTitle').textContent=c.title;
+  document.getElementById('csModalBody').innerHTML=c.body;
+  document.getElementById('csOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeComingSoon(){
+  document.getElementById('csOverlay').classList.remove('show');
+  document.body.style.overflow='';
+}
 </script>
 </body>
 </html>

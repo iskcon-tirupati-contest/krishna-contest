@@ -1,209 +1,191 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Submissions</title>
-  <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
-    .layout{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
-    .brand{font-weight:900;margin-bottom:18px}
-    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
-    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
-    .content{flex:1}
-    .wrap{max-width:1300px;margin:26px auto;padding:0 18px}
-    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
-    .muted{color:rgba(255,255,255,.7)}
-    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
-    .btn.primary{background:#1a3cff;color:#fff}
-    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .chip{display:inline-flex;gap:8px;align-items:center;background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);padding:6px 10px;border-radius:999px}
-    .chip a{color:#fff;text-decoration:none;opacity:.9}
-    progress{height:12px;border-radius:999px;overflow:hidden}
-    @media (max-width:1100px){ .sidebar{display:none} .grid{grid-template-columns:1fr} }
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="brand">Admin Panel</div>
-      <div class="nav">
-        <a href="/admin">Overview</a>
-        <a href="/admin/contests">Contests</a>
-        <a href="/admin/user360">View User</a>
-        <a href="/admin/orders">Orders</a>
-        <a href="/admin/submissions" class="active">Submissions</a>
-        <a href="/admin/shipments">Shipments</a>
-        <a href="/admin/users">Users</a>
-        <a href="/admin/feedback">Feedback</a>
-        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
-      </div>
-    </aside>
+<%- include('partials/admin-shell-start', {
+  title: 'Submissions',
+  mobileTitle: 'Submissions',
+  activeTab: 'submissions'
+}) %>
 
-    <main class="content">
-      <div class="wrap">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
-            <div>
-              <h1 style="margin:0 0 6px 0">Submissions</h1>
-              <div class="muted">Showing <b><%= items.length %></b> (latest 500)</div>
-            </div>
-            <div style="display:flex;gap:10px">
-              <a class="btn ghost" href="/admin/submissions">Reset</a>
-              <a class="btn ghost" href="/admin/submissions/export.csv?<%= qs %>">Export CSV</a>
-              <button class="btn primary" type="submit" form="filtersForm">Apply</button>
-            </div>
-          </div>
-
-          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
-
-          <form id="filtersForm" method="GET" action="/admin/submissions">
-            <div class="grid">
-              <div>
-                <div class="muted" style="font-size:12px;margin-bottom:6px">Contest</div>
-                <select name="contest_id">
-                  <option value="" <%= !filters.contestId?'selected':'' %>>All</option>
-                  <% contests.forEach(c => { %>
-                    <option value="<%= c.id %>" <%= (filters.contestId===c.id)?'selected':'' %>><%= c.title %></option>
-                  <% }) %>
-                </select>
-              </div>
-              <div>
-                <div class="muted" style="font-size:12px;margin-bottom:6px">User name</div>
-                <input name="user_name" value="<%= filters.userName || '' %>" placeholder="e.g. Iskcon" />
-              </div>
-              <div>
-                <div class="muted" style="font-size:12px;margin-bottom:6px">Email</div>
-                <input name="email" value="<%= filters.email || '' %>" placeholder="e.g. gmail.com" />
-              </div>
-            </div>
-          </form>
-
-          <%
-            const base = (obj) => {
-              const p = new URLSearchParams();
-              Object.keys(obj).forEach(k => { if (obj[k]) p.set(k, obj[k]); });
-              return p.toString();
-            };
-            const f = {
-              contest_id: filters.contestId || '',
-              user_name: filters.userName || '',
-              email: filters.email || ''
-            };
-          %>
-
-          <div class="chips">
-            <% Object.keys(f).forEach(k => { if (f[k]) {
-              const copy = { ...f }; copy[k] = '';
-              const qss = base(copy);
-            %>
-              <span class="chip">
-                <span><%= k %>: <%= f[k] %></span>
-                <a href="/admin/submissions?<%= qss %>">✕</a>
-              </span>
-            <% } }) %>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Uploaded</th>
-                <th>Contest</th>
-                <th>User</th>
-                <th>Book</th>
-                <th>File</th>
-                <th>Size</th>
-                <th>Lock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%
-                function bytesToHuman(b){
-                  const n = Number(b||0);
-                  const gb = n/(1024*1024*1024);
-                  if (gb>=1) return gb.toFixed(2)+" GB";
-                  const mb = n/(1024*1024);
-                  if (mb>=1) return mb.toFixed(2)+" MB";
-                  const kb = n/1024;
-                  if (kb>=1) return kb.toFixed(2)+" KB";
-                  return n+" B";
-                }
-              %>
-
-              <% items.forEach(s => { %>
-                <tr>
-                  <td><%= s.uploaded_at %></td>
-                  <td><%= s.contest_title %></td>
-
-                  <td>
-                    <div style="font-weight:900"><%= s.user_name %></div>
-                    <div class="muted" style="font-size:12px"><%= s.email %></div>
-                    <div class="muted" style="font-size:12px">UUID: <%= s.user_id %></div>
-                  </td>
-
-                  <td>
-                    <% if ((s.book_option || '').toLowerCase() === 'donation') { %>
-                      Donation
-                    <% } else { %>
-                      <%= s.book_title || 'Book' %>
-                    <% } %>
-                  </td>
-
-                  <td><%= s.original_name || '-' %></td>
-                  <td><%= s.file_size ? bytesToHuman(s.file_size) : '-' %></td>
-
-                  <td>
-                    <form method="POST" action="/admin/submissions/toggle-lock">
-                      <input type="hidden" name="submissionId" value="<%= s.id %>" />
-                      <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
-                    </form>
-                  </td>
-
-                  <td style="min-width:260px">
-                    <div style="display:flex;gap:10px;flex-wrap:wrap">
-                      <a class="btn ghost" style="display:inline-block;text-decoration:none"
-                         href="/admin/submissions/download?submissionId=<%= s.id %>">
-                        Download (renamed)
-                      </a>
-
-                      <!-- Upload on behalf -->
-                      <input
-                        type="file"
-                        id="f-<%= s.order_id %>"
-                        style="display:none"
-                        accept=".pdf,.doc,.docx,.mp3,.wav,.aac,.m4a,.ogg,.mp4,.m4v,.mov,.webm,.mkv" />
-
-                      <button
-                        class="btn ghost"
-                        type="button"
-                        onclick="adminPickFile('<%= s.order_id %>', <%= s.is_locked ? 'true' : 'false' %>, <%= s.deadline_passed ? 'true' : 'false' %>)">
-                        Upload
-                      </button>
-                    </div>
-
-                    <div class="muted" style="font-size:12px;margin-top:8px" id="st-<%= s.order_id %>"></div>
-                    <progress id="pg-<%= s.order_id %>" value="0" max="100" style="width:220px;display:none;margin-top:8px"></progress>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-
-          <div class="muted" style="font-size:12px;margin-top:12px">
-            Admin upload-on-behalf respects: paid order + deadline + unlocked submission.
-          </div>
-
-        </div>
-      </div>
-    </main>
+<div class="page-head">
+  <div>
+    <h1>Submissions</h1>
+    <div class="sub">Showing <strong><%= (items || []).length %></strong> rows (latest 500)</div>
   </div>
+
+  <div class="page-actions">
+    <a class="btn ghost" href="/admin/submissions">Reset</a>
+    <a class="btn ghost" href="/admin/submissions/export.csv?<%= qs %>">Export CSV</a>
+    <button class="btn primary" type="submit" form="filtersForm">Apply</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="strong" style="margin-bottom:6px">Filters</div>
+  <div class="tiny">Filter by contest, user name, and email.</div>
+
+  <div class="section-line"></div>
+
+  <form id="filtersForm" method="GET" action="/admin/submissions">
+    <div class="grid grid-3">
+      <div>
+        <label for="contest_id">Contest</label>
+        <select id="contest_id" name="contest_id">
+          <option value="" <%= !filters.contestId ? 'selected' : '' %>>All</option>
+          <% (contests || []).forEach(c => { %>
+            <option value="<%= c.id %>" <%= filters.contestId === c.id ? 'selected' : '' %>><%= c.title %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div>
+        <label for="user_name">User name</label>
+        <input id="user_name" name="user_name" value="<%= filters.userName || '' %>" placeholder="e.g. Iskcon" />
+      </div>
+
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" value="<%= filters.email || '' %>" placeholder="e.g. gmail.com" />
+      </div>
+    </div>
+  </form>
+
+  <%
+    const base = (obj) => {
+      const p = new URLSearchParams();
+      Object.keys(obj).forEach(k => { if (obj[k]) p.set(k, obj[k]); });
+      return p.toString();
+    };
+
+    const f = {
+      contest_id: filters.contestId || '',
+      user_name: filters.userName || '',
+      email: filters.email || ''
+    };
+  %>
+
+  <div class="row" style="margin-top:14px">
+    <% Object.keys(f).forEach(k => { if (f[k]) {
+      const copy = { ...f };
+      copy[k] = '';
+      const qss = base(copy);
+    %>
+      <span class="pill">
+        <span><%= k %>: <%= f[k] %></span>
+        <a href="/admin/submissions?<%= qss %>" style="margin-left:6px">✕</a>
+      </span>
+    <% } }) %>
+
+    <% if (!Object.keys(f).some(k => f[k])) { %>
+      <span class="tiny">No active filters.</span>
+    <% } %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div class="strong">Submissions List</div>
+      <div class="tiny">Scrollable safely on mobile while keeping actions usable.</div>
+    </div>
+    <span class="pill"><%= (items || []).length %> row(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Uploaded</th>
+          <th>Contest</th>
+          <th>User</th>
+          <th>Book</th>
+          <th>File</th>
+          <th>Size</th>
+          <th>Lock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          function bytesToHuman(b){
+            const n = Number(b || 0);
+            const gb = n / (1024 * 1024 * 1024);
+            if (gb >= 1) return gb.toFixed(2) + " GB";
+            const mb = n / (1024 * 1024);
+            if (mb >= 1) return mb.toFixed(2) + " MB";
+            const kb = n / 1024;
+            if (kb >= 1) return kb.toFixed(2) + " KB";
+            return n + " B";
+          }
+        %>
+
+        <% (items || []).forEach(s => { %>
+          <tr>
+            <td><%= s.uploaded_at %></td>
+            <td><%= s.contest_title %></td>
+
+            <td>
+              <div class="strong"><%= s.user_name %></div>
+              <div class="tiny"><%= s.email %></div>
+              <div class="tiny">UUID: <%= s.user_id %></div>
+            </td>
+
+            <td>
+              <% if ((s.book_option || '').toLowerCase() === 'donation') { %>
+                Donation
+              <% } else { %>
+                <%= s.book_title || 'Book' %>
+              <% } %>
+            </td>
+
+            <td><%= s.original_name || '-' %></td>
+            <td><%= s.file_size ? bytesToHuman(s.file_size) : '-' %></td>
+
+            <td>
+              <form method="POST" action="/admin/submissions/toggle-lock">
+                <input type="hidden" name="submissionId" value="<%= s.id %>" />
+                <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
+              </form>
+            </td>
+
+            <td style="min-width:280px">
+              <div class="row mobile-stack">
+                <a
+                  class="btn ghost"
+                  href="/admin/submissions/download?submissionId=<%= s.id %>">
+                  Download
+                </a>
+
+                <input
+                  type="file"
+                  id="f-<%= s.order_id %>"
+                  style="display:none"
+                  accept=".pdf,.doc,.docx,.mp3,.wav,.aac,.m4a,.ogg,.mp4,.m4v,.mov,.webm,.mkv" />
+
+                <button
+                  class="btn ghost"
+                  type="button"
+                  onclick="adminPickFile('<%= s.order_id %>', <%= s.is_locked ? 'true' : 'false' %>, <%= s.deadline_passed ? 'true' : 'false' %>)">
+                  Upload
+                </button>
+              </div>
+
+              <div class="tiny" style="margin-top:8px" id="st-<%= s.order_id %>"></div>
+              <progress id="pg-<%= s.order_id %>" value="0" max="100" style="width:220px;display:none;margin-top:8px"></progress>
+            </td>
+          </tr>
+        <% }) %>
+
+        <% if (!items || !items.length) { %>
+          <tr>
+            <td colspan="8" class="muted">No submissions found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tiny" style="margin-top:12px">
+    Admin upload-on-behalf respects: paid order + deadline + unlocked submission.
+  </div>
+</div>
 
 <script>
   const MAX_MB = 500;
@@ -212,38 +194,54 @@
   function st(orderId){ return document.getElementById("st-" + orderId); }
   function pg(orderId){ return document.getElementById("pg-" + orderId); }
 
-  function setMsg(orderId, msg){ st(orderId).textContent = msg; }
+  function setMsg(orderId, msg){
+    const el = st(orderId);
+    if (el) el.textContent = msg;
+  }
 
   window.adminPickFile = function(orderId, isLocked, deadlinePassed){
-    if (deadlinePassed) { setMsg(orderId, "Deadline passed. Upload blocked."); return; }
-    if (isLocked) { setMsg(orderId, "Submission locked. Unlock first."); return; }
+    if (deadlinePassed) {
+      setMsg(orderId, "Deadline passed. Upload blocked.");
+      return;
+    }
+
+    if (isLocked) {
+      setMsg(orderId, "Submission locked. Unlock first.");
+      return;
+    }
 
     const input = document.getElementById("f-" + orderId);
     if (!input) return;
 
     input.onchange = async () => {
       if (!input.files || !input.files[0]) return;
+
       try {
         await adminUploadMultipart(orderId, input.files[0]);
       } catch (e) {
         setMsg(orderId, (e && e.message) ? e.message : "Upload error");
-        pg(orderId).style.display = "none";
+        const prog = pg(orderId);
+        if (prog) prog.style.display = "none";
       } finally {
         input.value = "";
       }
     };
 
     input.click();
-  }
+  };
 
   async function adminUploadMultipart(orderId, file){
-    if (file.size > MAX_MB * 1024 * 1024) throw new Error(`Max file size is ${MAX_MB}MB`);
+    if (file.size > MAX_MB * 1024 * 1024) {
+      throw new Error(`Max file size is ${MAX_MB}MB`);
+    }
 
     setMsg(orderId, "Starting upload...");
-    pg(orderId).style.display = "block";
-    pg(orderId).value = 0;
+    const prog = pg(orderId);
+    if (prog) {
+      prog.style.display = "block";
+      prog.value = 0;
+    }
 
-    // 1) start
     const startRes = await fetch("/admin/submissions/upload/start", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
@@ -254,69 +252,82 @@
         fileSize: file.size
       })
     });
-    const start = await startRes.json().catch(()=> ({}));
+
+    const start = await startRes.json().catch(() => ({}));
     if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
 
     const { key, uploadId, userId } = start;
 
     const totalParts = Math.ceil(file.size / PART_SIZE);
-    const partNumbers = Array.from({length: totalParts}, (_, i) => i+1);
+    const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
 
-    // 2) presign
     setMsg(orderId, "Preparing parts...");
     const presignRes = await fetch("/admin/submissions/upload/presign-parts", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ orderId, userId, key, uploadId, partNumbers })
     });
-    const presign = await presignRes.json().catch(()=> ({}));
+
+    const presign = await presignRes.json().catch(() => ({}));
     if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
 
     const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
     const uploadedParts = [];
 
-    // 3) upload parts
-    for (let partNumber = 1; partNumber <= totalParts; partNumber++){
+    for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
       const startByte = (partNumber - 1) * PART_SIZE;
       const endByte = Math.min(partNumber * PART_SIZE, file.size);
       const blob = file.slice(startByte, endByte);
 
       setMsg(orderId, `Uploading part ${partNumber}/${totalParts}...`);
 
-      const putRes = await fetch(urlMap.get(partNumber), { method:"PUT", body: blob });
+      const putRes = await fetch(urlMap.get(partNumber), {
+        method: "PUT",
+        body: blob
+      });
+
       if (!putRes.ok) {
         await fetch("/admin/submissions/upload/abort", {
-          method:"POST",
+          method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ orderId, userId, key, uploadId })
-        }).catch(()=>{});
+        }).catch(() => {});
+
         throw new Error("Upload failed. Please retry (Wi-Fi recommended).");
       }
 
-      uploadedParts.push({ ETag: putRes.headers.get("ETag"), PartNumber: partNumber });
-      pg(orderId).value = Math.round((partNumber / totalParts) * 100);
+      uploadedParts.push({
+        ETag: putRes.headers.get("ETag"),
+        PartNumber: partNumber
+      });
+
+      if (prog) {
+        prog.value = Math.round((partNumber / totalParts) * 100);
+      }
     }
 
-    // 4) complete
     setMsg(orderId, "Finalizing...");
     const completeRes = await fetch("/admin/submissions/upload/complete", {
-      method:"POST",
+      method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
-        orderId, userId, key, uploadId,
+        orderId,
+        userId,
+        key,
+        uploadId,
         parts: uploadedParts,
         contentType: file.type || "application/octet-stream",
         originalName: file.name,
         fileSize: file.size
       })
     });
-    const complete = await completeRes.json().catch(()=> ({}));
+
+    const complete = await completeRes.json().catch(() => ({}));
     if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
 
     setMsg(orderId, "✅ Uploaded successfully!");
-    setTimeout(()=> window.location.reload(), 700);
+    setTimeout(() => window.location.reload(), 700);
   }
 </script>
 
-</body>
-</html>
+<%- include('partials/admin-shell-end') %>

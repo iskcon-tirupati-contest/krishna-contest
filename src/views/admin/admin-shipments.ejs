@@ -1,441 +1,225 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin • Shipments</title>
-  <style>
-    :root{
-      --bg:#0b1020;
-      --card:#121933;
-      --card2:#182245;
-      --text:#eef2ff;
-      --muted:#aab3d6;
-      --line:#2a376b;
-      --blue:#4f7cff;
-      --blue2:#2447b6;
-      --green:#22c55e;
-      --red:#ef4444;
-      --amber:#f59e0b;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:linear-gradient(180deg,#0a0f1d,#0f1630 35%,#0b1020);
-      color:var(--text);
-    }
-    a{color:inherit}
-    .wrap{max-width:1400px;margin:0 auto;padding:20px}
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:14px;
-      margin-bottom:18px;flex-wrap:wrap;
-    }
-    .title h1{margin:0;font-size:28px;line-height:1.1}
-    .title p{margin:6px 0 0;color:var(--muted);font-size:14px}
-    .card{
-      background:linear-gradient(180deg,var(--card),var(--card2));
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:16px;
-      box-shadow:0 18px 50px rgba(0,0,0,.28);
-    }
-    .toolbar{
-      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;
-      margin-bottom:14px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:10px;
-    }
-    @media (max-width:1200px){
-      .grid{grid-template-columns:repeat(2,1fr)}
-    }
-    @media (max-width:700px){
-      .grid{grid-template-columns:1fr}
-    }
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select,button{
-      font:inherit;
-    }
-    input[type="text"], input[type="file"], select{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#0d1430;
-      color:var(--text);
-      outline:none;
-    }
-    input[type="file"]{
-      padding:8px 10px;
-    }
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      min-height:42px;
-      padding:10px 14px;
-      border-radius:12px;
-      border:1px solid transparent;
-      text-decoration:none;
-      cursor:pointer;
-      white-space:nowrap;
-    }
-    .btn.primary{
-      background:linear-gradient(180deg,var(--blue),var(--blue2));
-      color:white;
-    }
-    .btn.ghost{
-      background:#111936;
-      border-color:var(--line);
-      color:var(--text);
-    }
-    .btn.warn{
-      background:linear-gradient(180deg,#f59e0b,#d97706);
-      color:white;
-    }
-    .btn:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-    }
-    .muted{color:var(--muted)}
-    .filters{
-      display:grid;
-      gap:12px;
-    }
-    .facetbar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-    .facet{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      background:#0d1430;
-      border:1px solid var(--line);
-      color:var(--muted);
-      font-size:13px;
-    }
-    .tablewrap{
-      overflow:auto;
-      border-radius:16px;
-      border:1px solid var(--line);
-      margin-top:14px;
-    }
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:1200px;
-      background:rgba(7,11,24,.35);
-    }
-    th,td{
-      padding:12px 12px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      vertical-align:top;
-      text-align:left;
-    }
-    th{
-      position:sticky;
-      top:0;
-      background:#121a38;
-      z-index:1;
-      font-size:13px;
-      color:#dbe5ff;
-    }
-    tr:hover td{
-      background:rgba(255,255,255,.02);
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:5px 10px;
-      border-radius:999px;
-      font-size:12px;
-      border:1px solid rgba(255,255,255,.1);
-      background:#0f1734;
-      color:#dbe5ff;
-      text-transform:capitalize;
-    }
-    .pill.pending{border-color:rgba(245,158,11,.35); color:#fde68a}
-    .pill.packed{border-color:rgba(59,130,246,.35); color:#bfdbfe}
-    .pill.dispatched{border-color:rgba(34,197,94,.35); color:#bbf7d0}
-    .pill.delivered{border-color:rgba(16,185,129,.35); color:#a7f3d0}
-    .pill.failed{border-color:rgba(239,68,68,.35); color:#fecaca}
-    .msg{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid transparent;
-      font-size:14px;
-    }
-    .msg.success{
-      background:rgba(34,197,94,.15);
-      border-color:rgba(34,197,94,.35);
-    }
-    .msg.info{
-      background:rgba(59,130,246,.15);
-      border-color:rgba(59,130,246,.35);
-    }
-    .msg.error{
-      background:rgba(239,68,68,.15);
-      border-color:rgba(239,68,68,.35);
-    }
-    .stack{display:grid;gap:8px}
-    .tiny{font-size:12px}
-    .inline-actions{
-      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-    }
-    .update-form{
-      display:grid;
-      gap:8px;
-      min-width:220px;
-    }
-    .empty{
-      text-align:center;
-      padding:22px;
-      color:var(--muted);
-    }
-    .checkcell{
-      width:42px;
-      text-align:center;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="title">
-        <h1>Admin Shipments</h1>
-        <p>Manage grouped book shipments, India Post batch creation, Excel export, result import, and manual tracking updates.</p>
+<%- include('partials/admin-shell-start', {
+  title: 'Shipments',
+  mobileTitle: 'Shipments',
+  activeTab: 'shipments'
+}) %>
 
-        <% if (batchCreated) { %>
-          <div class="msg success">
-            India Post batch created: <strong><%= batchCreated %></strong>
-            <a class="btn ghost" style="margin-left:10px;text-decoration:none" href="/admin/india-post/export/<%= encodeURIComponent(batchCreated) %>">Download Excel</a>
-          </div>
-        <% } %>
-
-        <% if (imported) { %>
-          <div class="msg info">
-            India Post result imported. Rows processed: <strong><%= imported %></strong>
-          </div>
-        <% } %>
-
-        <% if (errorMsg) { %>
-          <div class="msg error">
-            <%= errorMsg %>
-          </div>
-        <% } %>
-      </div>
-
-      <div class="inline-actions">
-        <a class="btn ghost" href="/admin">Admin Home</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="toolbar">
-        <form id="filtersForm" method="GET" action="/admin/shipments" class="filters" style="flex:1;min-width:320px">
-          <div class="grid">
-            <div>
-              <label for="contest_id">Contest</label>
-              <select id="contest_id" name="contest_id">
-                <option value="">All contests</option>
-                <% contests.forEach(c => { %>
-                  <option value="<%= c.id %>" <%= String(filters.contestId||"")===String(c.id) ? "selected" : "" %>><%= c.title %></option>
-                <% }) %>
-              </select>
-            </div>
-
-            <div>
-              <label for="user_name">User name</label>
-              <input id="user_name" type="text" name="user_name" value="<%= filters.userName || '' %>" placeholder="Search by user name" />
-            </div>
-
-            <div>
-              <label for="status">Shipment status</label>
-              <select id="status" name="status">
-                <option value="all" <%= filters.status==='all' ? 'selected' : '' %>>All</option>
-                <option value="pending" <%= filters.status==='pending' ? 'selected' : '' %>>Pending</option>
-                <option value="packed" <%= filters.status==='packed' ? 'selected' : '' %>>Packed</option>
-                <option value="dispatched" <%= filters.status==='dispatched' ? 'selected' : '' %>>Dispatched</option>
-                <option value="delivered" <%= filters.status==='delivered' ? 'selected' : '' %>>Delivered</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="missing_tracking">Missing Tracking</label>
-              <select id="missing_tracking" name="missing_tracking">
-                <option value="0" <%= filters.missingTracking==='0' ? 'selected' : '' %>>All</option>
-                <option value="1" <%= filters.missingTracking==='1' ? 'selected' : '' %>>Only missing tracking</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="ip_status">India Post Status</label>
-              <select id="ip_status" name="ip_status">
-                <option value="all" <%= filters.ipStatus==='all' ? 'selected' : '' %>>All</option>
-                <option value="pending" <%= filters.ipStatus==='pending' ? 'selected' : '' %>>Pending</option>
-                <option value="booked" <%= filters.ipStatus==='booked' ? 'selected' : '' %>>Booked</option>
-                <option value="delivered" <%= filters.ipStatus==='delivered' ? 'selected' : '' %>>Delivered</option>
-              </select>
-            </div>
-          </div>
-        </form>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
-          <a class="btn ghost" href="/admin/shipments">Reset</a>
-          <button class="btn primary" type="submit" form="filtersForm">Apply</button>
-          <a class="btn ghost" href="/admin/shipments/export.csv?<%= qs %>">Export CSV</a>
-          <button class="btn primary" type="submit" form="ipBatchForm">Create India Post Batch</button>
-        </div>
-      </div>
-
-      <div class="facetbar">
-        <% if (statusFacets && statusFacets.length) { %>
-          <% statusFacets.forEach(f => { %>
-            <span class="facet">
-              <span><%= f.status %></span>
-              <strong><%= f.c %></strong>
-            </span>
-          <% }) %>
-        <% } else { %>
-          <span class="facet">No status data</span>
-        <% } %>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px">
-        <form id="ipBatchForm" method="POST" action="/admin/india-post/create-batch"></form>
-
-        <form method="POST" action="/admin/india-post/import-result" enctype="multipart/form-data" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="file" name="result_file" accept=".xlsx,.xls" style="max-width:260px" />
-          <button class="btn ghost" type="submit">Import Result File</button>
-        </form>
-      </div>
-
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="checkcell">
-                <input type="checkbox" id="checkAll" />
-              </th>
-              <th>Shipment</th>
-              <th>User</th>
-              <th>Books / Contests</th>
-              <th>Address</th>
-              <th>Tracking</th>
-              <th>India Post</th>
-              <th>Update</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <% if (!items || !items.length) { %>
-              <tr>
-                <td colspan="8" class="empty">
-                  No shipments found for the selected filters.
-                </td>
-              </tr>
-            <% } %>
-
-            <% items.forEach(it => { %>
-              <tr>
-                <td class="checkcell">
-                  <input
-                    type="checkbox"
-                    name="shipment_ids"
-                    value="<%= it.shipment_id %>"
-                    form="ipBatchForm"
-                    class="rowCheck"
-                  />
-                </td>
-
-                <td class="muted tiny">
-                  <div><strong>Shipment:</strong> <%= it.shipment_id %></div>
-                  <div><strong>Payment:</strong> <%= it.payment_id || '-' %></div>
-                </td>
-
-                <td>
-                  <div style="font-weight:900"><%= it.user_name %></div>
-                  <div class="muted tiny"><%= it.email %> • <%= it.phone || '-' %></div>
-                </td>
-
-                <td>
-                  <div><strong>Books:</strong> <%= it.book_titles || '-' %></div>
-                  <div class="muted tiny"><%= it.contest_titles || '-' %></div>
-                </td>
-
-                <td class="muted tiny">
-                  <div><%= it.address || '-' %></div>
-                  <div><%= it.city || '' %> <%= it.state || '' %> <%= it.pincode || '' %></div>
-                </td>
-
-                <td class="muted tiny">
-                  <div><strong>ID:</strong> <%= it.tracking_id || '-' %></div>
-                  <div><strong>Courier:</strong> <%= it.courier_mode || '-' %></div>
-                  <div style="margin-top:6px">
-                    <span class="pill <%= (it.status || 'pending').toLowerCase() %>"><%= it.status || 'pending' %></span>
-                  </div>
-                </td>
-
-                <td class="muted tiny">
-                  <div><strong>Batch:</strong> <%= it.batch_no || '-' %></div>
-                  <div><strong>IP Status:</strong> <%= it.ip_booking_status || '-' %></div>
-
-                  <% if (it.batch_no) { %>
-                    <div style="margin-top:8px">
-                      <a
-                        class="btn ghost"
-                        style="text-decoration:none;display:inline-block;padding:6px 10px;min-height:auto"
-                        href="/admin/india-post/export/<%= encodeURIComponent(it.batch_no) %>"
-                      >
-                        Excel
-                      </a>
-                    </div>
-                  <% } %>
-                </td>
-
-                <td>
-                  <form method="POST" action="/admin/shipments/update" class="update-form">
-                    <input type="hidden" name="shipmentId" value="<%= it.shipment_id %>" />
-                    <input name="tracking_id" value="<%= it.tracking_id || '' %>" placeholder="Tracking ID" />
-                    <input name="courier_mode" value="<%= it.courier_mode || '' %>" placeholder="Courier" />
-                    <select name="status">
-                      <option value="pending" <%= (it.status || 'pending') === 'pending' ? 'selected' : '' %>>Pending</option>
-                      <option value="packed" <%= (it.status || '') === 'packed' ? 'selected' : '' %>>Packed</option>
-                      <option value="dispatched" <%= (it.status || '') === 'dispatched' ? 'selected' : '' %>>Dispatched</option>
-                      <option value="delivered" <%= (it.status || '') === 'delivered' ? 'selected' : '' %>>Delivered</option>
-                    </select>
-                    <button class="btn primary" type="submit">Save</button>
-                  </form>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+<div class="page-head">
+  <div>
+    <h1>Shipments</h1>
+    <div class="sub">
+      Manage grouped shipments, India Post batches, and tracking updates
     </div>
   </div>
 
-  <script>
-    (function () {
-      const checkAll = document.getElementById("checkAll");
-      const rowChecks = Array.from(document.querySelectorAll(".rowCheck"));
-      if (!checkAll) return;
+  <div class="page-actions">
+    <a class="btn ghost" href="/admin">Admin Home</a>
+  </div>
+</div>
 
-      checkAll.addEventListener("change", function () {
-        rowChecks.forEach(cb => cb.checked = checkAll.checked);
-      });
-    })();
-  </script>
-</body>
-</html>
+<!-- Alerts -->
+<% if (batchCreated) { %>
+  <div class="card">
+    <div class="pill">
+      Batch created: <strong><%= batchCreated %></strong>
+      <a class="btn ghost" href="/admin/india-post/export/<%= encodeURIComponent(batchCreated) %>">
+        Download Excel
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<% if (imported) { %>
+  <div class="card">
+    <div class="pill">Imported rows: <strong><%= imported %></strong></div>
+  </div>
+<% } %>
+
+<% if (errorMsg) { %>
+  <div class="card">
+    <div class="pill"><%= errorMsg %></div>
+  </div>
+<% } %>
+
+<!-- Filters -->
+<div class="card">
+  <div class="strong">Filters</div>
+  <div class="tiny">Filter shipments by contest, user, tracking and status.</div>
+
+  <div class="section-line"></div>
+
+  <form id="filtersForm" method="GET" action="/admin/shipments">
+    <div class="grid grid-3">
+
+      <div>
+        <label>Contest</label>
+        <select name="contest_id">
+          <option value="">All</option>
+          <% contests.forEach(c => { %>
+            <option value="<%= c.id %>" <%= String(filters.contestId||"")===String(c.id) ? "selected" : "" %>>
+              <%= c.title %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div>
+        <label>User name</label>
+        <input name="user_name" value="<%= filters.userName || '' %>" placeholder="Search name" />
+      </div>
+
+      <div>
+        <label>Status</label>
+        <select name="status">
+          <option value="all" <%= filters.status==='all'?'selected':'' %>>All</option>
+          <option value="pending" <%= filters.status==='pending'?'selected':'' %>>Pending</option>
+          <option value="packed" <%= filters.status==='packed'?'selected':'' %>>Packed</option>
+          <option value="dispatched" <%= filters.status==='dispatched'?'selected':'' %>>Dispatched</option>
+          <option value="delivered" <%= filters.status==='delivered'?'selected':'' %>>Delivered</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Missing Tracking</label>
+        <select name="missing_tracking">
+          <option value="0">All</option>
+          <option value="1" <%= filters.missingTracking==='1'?'selected':'' %>>Missing only</option>
+        </select>
+      </div>
+
+      <div>
+        <label>India Post Status</label>
+        <select name="ip_status">
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="booked">Booked</option>
+          <option value="delivered">Delivered</option>
+        </select>
+      </div>
+
+    </div>
+  </form>
+
+  <div class="row" style="margin-top:14px">
+    <button class="btn primary" form="filtersForm">Apply</button>
+    <a class="btn ghost" href="/admin/shipments">Reset</a>
+    <a class="btn ghost" href="/admin/shipments/export.csv?<%= qs %>">Export CSV</a>
+    <button class="btn primary" form="ipBatchForm">Create Batch</button>
+  </div>
+</div>
+
+<!-- India Post actions -->
+<div class="card">
+  <div class="row">
+    <form id="ipBatchForm" method="POST" action="/admin/india-post/create-batch"></form>
+
+    <form method="POST" action="/admin/india-post/import-result" enctype="multipart/form-data">
+      <input type="file" name="result_file" accept=".xlsx,.xls" />
+      <button class="btn ghost">Import Result</button>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div class="strong">Shipments</div>
+      <div class="tiny">Scroll horizontally on mobile</div>
+    </div>
+    <span class="pill"><%= (items || []).length %> rows</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="checkAll"></th>
+          <th>Shipment</th>
+          <th>User</th>
+          <th>Books</th>
+          <th>Address</th>
+          <th>Tracking</th>
+          <th>India Post</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (!items || !items.length) { %>
+          <tr><td colspan="8" class="muted">No shipments</td></tr>
+        <% } %>
+
+        <% items.forEach(it => { %>
+          <tr>
+            <td>
+              <input type="checkbox" class="rowCheck" form="ipBatchForm" name="shipment_ids" value="<%= it.shipment_id %>">
+            </td>
+
+            <td class="tiny">
+              <div><strong><%= it.shipment_id %></strong></div>
+              <div><%= it.payment_id || '-' %></div>
+            </td>
+
+            <td>
+              <div class="strong"><%= it.user_name %></div>
+              <div class="tiny"><%= it.email %></div>
+            </td>
+
+            <td>
+              <div><%= it.book_titles %></div>
+              <div class="tiny"><%= it.contest_titles %></div>
+            </td>
+
+            <td class="tiny">
+              <div><%= it.address %></div>
+              <div><%= it.city %> <%= it.state %> <%= it.pincode %></div>
+            </td>
+
+            <td class="tiny">
+              <div>ID: <%= it.tracking_id || '-' %></div>
+              <div><%= it.courier_mode || '-' %></div>
+              <span class="pill"><%= it.status || 'pending' %></span>
+            </td>
+
+            <td class="tiny">
+              <div>Batch: <%= it.batch_no || '-' %></div>
+              <div>Status: <%= it.ip_booking_status || '-' %></div>
+            </td>
+
+            <td>
+              <form method="POST" action="/admin/shipments/update">
+                <input type="hidden" name="shipmentId" value="<%= it.shipment_id %>" />
+
+                <input name="tracking_id" value="<%= it.tracking_id || '' %>" placeholder="Tracking" />
+                <input name="courier_mode" value="<%= it.courier_mode || '' %>" placeholder="Courier" />
+
+                <select name="status">
+                  <option value="pending">Pending</option>
+                  <option value="packed">Packed</option>
+                  <option value="dispatched">Dispatched</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+
+                <button class="btn primary">Save</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const checkAll = document.getElementById("checkAll");
+  const rows = document.querySelectorAll(".rowCheck");
+
+  if (checkAll) {
+    checkAll.addEventListener("change", () => {
+      rows.forEach(r => r.checked = checkAll.checked);
+    });
+  }
+</script>
+
+<%- include('partials/admin-shell-end') %>

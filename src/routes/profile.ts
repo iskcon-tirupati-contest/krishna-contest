@@ -15,6 +15,8 @@ function renderProfile(res: Response, data: any) {
   return res.render("dashboard-profile", data);
 }
 
+
+
 async function getGroupedPayments(userId: string) {
   const q = await pool.query(
     `SELECT

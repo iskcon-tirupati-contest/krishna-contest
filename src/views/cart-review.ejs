@@ -14,7 +14,9 @@
     .top{padding:20px 20px 18px;background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);color:#fff;position:relative;overflow:hidden}
     .top::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.07) 0%,transparent 55%);pointer-events:none}
     .topInner{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .topLeft h1{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+    .topLeft h1{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .itemCountPill{display:inline-flex;align-items:center;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.28);border-radius:999px;padding:3px 11px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#fff;letter-spacing:.2px;white-space:nowrap}
+    .itemCountPill.hidden{display:none}
     .topLeft p{font-size:13px;opacity:.88;line-height:1.5}
     .clearBtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:#fff;border-radius:11px;padding:9px 13px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .16s;white-space:nowrap;margin-top:4px}
     .clearBtn:hover{background:rgba(255,80,80,.25)}
@@ -52,9 +54,16 @@
     .sumAmount{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--navy)}
     /* SAFFRON-GOLD continue button */
     .continueBtn{width:100%;border:none;border-radius:14px;padding:14px 18px;background:linear-gradient(135deg,#d97706 0%,#f59e0b 50%,#d97706 100%);color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(217,119,6,.35);transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-    .continueBtn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(217,119,6,.48)}.continueBtn:active{transform:scale(.97)}
-    .empty{border:1.5px dashed var(--border);border-radius:18px;padding:28px;text-align:center;color:var(--text-muted);font-size:14px;background:#fafbff}
-    .emptyIcon{font-size:36px;margin-bottom:8px}
+    .continueBtn:disabled{opacity:.75;cursor:not-allowed;transform:none!important;box-shadow:0 6px 20px rgba(217,119,6,.25)!important}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+    .empty{border:1.5px dashed var(--border);border-radius:18px;padding:32px 20px;text-align:center;color:var(--text-muted);font-size:14px;background:#fafbff}
+    .emptyIcon{font-size:40px;margin-bottom:10px}
+    .emptyMsg{margin-bottom:18px;line-height:1.6;color:var(--text-mid)}
+    .browseBtn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;border-radius:12px;padding:11px 20px;box-shadow:0 6px 18px rgba(26,35,126,.25);transition:transform .14s,box-shadow .14s;text-decoration:none}
+    .browseBtn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(26,35,126,.32)}
+    .browseBtn:active{transform:scale(.97)}
+    .browseBtn svg{width:16px;height:16px;fill:#fff}
     /* toast */
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:14px;padding:12px 18px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.err{background:#7f1d1d}.toast.ok{background:#065f46}
@@ -65,7 +74,7 @@
 <div class="wrap">
   <div class="top">
     <div class="topInner">
-      <div class="topLeft"><h1>🛒 Cart Review</h1><p>Review your selected contests before continuing to checkout.</p></div>
+      <div class="topLeft"><h1>🛒 Cart Review <span class="itemCountPill hidden" id="itemCountPill">0 items</span></h1><p>Review your selected contests before continuing to checkout.</p></div>
       <button id="clearCartBtn" class="clearBtn" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/></svg>Clear Cart</button>
     </div>
   </div>
@@ -78,8 +87,8 @@
     <div id="cartSummary" style="display:none">
       <div class="summary">
         <div class="sumRow"><span class="sumLabel">Total Amount</span><span class="sumAmount" id="totalAmount">₹0</span></div>
-        <form method="POST" action="/cart-review/start">
-          <button class="continueBtn" type="submit">Continue to Address & Book Details<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button>
+        <form method="POST" action="/cart-review/start" id="checkoutForm">
+          <button class="continueBtn" type="submit" id="continueBtn">Continue to Address & Book Details<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button>
         </form>
       </div>
     </div>
@@ -102,15 +111,38 @@ const cartSummary=document.getElementById('cartSummary');
 const totalAmountEl=document.getElementById('totalAmount');
 const bonusBox=document.getElementById('bonusBox');
 const bonusText=document.getElementById('bonusText');
+const itemCountPill=document.getElementById('itemCountPill');
+
+function updateCountPill(count){
+  if(count>0){
+    itemCountPill.textContent=count===1?'1 item':`${count} items`;
+    itemCountPill.classList.remove('hidden');
+  }else{
+    itemCountPill.classList.add('hidden');
+  }
+}
 
 async function render(){
   let cart=[],summary={ssrCount:0};
   try{cart=await loadCart();summary=await loadSummary()}
-  catch(e){cartList.innerHTML=`<div class="empty"><div class="emptyIcon">⚠️</div>${e.message||'Failed to load cart.'}</div>`;cartSummary.style.display='none';return}
+  catch(e){cartList.innerHTML=`<div class="empty"><div class="emptyIcon">⚠️</div><div class="emptyMsg">${e.message||'Failed to load cart.'}</div></div>`;cartSummary.style.display='none';updateCountPill(0);return}
   cartList.innerHTML='';
   if(summary.ssrCount>0){bonusText.textContent=`You've earned ${summary.ssrCount} free bonus book${summary.ssrCount>1?'s':''}: Science of Self Realization. This will appear at checkout.`;bonusBox.style.display='flex'}
   else{bonusBox.style.display='none'}
-  if(!cart.length){cartList.innerHTML=`<div class="empty"><div class="emptyIcon">🛒</div>Your cart is empty. Go back to add contests!</div>`;cartSummary.style.display='none';return}
+  if(!cart.length){
+    updateCountPill(0);
+    cartList.innerHTML=`<div class="empty">
+      <div class="emptyIcon">🛒</div>
+      <div class="emptyMsg">Your cart is empty.<br>Browse contests and add them to get started!</div>
+      <a class="browseBtn" href="/dashboard">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Browse Contests
+      </a>
+    </div>`;
+    cartSummary.style.display='none';return;
+  }
+  const totalQty=cart.reduce((s,i)=>s+Number(i.quantity||0),0);
+  updateCountPill(totalQty);
   let total=0;
   cart.forEach(item=>{
     total+=Number(item.price||0)*Number(item.quantity||0);
@@ -153,6 +185,12 @@ document.getElementById('clearCartBtn')?.addEventListener('click',async()=>{
   if(!confirm('Clear all items from cart?'))return;
   try{await fetchJson('/api/cart/clear',{method:'POST',headers:{'Content-Type':'application/json'}});await render();showToast('Cart cleared','ok')}
   catch(e){showToast('⚠️ '+(e.message||'Failed'),'err')}
+});
+document.getElementById('checkoutForm')?.addEventListener('submit',function(){
+  const btn=document.getElementById('continueBtn');
+  if(!btn)return;
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div>Taking you to checkout…';
 });
 </script>
 </body>

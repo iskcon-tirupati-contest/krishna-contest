@@ -395,26 +395,36 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
-  const activeContests = await pool.query(
-    `SELECT
-        id,
-        title,
-        description,
-        price,
-        registration_deadline,
-        submission_deadline,
-        winner_declaration_date,
-        image_url,
-        prize_details,
-        rules,
-        age_categories,
-        participant_benefits,
-        is_active
-     FROM contests
-     WHERE is_active = true
-     ORDER BY title ASC`
-  );
 
+
+ const activeContests = await pool.query(
+  `SELECT
+      id,
+      title,
+      description,
+      price,
+      registration_deadline,
+      submission_deadline,
+      winner_declaration_date,
+      image_url,
+      prize_details,
+      rules,
+      age_categories,
+      participant_benefits,
+      is_active
+   FROM contests
+   WHERE is_active = true
+   ORDER BY
+     CASE title
+       WHEN 'Ramayana Essay Writing Contest' THEN 1
+       WHEN 'Bhagavatam Essay Writing Contest' THEN 2
+       WHEN 'Krishna Essay Writing Contest' THEN 3
+       WHEN 'Bhagavad Gita Essay Writing Contest' THEN 4
+       WHEN 'Combo Contest' THEN 5
+       ELSE 999
+     END,
+     title ASC`
+);
   return res.render("dashboard-home", {
     user: userRes.rows[0] || null,
     pending: activeContests.rows,

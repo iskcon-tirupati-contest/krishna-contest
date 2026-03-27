@@ -40,7 +40,6 @@
 
     .content{padding:20px}
 
-    /* step indicator */
     .steps{display:flex;gap:0;margin-bottom:20px;border-radius:14px;overflow:hidden;border:1.5px solid var(--border-lt)}
     .step{flex:1;padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);background:#fafbff;border-right:1.5px solid var(--border-lt)}
     .step:last-child{border-right:none}
@@ -50,7 +49,6 @@
 
     .err{background:var(--red-lt);border:1.5px solid #fecaca;color:var(--red-dark);padding:12px 14px;border-radius:12px;margin-bottom:16px;font-weight:600;font-size:14px}
 
-    /* bonus */
     .bonusCard{
       background:linear-gradient(135deg,#eff6ff,#fff);border:1.5px solid #bfdbfe;
       border-radius:18px;padding:14px 16px;margin-bottom:16px;
@@ -60,7 +58,6 @@
     .bonusCard h3{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#1e3a8a;margin-bottom:4px}
     .bonusCard p{font-size:13px;color:#1d4ed8;line-height:1.55}
 
-    /* delivery mode */
     .modeLabel{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);margin-bottom:10px}
     .radioWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
     .radioCard{
@@ -75,7 +72,6 @@
     .radioTitle{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);margin-bottom:3px}
     .radioText{font-size:12px;color:var(--text-muted);line-height:1.5}
 
-    /* form sections */
     .formSection{border:1.5px solid var(--border-lt);border-radius:20px;padding:16px;margin-bottom:14px;background:#fafbff}
     .formSectionTitle{
       font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h);
@@ -99,7 +95,6 @@
     input:focus,select:focus,textarea:focus{border-color:var(--navy-lt);box-shadow:0 0 0 3px rgba(92,107,192,.16);background:#fff}
     textarea{min-height:88px;resize:vertical}
 
-    /* contest book rows */
     .contestRow{
       border:1.5px solid var(--border-lt);border-radius:16px;
       padding:14px;margin-bottom:10px;background:#fff;
@@ -107,9 +102,8 @@
     }
     .contestRow:last-child{margin-bottom:0}
     .contestRow:hover{border-color:var(--border)}
-    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .contestHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
     .contestTitle{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-h)}
-    .agePill{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--navy-ghost);color:var(--navy);border:1px solid var(--border);font-size:11px;font-weight:700;margin-top:4px}
     .priceTag{font-family:'Sora',sans-serif;font-weight:800;color:var(--navy);font-size:15px;white-space:nowrap}
     .freeBadge{
       display:inline-block;padding:4px 10px;border-radius:999px;
@@ -122,9 +116,44 @@
       background:#f0fdf9;font-size:14px;font-weight:600;color:var(--green-dark);
     }
 
+    .orderMetaGrid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:4px;
+    }
+    .metaField label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-mid);
+      margin-bottom:6px;
+    }
+    .metaField select,
+    .fixedValue{
+      width:100%;
+      min-height:44px;
+      border:1.5px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px 12px;
+      font-size:14px;
+    }
+    .fixedValue{
+      display:flex;
+      align-items:center;
+      background:#f8fafc;
+      font-weight:600;
+      color:var(--text-b);
+    }
+    @media (max-width: 760px){
+      .orderMetaGrid{
+        grid-template-columns:1fr;
+      }
+    }
+
     .hide{display:none}
 
-    /* submit button */
     .submitBtn{
       width:100%;border:none;border-radius:14px;padding:15px 20px;
       background:linear-gradient(135deg,#d97706 0%,#f59e0b 50%,#d97706 100%);
@@ -135,6 +164,12 @@
     }
     .submitBtn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(245,158,11,.45)}
     .submitBtn:active{transform:scale(.97)}
+    .submitBtn:disabled{
+      background:linear-gradient(135deg,#9ca3af 0%,#6b7280 100%);
+      box-shadow:none;cursor:not-allowed;opacity:.75;transform:none!important;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
   </style>
 </head>
 <body>
@@ -168,10 +203,9 @@
       </div>
     <% } %>
 
-    <form method="POST" action="/checkout/review">
+    <form method="POST" action="/checkout/review" id="checkoutForm">
       <input type="hidden" name="paymentId" value="<%= paymentId %>">
 
-      <!-- Delivery mode -->
       <div class="modeLabel">📦 How would you like to receive your books?</div>
       <div class="radioWrap">
         <label class="radioCard">
@@ -197,7 +231,6 @@
         </label>
       </div>
 
-      <!-- Address section -->
       <div class="formSection" id="addressBox">
         <div class="formSectionTitle"><span class="icon">👤</span> Recipient Details</div>
         <div class="row">
@@ -221,32 +254,37 @@
         </div>
       </div>
 
-      <!-- Books section -->
       <div class="formSection" id="booksBox">
-        <div class="formSectionTitle"><span class="icon">📚</span> Book & Language Preferences</div>
+        <div class="formSectionTitle"><span class="icon">📚</span>Select gift book languages and age:</div>
 
         <% (orders||[]).forEach(o=>{ %>
           <div class="contestRow">
             <div class="contestHead">
-              <div>
-                <div class="contestTitle"><%= o.contest_title %></div>
-                <span class="agePill">Age: <%= o.age_category==='above-25'?'Above 25 years':'0 to 25 years' %></span>
-              </div>
+              <div class="contestTitle"><%= o.contest_title %></div>
               <div class="priceTag">₹<%= Number(o.amount||0) %></div>
             </div>
-            <div class="row">
-              <div>
-                <label>Book Title</label>
-                <select name="bookTitle" class="book-title">
-                  <option value="">Select book</option>
-                  <% (books||[]).forEach(b=>{ %><option value="<%= b %>" <%= (o.saved_book_title===b||o.book_title===b)?'selected':'' %>><%= b %></option><% }) %>
+
+            <div class="orderMetaGrid">
+              <div class="metaField">
+                <label>Book</label>
+                <div class="fixedValue"><%= o.default_book_title || '-' %></div>
+              </div>
+
+              <div class="metaField">
+                <label>Age Category</label>
+                <select name="ageCategory" class="age-category" required>
+                  <option value="0-25" <%= String(o.age_category||'') === '0-25' ? 'selected' : '' %>>0-25 years</option>
+                  <option value="above-25" <%= String(o.age_category||'') === 'above-25' ? 'selected' : '' %>>Above 25 years</option>
                 </select>
               </div>
-              <div>
-                <label>Language</label>
-                <select name="bookLanguage" class="book-language">
+
+            <div class="metaField">
+                <label>Preferred Language</label>
+                <select name="bookLanguage" class="book-language" required>
                   <option value="">Select language</option>
-                  <% (languages||[]).forEach(l=>{ %><option value="<%= l %>" <%= o.saved_book_language===l?'selected':'' %>><%= l %></option><% }) %>
+                  <% (languages||[]).forEach(l=>{ %>
+                    <option value="<%= l %>" <%= String(o.saved_book_language||'') === String(l) ? 'selected' : '' %>><%= l %></option>
+                  <% }) %>
                 </select>
               </div>
             </div>
@@ -279,7 +317,7 @@
         <% } %>
       </div>
 
-      <button class="submitBtn" type="submit">
+      <button class="submitBtn" type="submit" id="submitBtn">
         Save Details & Continue to Payment
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
       </button>
@@ -289,42 +327,154 @@
 
 <script>
 (function(){
-  const addressBox=document.getElementById('addressBox');
-  const booksBox=document.getElementById('booksBox');
-  const errBox=document.querySelector('.err');
+  const addressBox = document.getElementById('addressBox');
+  const booksBox = document.getElementById('booksBox');
+  const errBox = document.querySelector('.err');
+  const form = document.getElementById('checkoutForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function setDisabled(selector, disabled){
+    document.querySelectorAll(selector).forEach(el => {
+      el.disabled = disabled;
+      if(disabled){
+        el.removeAttribute('required');
+      }else{
+        if(el.classList.contains('age-category') || el.classList.contains('book-language')){
+          el.setAttribute('required', 'required');
+        }
+      }
+    });
+  }
 
   function toggleByMode(){
-    const mode=document.querySelector('input[name="deliveryMode"]:checked')?.value;
-    addressBox.classList.toggle('hide',mode==='donate'||mode==='temple_pickup');
-    booksBox.classList.toggle('hide',mode==='donate');
+    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+
+    const hideAddress = mode === 'donate' || mode === 'temple_pickup';
+    const hideBooks = mode === 'donate';
+
+    addressBox.classList.toggle('hide', hideAddress);
+    booksBox.classList.toggle('hide', hideBooks);
+
+    // address fields are optional in HTML, so only disable when hidden
+    document.querySelectorAll('[name="address"], [name="city"], [name="state"], [name="pincode"]').forEach(el => {
+      el.disabled = hideAddress;
+    });
+
+    // THIS is the real fix
+    setDisabled('.age-category', hideBooks);
+    setDisabled('.book-language', hideBooks);
+    setDisabled('.ssr-language', hideBooks);
   }
-  document.querySelectorAll('input[name="deliveryMode"]').forEach(r=>r.addEventListener('change',toggleByMode));
+
+  document.querySelectorAll('input[name="deliveryMode"]').forEach(r =>
+    r.addEventListener('change', toggleByMode)
+  );
   toggleByMode();
 
-  function showError(msg){ if(errBox){errBox.textContent=msg;errBox.style.display='block';}else alert(msg); }
-  function clearError(){ if(errBox)errBox.style.display='none'; }
-  function focusField(el){ if(!el)return; el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>el.focus(),120); }
-
-  function validate(){
-    const mode=document.querySelector('input[name="deliveryMode"]:checked')?.value;
-    if(mode==='donate'){clearError();return true;}
-    const get=n=>document.querySelector(`[name="${n}"]`);
-    const fullName=get('fullName'),phone=get('phone'),address=get('address'),city=get('city'),state=get('state'),pincode=get('pincode');
-    if(!String(fullName?.value||'').trim()){showError('Please enter full name.');focusField(fullName);return false;}
-    if(!/^[6-9]\d{9}$/.test(String(phone?.value||'').trim())){showError('Please enter a valid 10-digit mobile number.');focusField(phone);return false;}
-    if(mode!=='temple_pickup'){
-      if(!String(address?.value||'').trim()){showError('Please enter address.');focusField(address);return false;}
-      if(!String(city?.value||'').trim()){showError('Please enter city.');focusField(city);return false;}
-      if(!String(state?.value||'').trim()){showError('Please enter state.');focusField(state);return false;}
-      if(!/^[1-9][0-9]{5}$/.test(String(pincode?.value||'').trim())){showError('Please enter a valid 6-digit pincode.');focusField(pincode);return false;}
+  function showError(msg){
+    if(errBox){
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+    } else {
+      alert(msg);
     }
-    for(const el of document.querySelectorAll('.book-title')){ if(!String(el.value||'').trim()){showError('Please select book for every contest.');focusField(el);return false;} }
-    for(const el of document.querySelectorAll('.book-language')){ if(!String(el.value||'').trim()){showError('Please select language for every contest.');focusField(el);return false;} }
-    for(const el of document.querySelectorAll('.ssr-language')){ if(!String(el.value||'').trim()){showError('Please select language for all bonus books.');focusField(el);return false;} }
-    clearError();return true;
   }
 
-  document.querySelector('form')?.addEventListener('submit',e=>{if(!validate())e.preventDefault();});
+  function clearError(){
+    if(errBox) errBox.style.display = 'none';
+  }
+
+  function focusField(el){
+    if(!el) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    setTimeout(() => el.focus(), 120);
+  }
+
+  function validate(){
+    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    const get = n => document.querySelector(`[name="${n}"]`);
+
+    const fullName = get('fullName');
+    const phone = get('phone');
+    const address = get('address');
+    const city = get('city');
+    const state = get('state');
+    const pincode = get('pincode');
+
+    if(!String(fullName?.value || '').trim()){
+      showError('Please enter full name.');
+      focusField(fullName);
+      return false;
+    }
+
+    if(!/^[6-9]\d{9}$/.test(String(phone?.value || '').trim())){
+      showError('Please enter a valid 10-digit mobile number.');
+      focusField(phone);
+      return false;
+    }
+
+    if(mode !== 'donate' && mode !== 'temple_pickup'){
+      if(!String(address?.value || '').trim()){
+        showError('Please enter address.');
+        focusField(address);
+        return false;
+      }
+      if(!String(city?.value || '').trim()){
+        showError('Please enter city.');
+        focusField(city);
+        return false;
+      }
+      if(!String(state?.value || '').trim()){
+        showError('Please enter state.');
+        focusField(state);
+        return false;
+      }
+      if(!/^[1-9][0-9]{5}$/.test(String(pincode?.value || '').trim())){
+        showError('Please enter a valid 6-digit pincode.');
+        focusField(pincode);
+        return false;
+      }
+    }
+
+    if(mode !== 'donate'){
+      for(const el of document.querySelectorAll('.age-category:not(:disabled)')){
+        if(!String(el.value || '').trim()){
+          showError('Please select age category for every contest.');
+          focusField(el);
+          return false;
+        }
+      }
+
+      for(const el of document.querySelectorAll('.book-language:not(:disabled)')){
+        if(!String(el.value || '').trim()){
+          showError('Please select language for every contest.');
+          focusField(el);
+          return false;
+        }
+      }
+
+      for(const el of document.querySelectorAll('.ssr-language:not(:disabled)')){
+        if(!String(el.value || '').trim()){
+          showError('Please select language for all bonus books.');
+          focusField(el);
+          return false;
+        }
+      }
+    }
+
+    clearError();
+    return true;
+  }
+
+  form?.addEventListener('submit', function(e){
+    toggleByMode(); // ensure disabled state is correct before browser/native submit
+    if(!validate()){
+      e.preventDefault();
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<div class="spinner"></div>Saving details…';
+  });
 })();
 </script>
 </body>

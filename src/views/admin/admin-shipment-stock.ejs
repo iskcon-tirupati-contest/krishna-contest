@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Shipment Stock</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121933;
+      --card2:#182245;
+      --text:#eef2ff;
+      --muted:#aab3d6;
+      --line:#2a376b;
+      --blue:#4f7cff;
+      --blue2:#2447b6;
+      --green:#22c55e;
+      --red:#ef4444;
+      --amber:#f59e0b;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:#0b1224;
+      color:var(--text);
+    }
+
+    a{color:inherit}
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{
+      width:260px;
+      background:#0a1022;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:18px;
+    }
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      color:rgba(255,255,255,.85);
+      margin-bottom:8px;
+    }
+    .nav a.active{
+      background:rgba(26,60,255,.18);
+      border:1px solid rgba(26,60,255,.35);
+      color:#fff;
+    }
+
+    .content{flex:1}
+    .wrap{max-width:1500px;margin:26px auto;padding:0 18px}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title h1{margin:0;font-size:28px;line-height:1.1}
+    .title p{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .metric{
+      padding:14px;
+      border-radius:18px;
+      background:#0d1430;
+      border:1px solid var(--line);
+    }
+
+    .metric .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .metric .value{
+      font-size:24px;
+      font-weight:900;
+    }
+
+    .lang-section{
+      margin-top:18px;
+    }
+
+    .lang-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .lang-head h2{
+      margin:0;
+      font-size:22px;
+    }
+
+    .facet{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#0d1430;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .tablewrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid var(--line);
+      margin-top:10px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1300px;
+      background:rgba(7,11,24,.35);
+    }
+
+    th,td{
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:top;
+      text-align:left;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#121a38;
+      z-index:1;
+      font-size:13px;
+      color:#dbe5ff;
+    }
+
+    tr:hover td{
+      background:rgba(255,255,255,.02);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.1);
+      background:#0f1734;
+      color:#dbe5ff;
+      text-transform:capitalize;
+      white-space:nowrap;
+    }
+
+    .pill.ok{border-color:rgba(34,197,94,.35);color:#bbf7d0}
+    .pill.warning{border-color:rgba(245,158,11,.35);color:#fde68a}
+    .pill.critical{border-color:rgba(239,68,68,.35);color:#fecaca}
+
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+
+    input, button, textarea{
+      font:inherit;
+    }
+
+    input[type="number"], textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0d1430;
+      color:var(--text);
+      outline:none;
+    }
+
+    textarea{
+      min-height:42px;
+      resize:vertical;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid transparent;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+      font-weight:900;
+    }
+
+
+
+    .stack{
+  display:grid;
+  gap:8px;
+}
+
+.tiny{
+  font-size:12px;
+}
+
+.num{
+  font-weight:900;
+}
+
+.neg{
+  color:#fecaca;
+  font-weight:900;
+}
+
+.pos{
+  color:#bbf7d0;
+  font-weight:900;
+}
+
+.pill.ok{
+  border-color:rgba(34,197,94,.35);
+  color:#bbf7d0;
+}
+
+.pill.warning{
+  border-color:rgba(245,158,11,.35);
+  color:#fde68a;
+}
+
+.pill.critical{
+  border-color:rgba(239,68,68,.35);
+  color:#fecaca;
+}
+
+    .btn.primary{
+      background:linear-gradient(180deg,var(--blue),var(--blue2));
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#111936;
+      border-color:var(--line);
+      color:var(--text);
+    }
+
+    .msg{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid transparent;
+      font-size:14px;
+    }
+
+    .msg.success{
+      background:rgba(34,197,94,.15);
+      border-color:rgba(34,197,94,.35);
+    }
+
+    .msg.error{
+      background:rgba(239,68,68,.15);
+      border-color:rgba(239,68,68,.35);
+    }
+
+    .empty{
+      text-align:center;
+      padding:22px;
+      color:var(--muted);
+    }
+
+    .inline-form{
+      display:grid;
+      grid-template-columns:110px minmax(180px,1fr) 110px;
+      gap:8px;
+      align-items:start;
+      min-width:420px;
+    }
+
+    .num{
+      font-weight:900;
+    }
+
+    .neg{
+      color:#fecaca;
+      font-weight:900;
+    }
+
+    .pos{
+      color:#bbf7d0;
+      font-weight:900;
+    }
+
+    @media (max-width:1200px){
+      .summary{grid-template-columns:repeat(3,1fr)}
+    }
+
+    @media (max-width:1100px){
+      .sidebar{display:none}
+    }
+
+    @media (max-width:700px){
+      .summary{grid-template-columns:1fr}
+      .inline-form{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/shipment-stock" class="active">Shipment Stock</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Shipment Stock Analytics</h1>
+        <p>Godown stock vs paid shipment demand, language-wise.</p>
+
+        <% if (okMsg) { %>
+          <div class="msg success"><%= okMsg %></div>
+        <% } %>
+
+        <% if (errMsg) { %>
+          <div class="msg error"><%= errMsg %></div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="metric">
+        <div class="label">Tracked rows</div>
+        <div class="value"><%= Number(summary?.trackedRows || 0) %></div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Godown stock on hand</div>
+        <div class="value"><%= Number(summary?.godownStock || 0) %></div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Pending books to pack</div>
+        <div class="value"><%= Number(summary?.pendingToPack || 0) %></div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Packed awaiting dispatch</div>
+        <div class="value"><%= Number(summary?.packedAwaitingDispatch || 0) %></div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Critical rows</div>
+        <div class="value"><%= Number(summary?.criticalCount || 0) %></div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Out of stock rows</div>
+        <div class="value"><%= Number(summary?.outOfStockCount || 0) %></div>
+      </div>
+    </div>
+
+    <% (stockLanguages || []).forEach(function(lang){
+         const rows = (groupedRows && groupedRows[lang]) ? groupedRows[lang] : [];
+    %>
+      <section class="card lang-section">
+        <div class="lang-head">
+          <h2><%= lang %></h2>
+          <span class="facet"><strong><%= rows.length %></strong> rows</span>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Book</th>
+                <th>Godown Stock</th>
+                <th>Pending to Pack</th>
+                <th>Packed</th>
+                <th>Dispatched</th>
+                <th>Delivered</th>
+                <th>Temple Handed Over</th>
+                <th>Total Demand</th>
+                <th>Available After Pending</th>
+                <th>Available After Packed</th>
+                <th>Stock Health</th>
+                <th>Adjust Stock</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% if (!rows.length) { %>
+                <tr>
+                  <td colspan="13" class="empty">No rows found for <%= lang %></td>
+                </tr>
+              <% } %>
+
+              <% rows.forEach(function(row){ %>
+                <tr>
+                  <td><%= row.item_type === 'bonus' ? 'Bonus' : 'Main' %></td>
+
+                  <td>
+                    <div><strong><%= row.book_title %></strong></div>
+                    <div class="tiny muted"><%= row.book_language %></div>
+                  </td>
+
+                  <td class="num"><%= Number(row.stock_qty || 0) %></td>
+                  <td><%= Number(row.pending || 0) %></td>
+                  <td><%= Number(row.packed || 0) %></td>
+                  <td><%= Number(row.dispatched || 0) %></td>
+                  <td><%= Number(row.delivered || 0) %></td>
+                  <td><%= Number(row.handed_over || 0) %></td>
+                  <td><%= Number(row.total_demand || 0) %></td>
+
+                  <td class="<%= Number(row.available_after_pending || 0) < 0 ? 'neg' : 'pos' %>">
+                    <%= Number(row.available_after_pending || 0) %>
+                  </td>
+
+                  <td class="<%= Number(row.available_after_packed || 0) < 0 ? 'neg' : 'pos' %>">
+                    <%= Number(row.available_after_packed || 0) %>
+                  </td>
+
+                  <td>
+                    <span class="pill <%= row.stock_state %>">
+                      <%= row.stock_state === 'critical'
+                        ? 'Critical'
+                        : row.stock_state === 'warning'
+                        ? 'Watch'
+                        : 'Ok' %>
+                    </span>
+                  </td>
+
+                  <td style="min-width:300px">
+                    <form method="POST" action="/admin/shipment-stock/adjust" class="stack">
+                      <input type="hidden" name="book_title" value="<%= row.book_title %>">
+                      <input type="hidden" name="book_language" value="<%= row.book_language %>">
+
+                      <div>
+                        <label class="tiny muted">Adjustment quantity</label>
+                        <input
+                          type="number"
+                          name="adjust_qty"
+                          min="1"
+                          step="1"
+                          placeholder="Enter qty"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label class="tiny muted">Reason / Notes</label>
+                        <textarea
+                          name="notes"
+                          placeholder="Reason for manual stock adjustment"
+                        ><%= row.notes || '' %></textarea>
+                      </div>
+
+                      <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn primary" type="submit" name="action" value="add">
+                          Add Stock
+                        </button>
+                        <button class="btn ghost" type="submit" name="action" value="remove">
+                          Remove Stock
+                        </button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% }) %>
+  </div>
+</main>
+  </div>
+</body>
+</html>

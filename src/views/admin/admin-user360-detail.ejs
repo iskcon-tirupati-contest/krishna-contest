@@ -23,6 +23,12 @@
     th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
     .muted{color:rgba(255,255,255,.7)}
     .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}
+.msg{padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,.12)}
+.msg.ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25)}
+.msg.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+.small{font-size:12px}
+.stack{display:grid;gap:8px}
     @media (max-width: 900px){ .sidebar{display:none} .grid2{grid-template-columns:1fr} }
   </style>
 </head>
@@ -37,14 +43,27 @@
       <a href="/admin/orders">Orders</a>
       <a href="/admin/submissions">Submissions</a>
       <a href="/admin/shipments">Shipments</a>
-      <a href="/admin/users" class="active">Users</a>
+      <a href="/admin/users">Users</a>
       <a href="/admin/feedback">Feedback</a>
+      <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
       <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
     </div>
   </aside>
 
   <main class="content">
     <div class="wrap">
+
+      <% const _okMsg = typeof okMsg !== "undefined" ? okMsg : ""; %>
+      <% const _errMsg = typeof errMsg !== "undefined" ? errMsg : ""; %>
+      <% const _paymentGroups = typeof paymentGroups !== "undefined" ? paymentGroups : []; %>
+      <% const _reconcilePreview = typeof reconcilePreview !== "undefined" ? reconcilePreview : null; %>
+
+      <% if (_okMsg) { %>
+        <div class="msg ok"><%= _okMsg %></div>
+      <% } %>
+      <% if (_errMsg) { %>
+        <div class="msg err"><%= _errMsg %></div>
+      <% } %>
 
       <div class="card">
         <div class="row" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
@@ -78,10 +97,8 @@
 
             <div>
               <label class="muted">Role</label>
-              <select name="role">
-                <option value="user" <%= (user.role||'user')==='user' ? 'selected' : '' %>>user</option>
-                <option value="admin" <%= (user.role||'user')==='admin' ? 'selected' : '' %>>admin</option>
-              </select>
+              <input value="<%= user.role || 'user' %>" disabled />
+              <div class="muted" style="font-size:12px;margin-top:6px">Cannot modify</div>
             </div>
 
             <div>
@@ -133,27 +150,207 @@
       </div>
 
       <div class="card">
-        <h2 style="margin:0 0 8px 0">Shipments</h2>
-        <div class="muted">Latest 200 (linked by order)</div>
+        <h2 style="margin:0 0 8px 0">Payments / Reconcile</h2>
+        <div class="muted">Check Razorpay for pending or failed sessions. Apply paid when Razorpay is captured and the captured amount is at least the expected local amount.</div>
         <table>
           <thead>
             <tr>
-              <th>Order</th><th>Status</th><th>Tracking</th><th>Courier</th><th>Updated</th>
+              <th>Internal Payment</th><th>Gateway Order</th><th>Session Status</th><th>Amount</th><th>Orders</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (_paymentGroups || []).forEach(p => { %>
+              <tr>
+                <td>
+                  <div class="mono"><%= p.internal_payment_id || '-' %></div>
+                  <div class="muted small">Session: <span class="mono"><%= p.payment_session_id %></span></div>
+                </td>
+                <td>
+                  <div class="mono"><%= p.gateway_order_id || '-' %></div>
+                  <div class="muted small"><%= p.created_at || '-' %></div>
+                </td>
+                <td>
+                  <span class="pill"><%= p.session_status || '-' %></span>
+                  <div class="muted small" style="margin-top:6px">Orders: <%= p.order_statuses || '-' %></div>
+                </td>
+                <td>₹<%= p.session_amount || 0 %></td>
+                <td><%= p.order_count || 0 %></td>
+                <td>
+                   <% const isSessionPaid = String(p.session_status || '').toLowerCase() === 'paid'; %>
+
+                    <form method="POST" action="/admin/user360/<%= user.id %>/payments/reconcile-preview">
+                      <input type="hidden" name="paymentSessionId" value="<%= p.payment_session_id %>" />
+                      <button
+                        class="btn ghost"
+                        type="submit"
+                        <%= isSessionPaid ? 'disabled' : '' %>>
+                        Check Razorpay
+                      </button>
+                    </form>
+
+                    <% if (isSessionPaid) { %>
+                      <div class="muted small" style="margin-top:6px">Already paid</div>
+                    <% } %>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (!(_paymentGroups || []).length) { %>
+              <tr><td colspan="6" class="muted">No payment sessions found.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <% if (_reconcilePreview && _reconcilePreview.local) { %>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+          <h3 style="margin:0 0 8px 0">Razorpay Check Result</h3>
+          <div class="grid2">
+            <div class="card" style="margin:0;background:#0f1730">
+              <div class="muted" style="margin-bottom:8px">Local Session</div>
+              <div class="stack small">
+                <div><strong>Payment Session:</strong> <span class="mono"><%= _reconcilePreview.local.payment_session_id %></span></div>
+                <div><strong>Gateway Order:</strong> <span class="mono"><%= _reconcilePreview.local.gateway_order_id || '-' %></span></div>
+                <div><strong>Internal Payment:</strong> <span class="mono"><%= _reconcilePreview.local.internal_payment_id || '-' %></span></div>
+                <div><strong>Local Status:</strong> <span class="pill"><%= _reconcilePreview.local.session_status || '-' %></span></div>
+                <div><strong>Amount:</strong> ₹<%= _reconcilePreview.local.session_amount || 0 %></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin:0;background:#0f1730">
+              <div class="muted" style="margin-bottom:8px">Razorpay</div>
+              <% if (_reconcilePreview.apiError) { %>
+                <div class="muted"><%= _reconcilePreview.apiError %></div>
+              <% } else if (_reconcilePreview.selectedPayment) { %>
+                <div class="stack small">
+                  <div><strong>Payment ID:</strong> <span class="mono"><%= _reconcilePreview.selectedPayment.id %></span></div>
+                  <div><strong>Status:</strong> <span class="pill"><%= _reconcilePreview.selectedPayment.status || '-' %></span></div>
+                  <div><strong>Captured Amount:</strong> ₹<%= Number(_reconcilePreview.capturedAmount || 0).toFixed(2) %></div>
+                  <div><strong>Method:</strong> <%= _reconcilePreview.selectedPayment.method || '-' %></div>
+                  <div><strong>At least expected:</strong> <span class="pill"><%= _reconcilePreview.amountAtLeastExpected ? 'yes' : 'no' %></span></div>
+                  <div><strong>Exact match:</strong> <span class="pill"><%= _reconcilePreview.amountMatches ? 'yes' : 'no' %></span></div>
+                  <% if (_reconcilePreview.isHigherAmount) { %>
+                    <div><strong>Extra above expected:</strong> ₹<%= Number(_reconcilePreview.overCollectedAmount || 0).toFixed(2) %></div>
+                  <% } %>
+                  <% if (_reconcilePreview.underpaidAmount) { %>
+                    <div><strong>Short by:</strong> ₹<%= Number(_reconcilePreview.underpaidAmount || 0).toFixed(2) %></div>
+                  <% } %>
+                  <div><strong>Decision:</strong> <span class="pill"><%= _reconcilePreview.decisionLabel || 'Review manually' %></span></div>
+                </div>
+              <% } else { %>
+                <div class="muted">No Razorpay payment found for this order yet.</div>
+              <% } %>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <form method="POST" action="/admin/user360/<%= user.id %>/payments/apply-paid">
+              <input type="hidden" name="paymentSessionId" value="<%= _reconcilePreview.local.payment_session_id %>" />
+
+
+              <%
+  const alreadyPaid =
+    String(_reconcilePreview?.local?.session_status || '').toLowerCase() === 'paid';
+%>
+
+<button
+  class="btn primary"
+  type="submit"
+  <%= (_reconcilePreview.canApplyPaid && !alreadyPaid) ? '' : 'disabled' %>>
+  Apply Paid Status
+</button>
+
+<% if (alreadyPaid) { %>
+  <div class="muted small" style="margin-top:6px">Already marked as paid</div>
+<% } %>
+
+
+            </form>
+            <span class="muted small">Enabled only when Razorpay status is captured and captured amount is at least the local expected amount.</span>
+          </div>
+        <% } %>
+      </div>
+
+
+            <div class="card">
+        <h2 style="margin:0 0 8px 0">Shipments</h2>
+        <div class="muted">Latest 200. Only paid orders can be handed over or marked delivered here.</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment</th>
+              <th>Mode</th>
+              <th>Books / Contests</th>
+              <th>Status</th>
+              <th>Tracking</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             <% (shipments || []).forEach(s => { %>
+              <% const isTemple = String(s.delivery_mode || '') === 'temple_pickup'; %>
+              <% const isPaid = String(s.payment_status || '').toLowerCase() === 'paid'; %>
+              <% const shipmentStatus = String(s.status || 'pending').toLowerCase(); %>
+              <% const canHandOver = isPaid && shipmentStatus === 'pending'; %>
+
               <tr>
-                <td><%= s.order_id %></td>
-                <td><span class="pill"><%= (s.status || 'pending') %></span></td>
-                <td><%= s.tracking_id || '-' %></td>
-                <td><%= s.courier_mode || '-' %></td>
-                <td><%= s.updated_at || '-' %></td>
+                <td>
+                  <div style="font-weight:900"><%= s.shipment_id || s.id %></div>
+                  <div class="muted" style="font-size:12px">Order: <%= s.order_id || '-' %> • Payment: <%= s.payment_id || '-' %></div>
+                </td>
+
+                <td>
+                  <span class="pill"><%= isTemple ? 'Temple Pickup' : 'Home Delivery' %></span>
+                  <div class="muted" style="font-size:12px;margin-top:6px">
+                    <%= s.recipient_name || user.name || '-' %> • <%= s.recipient_phone || user.phone || '-' %>
+                  </div>
+                  <div class="muted" style="font-size:12px;margin-top:6px">
+                    Payment: <span class="pill"><%= s.payment_status || '-' %></span>
+                  </div>
+                </td>
+
+                <td>
+                  <div><strong>Books:</strong> <%= s.book_titles || '-' %></div>
+                  <div class="muted" style="font-size:12px;margin-top:6px"><%= s.contest_titles || '-' %></div>
+                </td>
+
+                <td>
+                  <span class="pill"><%= s.status || 'pending' %></span>
+                  <div class="muted" style="font-size:12px;margin-top:6px"><%= s.updated_at || '-' %></div>
+                </td>
+
+                <td>
+                  <div><strong>ID:</strong> <%= s.tracking_id || '-' %></div>
+                  <div class="muted" style="font-size:12px">Courier: <%= s.courier_mode || '-' %></div>
+                </td>
+
+                <td>
+                  <form method="POST" action="/admin/user360/<%= user.id %>/shipments/mark-delivered">
+                      <input type="hidden" name="shipmentId" value="<%= s.shipment_id || s.id %>" />
+                      <button
+                        class="btn ghost"
+                        type="submit"
+                        <%= canHandOver ? '' : 'disabled' %>>
+                        Mark Handed Over
+                      </button>
+                    </form>
+
+                    <% if (!isPaid) { %>
+                      <div class="muted" style="font-size:12px;margin-top:8px">Blocked until payment is paid</div>
+                    <% } else if (shipmentStatus !== 'pending') { %>
+                      <div class="muted" style="font-size:12px;margin-top:8px">Already under <%= shipmentStatus %> state</div>
+                    <% } %>
+                </td>
               </tr>
             <% }) %>
+
+            <% if (!(shipments || []).length) { %>
+              <tr>
+                <td colspan="6" class="muted">No shipment records found.</td>
+              </tr>
+            <% } %>
           </tbody>
         </table>
       </div>
+
 
       <div class="card">
         <h2 style="margin:0 0 8px 0">Submissions</h2>
@@ -188,12 +385,13 @@
         </div>
       </div>
 
+
       <div class="card">
         <h2 style="margin:0 0 8px 0">Feedback</h2>
         <table>
           <thead>
             <tr>
-              <th>Message</th><th>Status</th><th>Created</th><th>Closed</th>
+              <th>Message</th><th>Status</th><th>Created</th><th>Closed</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -203,6 +401,16 @@
                 <td><span class="pill"><%= f.status %></span></td>
                 <td><%= f.created_at %></td>
                 <td><%= f.closed_at || '-' %></td>
+                <td>
+                  <% if (String(f.status || '').toLowerCase() !== 'closed') { %>
+                    <form method="POST" action="/admin/user360/<%= user.id %>/feedback/close">
+                      <input type="hidden" name="id" value="<%= f.id %>" />
+                      <button class="btn ghost" type="submit">Close Ticket</button>
+                    </form>
+                  <% } else { %>
+                    <span class="muted">Closed</span>
+                  <% } %>
+                </td>
               </tr>
             <% }) %>
           </tbody>

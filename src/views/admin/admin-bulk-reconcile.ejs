@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Bulk Reconcile V2</title>
+  <style>
+    :root{
+      --bg:#0b1020;--card:#121933;--card2:#182245;--text:#eef2ff;--muted:#aab6d3;--line:rgba(255,255,255,.10);
+      --primary:#1a3cff;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--text)}
+    .layout{display:flex;min-height:100vh}.sidebar{width:260px;background:#0a1022;border-right:1px solid var(--line);padding:18px}.brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}.nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}.wrap{max-width:1600px;margin:26px auto;padding:0 18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px}.k{font-size:12px;color:var(--muted)}.v{font-size:26px;font-weight:900;margin-top:4px}
+    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}.btn.primary{background:var(--primary);color:#fff}.btn.ok{background:var(--ok);color:#08130b}.btn.warn{background:var(--warn);color:#221600}.btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    input[type="number"],input[type="text"],select{padding:10px;border-radius:10px;border:1px solid var(--line);background:#0e1630;color:#fff;min-width:110px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px}
+    .muted{color:var(--muted)}.pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}.okpill{background:rgba(34,197,94,.16);color:#d7ffe4}.warnpill{background:rgba(245,158,11,.16);color:#ffefc2}.errpill{background:rgba(239,68,68,.16);color:#ffd8d8}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}.msg{padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--line)}.msg.ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25)}.msg.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25)}.small{font-size:12px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.stickyActions{position:sticky;bottom:0;background:rgba(11,16,32,.94);backdrop-filter:blur(8px);padding:12px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+    .pagination{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+    @media (max-width: 1100px){ .grid{grid-template-columns:repeat(2,1fr)} .sidebar{display:none} }
+    @media (max-width: 700px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Admin Panel</div>
+    <div class="nav">
+      <a href="/admin">Overview</a>
+      <a href="/admin/contests">Contests</a>
+      <a href="/admin/user360">View User</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/admin/submissions">Submissions</a>
+      <a href="/admin/shipments">Shipments</a>
+      <a href="/admin/shipment-stock">Shipment Stock</a>
+      <a href="/admin/users">Users</a>
+      <a href="/admin/feedback">Feedback</a>
+      <a href="/admin/payments/reconcile-bulk" class="active">Bulk Reconcile</a>
+      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="wrap">
+      <% if (okMsg) { %><div class="msg ok"><%= okMsg %></div><% } %>
+      <% if (errMsg) { %><div class="msg err"><%= errMsg %></div><% } %>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h1 style="margin:0 0 6px 0">Bulk Payment Reconcile V2</h1>
+            <div class="muted">Includes local pending and failed sessions. Safe means Razorpay is captured and captured amount is at least the expected local amount.</div>
+          </div>
+        </div>
+        <form method="GET" action="/admin/payments/reconcile-bulk" class="row" style="margin-top:12px">
+          <input type="hidden" name="scan" value="1" />
+          <label class="muted">Local status</label>
+          <select name="local_status">
+            <option value="all" <%= filters.localStatus==='all'?'selected':'' %>>All</option>
+            <option value="pending" <%= filters.localStatus==='pending'?'selected':'' %>>Pending only</option>
+            <option value="failed" <%= filters.localStatus==='failed'?'selected':'' %>>Failed only</option>
+          </select>
+          <label class="muted">Decision</label>
+          <select name="decision">
+            <option value="all" <%= filters.decision==='all'?'selected':'' %>>All</option>
+            <option value="safe_exact" <%= filters.decision==='safe_exact'?'selected':'' %>>Safe exact</option>
+            <option value="safe_higher" <%= filters.decision==='safe_higher'?'selected':'' %>>Safe higher amount</option>
+            <option value="underpaid" <%= filters.decision==='underpaid'?'selected':'' %>>Captured but underpaid</option>
+            <option value="authorized_only" <%= filters.decision==='authorized_only'?'selected':'' %>>Authorized only</option>
+            <option value="no_payment_found" <%= filters.decision==='no_payment_found'?'selected':'' %>>No payment found</option>
+            <option value="api_error" <%= filters.decision==='api_error'?'selected':'' %>>API issue</option>
+          </select>
+          <label class="muted">Search</label>
+          <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="name / email / phone / order" style="min-width:220px" />
+          <label class="muted">Rows per page</label>
+          <input type="number" name="page_size" min="10" max="500" value="<%= pager.pageSize %>" />
+          <label class="muted"><input type="checkbox" name="scan_all" value="1" <%= filters.scanAll ? 'checked' : '' %> /> Scan all matching</label>
+          <button class="btn primary" type="submit">Run Scan</button>
+          <a class="btn ghost" href="/admin/payments/reconcile-bulk?scan=1&scan_all=1">Reset</a>
+        </form>
+      </div>
+
+      <div class="grid">
+        <div class="stat"><div class="k">Global DB Paid Revenue</div><div class="v">₹<%= Number(summary.currentDbRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Recoverable Revenue On This Page</div><div class="v">₹<%= Number(summary.recoverableRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Projected Revenue If This Page Is Reconciled</div><div class="v">₹<%= Number(summary.projectedRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Safe Sessions</div><div class="v"><%= summary.safeTotal || 0 %></div></div>
+      </div>
+
+      <div class="grid">
+        <div class="stat"><div class="k">Safe Exact</div><div class="v"><%= summary.safeExact || 0 %></div></div>
+        <div class="stat"><div class="k">Safe Higher Amount</div><div class="v"><%= summary.safeHigher || 0 %></div></div>
+        <div class="stat"><div class="k">Underpaid</div><div class="v"><%= summary.underpaid || 0 %></div></div>
+        <div class="stat"><div class="k">No Payment / API</div><div class="v"><%= (summary.noPaymentFound || 0) + (summary.apiError || 0) %></div></div>
+      </div>
+
+      <div class="grid">
+        <div class="stat"><div class="k">Gateway Extra Over Expected</div><div class="v">₹<%= Number(summary.gatewayExtraOverExpected || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Underpaid Gap</div><div class="v">₹<%= Number(summary.underpaidGap || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Safe Orders</div><div class="v"><%= summary.safeOrderCount || 0 %></div></div>
+        <div class="stat"><div class="k">Scanned / Filtered</div><div class="v"><%= scannedCount || 0 %> / <%= filteredCount || 0 %></div></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+
+          <div class="muted small">Current table and summary cards are based on the current page rows only. Use selected rows or current-page actions for safe bulk reconcile.</div>
+          <div class="row">
+            <form method="POST" action="/admin/payments/reconcile-bulk/apply-filtered-safe" class="row">
+              <input type="hidden" name="local_status" value="<%= filters.localStatus %>" />
+              <input type="hidden" name="decision" value="<%= filters.decision %>" />
+              <input type="hidden" name="q" value="<%= filters.q %>" />
+              <input type="hidden" name="scan_all" value="<%= filters.scanAll ? '1' : '0' %>" />
+              <input type="hidden" name="page_size" value="<%= pager.pageSize %>" />
+              <input type="hidden" name="page" value="<%= pager.currentPage %>" />
+              <button class="btn warn" type="submit">Apply All Safe In Current Filter</button>
+            </form>
+            <form method="POST" action="/admin/payments/reconcile-bulk/reconcile-send-filtered-safe" class="row">
+              <input type="hidden" name="local_status" value="<%= filters.localStatus %>" />
+              <input type="hidden" name="decision" value="<%= filters.decision %>" />
+              <input type="hidden" name="q" value="<%= filters.q %>" />
+              <input type="hidden" name="scan_all" value="<%= filters.scanAll ? '1' : '0' %>" />
+              <input type="hidden" name="page_size" value="<%= pager.pageSize %>" />
+              <input type="hidden" name="page" value="<%= pager.currentPage %>" />
+              <button class="btn ok" type="submit">Reconcile + Send All Safe</button>
+            </form>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/payments/reconcile-bulk/apply-selected">
+          <input type="hidden" name="return_qs" value="<%= qs %>" />
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="checkAll" /></th>
+                <th>User</th>
+                <th>Session</th>
+                <th>Gateway Order</th>
+                <th>Local</th>
+                <th>Razorpay</th>
+                <th>Decision</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% (rows || []).forEach(r => { %>
+                <tr>
+                  <td><input type="checkbox" name="payment_session_ids" value="<%= r.payment_session_id %>" <%= r.canApplyPaid ? '' : 'disabled' %> /></td>
+                  <td>
+                    <div><strong><%= r.user_name || '-' %></strong></div>
+                    <div class="muted small"><%= r.email || '-' %></div>
+                    <div class="muted small"><%= r.phone || '-' %></div>
+                    <div class="muted small"><a href="/admin/user360/<%= r.user_id %>" style="color:#c8d4ff">Open User 360</a></div>
+                  </td>
+                  <td>
+                    <div class="mono"><%= r.payment_session_id %></div>
+                    <div class="muted small">Internal: <span class="mono"><%= r.internal_payment_id || '-' %></span></div>
+                    <div class="muted small">Orders: <%= r.order_count || 0 %></div>
+                  </td>
+                  <td>
+                    <div class="mono"><%= r.gateway_order_id || '-' %></div>
+                    <div class="muted small"><%= r.created_at || '-' %></div>
+                  </td>
+                  <td>
+                    <div><span class="pill"><%= r.session_status || '-' %></span></div>
+                    <div class="muted small">Expected: ₹<%= Number(r.session_amount || 0).toFixed(2) %></div>
+                    <div class="muted small"><%= r.order_statuses || '-' %></div>
+                  </td>
+                  <td>
+                    <% if (r.apiError) { %>
+                      <span class="pill errpill">API error</span>
+                      <div class="muted small" style="margin-top:6px"><%= r.apiError %></div>
+                    <% } else if (!r.selectedPayment) { %>
+                      <span class="pill warnpill">Not found</span>
+                      <div class="muted small" style="margin-top:6px">No Razorpay payment found for this order yet.</div>
+                    <% } else { %>
+                      <div><span class="pill"><%= r.selectedPayment.status || '-' %></span></div>
+                      <div class="muted small mono" style="margin-top:6px"><%= r.selectedPayment.id || '-' %></div>
+                      <div class="muted small">Captured: ₹<%= Number(r.capturedAmount || 0).toFixed(2) %></div>
+                      <div class="muted small">Method: <%= r.selectedPayment.method || '-' %></div>
+                      <div class="muted small">At least expected: <%= r.amountAtLeastExpected ? 'yes' : 'no' %></div>
+                      <% if (r.isHigherAmount) { %><div class="muted small">Extra above expected: ₹<%= Number(r.overCollectedAmount || 0).toFixed(2) %></div><% } %>
+                      <% if (r.underpaidAmount) { %><div class="muted small">Short by: ₹<%= Number(r.underpaidAmount || 0).toFixed(2) %></div><% } %>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (r.decision === 'local_paid') { %>
+                      <span class="pill">Already paid locally</span>
+                    <% } else if (r.decision === 'safe_exact') { %>
+                      <span class="pill okpill">Safe exact</span>
+                    <% } else if (r.decision === 'safe_higher') { %>
+                      <span class="pill okpill">Safe higher amount</span>
+                    <% } else if (r.decision === 'underpaid') { %>
+                      <span class="pill errpill">Captured but underpaid</span>
+                    <% } else if (r.decision === 'authorized_only') { %>
+                      <span class="pill warnpill">Authorized only</span>
+                    <% } else if (r.decision === 'no_payment_found') { %>
+                      <span class="pill warnpill">No payment found</span>
+                    <% } else if (r.decision === 'api_error') { %>
+                      <span class="pill errpill">API issue</span>
+                    <% } else { %>
+                      <span class="pill"><%= r.decisionLabel || 'Review manually' %></span>
+                    <% } %>
+                    <% if (r.canApplyPaid) { %>
+                      <div class="muted small" style="margin-top:6px">Eligible for automatic paid update.</div>
+                      <form method="POST" action="/admin/payments/reconcile-bulk/reconcile-send-one" style="margin-top:8px">
+                        <input type="hidden" name="payment_session_id" value="<%= r.payment_session_id %>" />
+                        <input type="hidden" name="return_qs" value="<%= qs %>" />
+                        <button class="btn ghost" type="submit">Reconcile + Send This Row</button>
+                      </form>
+                    <% } else if (r.decision === 'local_paid') { %>
+                      <div class="muted small" style="margin-top:6px">Already reconciled in local DB.</div>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (!(rows || []).length) { %>
+                <tr><td colspan="7" class="muted">No rows found for this filter.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+
+          <div class="stickyActions">
+            <button class="btn ok" type="submit">Apply Selected Safe Rows</button>
+            <button class="btn primary" type="submit" formaction="/admin/payments/reconcile-bulk/reconcile-send-selected">Reconcile + Send Selected</button>
+            <span class="muted small">Only rows checked and still eligible will be updated. WhatsApp uses your existing contest success template and skips already-sent payment ids.</span>
+          </div>
+        </form>
+
+        <div class="pagination">
+          <% const prevPage = Math.max(1, pager.currentPage - 1); const nextPage = Math.min(pager.pageCount, pager.currentPage + 1); %>
+          <a class="btn ghost" href="/admin/payments/reconcile-bulk?<%= `local_status=${encodeURIComponent(filters.localStatus)}&decision=${encodeURIComponent(filters.decision)}&q=${encodeURIComponent(filters.q || '')}&page_size=${pager.pageSize}&scan_all=${filters.scanAll ? '1':'0'}&scan=1&page=${prevPage}` %>">Prev</a>
+          <span class="muted">Page <%= pager.currentPage %> / <%= pager.pageCount %></span>
+          <a class="btn ghost" href="/admin/payments/reconcile-bulk?<%= `local_status=${encodeURIComponent(filters.localStatus)}&decision=${encodeURIComponent(filters.decision)}&q=${encodeURIComponent(filters.q || '')}&page_size=${pager.pageSize}&scan_all=${filters.scanAll ? '1':'0'}&scan=1&page=${nextPage}` %>">Next</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+  const checkAll = document.getElementById('checkAll');
+  if (checkAll) {
+    checkAll.addEventListener('change', function () {
+      document.querySelectorAll('input[name="payment_session_ids"]').forEach((el) => {
+        if (!el.disabled) el.checked = checkAll.checked;
+      });
+    });
+  }
+</script>
+</body>
+</html>
+

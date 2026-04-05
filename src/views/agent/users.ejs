@@ -1,0 +1,323 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Users – Agent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1a237e;--navy2:#283593;--navy3:#3949ab;--ng:#eef2ff;
+    --gold:#f59e0b;--glt:#fef3c7;--gdk:#92400e;
+    --green:#10b981;--glt2:#d1fae5;--gdk2:#065f46;
+    --red:#ef4444;--rlt:#fee2e2;--rdk:#991b1b;
+    --bg:#eef1fb;--sf:#fff;
+    --bd:#c5cae9;--bdl:#e8eaf6;
+    --th:#0f172a;--tb:#1e293b;--tm:#334155;--mu:#64748b;--fa:#94a3b8;
+    --sh:0 2px 12px rgba(26,35,126,.08);--sh2:0 6px 24px rgba(26,35,126,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--tb);-webkit-font-smoothing:antialiased;padding-bottom:80px}
+  a{text-decoration:none;color:inherit}
+
+  .topbar{background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);border-radius:0 0 24px 24px;padding:16px 16px 20px;margin-bottom:16px;box-shadow:0 4px 20px rgba(26,35,126,.25);position:relative;overflow:hidden}
+  .topbar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 90% 20%,rgba(255,255,255,.08),transparent 60%);pointer-events:none}
+  .tb-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .tb-brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+  .tb-logo{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,215,0,.3);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .tb-logo img{width:100%;height:100%;object-fit:contain}
+  .tb-title{font-family:'Sora',sans-serif;font-size:clamp(14px,4vw,18px);font-weight:800;color:#fff;line-height:1.2}
+  .tb-sub{font-size:12px;color:rgba(255,255,255,.72);margin-top:2px}
+  .tb-logout{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.22);padding:8px 14px;border-radius:10px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;flex-shrink:0;transition:background .15s;white-space:nowrap}
+  .tb-logout:hover{background:rgba(255,255,255,.22)}
+  .tb-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.35);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;color:#fde68a;margin-top:8px;position:relative;z-index:1}
+
+  .wrap{max-width:560px;margin:0 auto;padding:0 14px 20px}
+
+  /* SEARCH */
+  .sbox{background:var(--sf);border-radius:18px;padding:14px;box-shadow:var(--sh2);margin-bottom:14px;border:1.5px solid var(--bdl)}
+  .srow{display:flex;gap:8px;align-items:center}
+  .sfield-wrap{flex:1;position:relative;display:flex;align-items:center}
+  .sfield-wrap svg{position:absolute;left:12px;width:17px;height:17px;fill:var(--mu);pointer-events:none;flex-shrink:0}
+  .sfield{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--bd);border-radius:12px;font-size:14px;color:var(--tb);background:#f8fafc;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .16s,box-shadow .16s}
+  .sfield:focus{border-color:var(--navy3);box-shadow:0 0 0 3px rgba(57,73,171,.1);background:#fff}
+  .sfield::placeholder{color:var(--fa)}
+  .ssub{width:42px;height:42px;border:none;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(26,35,126,.22);transition:transform .14s}
+  .ssub:hover{transform:scale(1.05)}
+  .ssub svg{width:18px;height:18px;fill:#fff}
+  .sreset{height:42px;padding:0 14px;border:1.5px solid var(--navy);background:var(--ng);border-radius:11px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;flex-shrink:0;transition:all .14s;active:scale(.95)}
+  .sreset:hover{background:var(--navy);color:#fff}.sreset:active{transform:scale(.95);background:var(--navy2)}
+  .smeta{margin-top:10px;font-size:12px;color:var(--mu);display:flex;align-items:center;gap:5px}
+  .smeta-count{background:var(--ng);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:var(--navy)}
+
+  /* CARD LIST */
+  .cl{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+
+  /* USER CARD */
+  .uc{background:var(--sf);border:1.5px solid var(--bdl);border-radius:18px;box-shadow:var(--sh);overflow:hidden;transition:box-shadow .18s,transform .15s}
+  .uc:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+  .uc-top{display:flex;align-items:center;gap:12px;padding:13px 13px 10px}
+  .uc-av{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--navy),var(--navy3));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#fff;text-transform:uppercase}
+  .uc-info{flex:1;min-width:0}
+  .uc-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--th);line-height:1.2}
+  .uc-phone{font-size:13px;color:var(--mu);margin-top:3px}
+  .uc-bcount{background:var(--ng);border:1px solid var(--bd);border-radius:8px;padding:4px 9px;font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:var(--navy);flex-shrink:0;white-space:nowrap}
+  .uc-foot{display:flex;border-top:1px solid var(--bdl)}
+  .uc-act{flex:1;padding:10px 6px;text-align:center;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer;border:none;background:none;transition:color .14s,background .14s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .uc-act+.uc-act{border-left:1px solid var(--bdl)}
+  .uc-act:hover{background:var(--ng);color:var(--navy)}
+  .uc-act svg{width:14px;height:14px;fill:currentColor}
+  .uc-act.primary{color:var(--navy3)}
+  .uc-act.gold-act{color:var(--gdk);background:var(--glt)}
+  .uc-act.gold-act:hover{background:#fde68a}
+
+  /* BOOKING CARD */
+  .bc{background:var(--sf);border:1.5px solid var(--bdl);border-radius:18px;box-shadow:var(--sh);padding:14px;transition:box-shadow .15s}
+  .bc:hover{box-shadow:var(--sh2)}
+  .bc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+  .bc-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--th)}
+  .bc-ref{font-size:11px;color:var(--mu);margin-top:2px;letter-spacing:.3px}
+  .bc-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;font-family:'Sora',sans-serif;font-size:11px;font-weight:800;flex-shrink:0}
+  .bc-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .pill-paid{background:var(--glt2);color:var(--gdk2)}
+  .pill-draft{background:#e0e7ff;color:#3730a3}
+  .pill-checkout_pending{background:var(--glt);color:var(--gdk)}
+  .pill-cancelled{background:var(--rlt);color:var(--rdk)}
+  .bc-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .bc-chip{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mu);background:var(--bg);border:1px solid var(--bdl);border-radius:8px;padding:4px 9px}
+  .bc-chip svg{width:12px;height:12px;fill:var(--fa)}
+  .bc-chip b{color:var(--tb)}
+  .bc-btn{display:block;width:100%;padding:10px;border-radius:11px;text-align:center;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;border:none;cursor:pointer;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;box-shadow:0 4px 12px rgba(26,35,126,.2);transition:all .16s}
+  .bc-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,35,126,.3)}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:13px;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;cursor:pointer;border:none;text-decoration:none;transition:all .16s;line-height:1;text-align:center}
+  .btn svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
+  .btn-navy{background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;box-shadow:0 4px 14px rgba(26,35,126,.25)}
+  .btn-navy:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(26,35,126,.35)}
+  .btn-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;box-shadow:0 4px 14px rgba(217,119,6,.28)}
+  .btn-gold:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(217,119,6,.42)}
+  .btn-ghost{background:var(--sf);color:var(--tm);border:1.5px solid var(--bd);box-shadow:var(--sh)}
+  .btn-ghost:hover{border-color:var(--navy3);color:var(--navy)}
+  .btn-danger{background:var(--rlt);color:var(--rdk);border:1.5px solid #fecaca}
+  .btn-wa{background:#25d366;color:#fff;box-shadow:0 4px 14px rgba(37,211,102,.3)}
+  .btn-wa:hover{transform:translateY(-1px)}
+  .btn-block{width:100%;display:flex}
+  .btn:disabled,.btn.disabled{opacity:.55;cursor:not-allowed;transform:none!important;pointer-events:none}
+
+  /* PAGINATOR */
+  .pager{display:flex;justify-content:center;align-items:center;gap:6px;padding:14px 0 4px}
+  .pg{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;border:1.5px solid var(--bd);color:var(--tb);background:#fff;transition:all .14s}
+  .pg:hover{border-color:var(--navy3);color:var(--navy)}
+  .pg.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 3px 10px rgba(26,35,126,.25)}
+  .pg.pgw{width:auto;padding:0 13px}
+  .pg svg{width:14px;height:14px;fill:currentColor}
+
+  /* FORM CARD */
+  .fcard{background:var(--sf);border:1.5px solid var(--bdl);border-radius:18px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+  .fcard-head{padding:13px 16px;background:linear-gradient(135deg,#f8faff,#fff);border-bottom:1.5px solid var(--bdl);display:flex;align-items:center;gap:10px}
+  .fcard-ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--navy3));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .fcard-ico svg{width:17px;height:17px;fill:#fff}
+  .fcard-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:var(--th)}
+  .fcard-sub{font-size:11px;color:var(--mu);margin-top:1px}
+  .fcard-body{padding:15px}
+
+  /* FIELD */
+  .field{margin-bottom:13px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--tm);margin-bottom:5px}
+  .field input,.field select{width:100%;padding:11px 13px;border:1.5px solid var(--bd);border-radius:11px;font-size:14px;color:var(--tb);background:#f8fafc;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .16s,box-shadow .16s}
+  .field input:focus,.field select:focus{border-color:var(--navy3);box-shadow:0 0 0 3px rgba(57,73,171,.1);background:#fff}
+  .field input::placeholder{color:var(--fa)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:420px){.field-row{grid-template-columns:1fr}}
+
+  /* RADIO CARDS */
+  .rcards{display:flex;gap:9px;margin-top:4px}
+  .rcard{flex:1;display:flex;align-items:center;gap:10px;padding:12px 13px;border:1.5px solid var(--bd);border-radius:13px;cursor:pointer;background:#fff;transition:all .15s;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--tm)}
+  .rcard input[type=radio]{accent-color:var(--navy);width:16px;height:16px;flex-shrink:0}
+  .rcard:has(input:checked){border-color:var(--navy3);background:var(--ng);color:var(--navy)}
+  .rcard-ico{font-size:20px}
+  @media(max-width:400px){.rcards{flex-direction:column}}
+
+  /* CONTEST SELECT CARD */
+  .csc{background:var(--sf);border:1.5px solid var(--bdl);border-radius:18px;box-shadow:var(--sh);padding:12px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+  .csc:hover{border-color:var(--bd)}
+  .cs-thumb{width:56px;height:56px;border-radius:12px;overflow:hidden;background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid var(--bdl)}
+  .cs-thumb img{width:100%;height:100%;object-fit:cover}
+  .cs-info{flex:1;min-width:0}
+  .cs-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:var(--th);line-height:1.3}
+  .cs-price{font-size:12px;color:var(--mu);margin-top:2px;font-weight:600}
+  .stepper{display:inline-flex;align-items:center;border:1.5px solid var(--navy);border-radius:10px;overflow:hidden;flex-shrink:0}
+  .stbtn{border:none;background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;width:36px;height:36px;font-size:19px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;padding:0;line-height:1}
+  .stbtn:hover{background:#1d4ed8}
+  .stbtn:disabled{opacity:.35;cursor:not-allowed}
+  .stnum{background:#fff;color:var(--navy);font-family:'Sora',sans-serif;font-size:14px;font-weight:800;min-width:34px;text-align:center;line-height:36px;border-left:1px solid var(--bd);border-right:1px solid var(--bd);padding:0 4px}
+
+  /* CHECKOUT CONTEST ROW */
+  .co-row{border:1.5px solid var(--bdl);border-radius:14px;padding:13px;margin-bottom:10px;background:#fafbff}
+  .co-row:last-child{margin-bottom:0}
+  .co-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .co-row-name{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:var(--navy);flex:1;min-width:0;padding-right:8px}
+  .co-row-amt{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:var(--gdk);flex-shrink:0}
+  .co-row-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  @media(max-width:480px){.co-row-fields{grid-template-columns:1fr}}
+  .co-row-fields .field{margin-bottom:0}
+  .co-row-fields .field input,.co-row-fields .field select{padding:9px 10px;font-size:13px}
+
+  /* BOTTOM NAV */
+  .bnav{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a237e,#283593);display:flex;justify-content:space-around;z-index:100;box-shadow:0 -4px 20px rgba(26,35,126,.3);padding-bottom:env(safe-area-inset-bottom)}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 7px;color:rgba(255,255,255,.55);font-family:'Sora',sans-serif;font-size:10px;font-weight:800;cursor:pointer;transition:all .18s;position:relative}
+  .bnav-item.active{color:#ffd700}
+  .bnav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;background:#ffd700;border-radius:0 0 4px 4px}
+  .bnav-item:not(.active):hover{color:rgba(255,255,255,.82)}
+  .bnav-ico{font-size:20px;line-height:1}
+
+  /* MODAL */
+  .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+  .modal.show{display:flex}
+  .modal-sheet{width:min(560px,100%);background:#fff;border-radius:22px 22px 0 0;max-height:80vh;overflow-y:auto}
+  .modal-handle{width:36px;height:4px;border-radius:4px;background:#e5e7eb;margin:10px auto 0}
+  .modal-head{padding:14px 18px 12px;border-bottom:1px solid var(--bdl)}
+  .modal-head h3{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:var(--th)}
+  .modal-body{padding:14px 18px 24px}
+  .modal-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdl);font-size:13px}
+  .modal-row:last-of-type{border-bottom:none}
+  .modal-row .ml{color:var(--mu);font-weight:600}
+  .modal-row .mv{color:var(--th);font-weight:700}
+
+  /* INFO ROW */
+  .ir{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdl);font-size:13px;align-items:flex-start}
+  .ir:last-child{border-bottom:none}
+  .il{color:var(--mu);font-weight:600;min-width:130px;flex-shrink:0;font-size:12px}
+  .iv{color:var(--th);font-weight:700;word-break:break-word}
+
+  /* STATS */
+  .sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .sc{background:var(--sf);border:1.5px solid var(--bdl);border-radius:16px;box-shadow:var(--sh);padding:14px}
+  .sn{font-family:'Sora',sans-serif;font-size:clamp(20px,5vw,28px);font-weight:800;color:var(--navy);line-height:1}
+  .sl{font-size:11px;color:var(--mu);margin-top:4px}
+
+  /* ALERTS */
+  .alert-err{background:var(--rlt);border:1.5px solid #fecaca;color:var(--rdk);padding:11px 13px;border-radius:12px;margin-bottom:13px;font-size:13px;font-weight:600;display:flex;gap:8px}
+  .alert-ok{background:var(--glt2);border:1.5px solid #a7f3d0;color:var(--gdk2);padding:11px 13px;border-radius:12px;margin-bottom:13px;font-size:13px;font-weight:600;display:flex;gap:8px}
+  .hide{display:none!important}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* Ripple effect */
+  .ripple{position:relative;overflow:hidden}
+  .ripple::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.35);width:100px;height:100px;margin-top:-50px;margin-left:-50px;top:50%;left:50%;transform:scale(0);opacity:1;transition:transform .4s,opacity .4s}
+  .ripple:active::after{transform:scale(3);opacity:0;transition:0s}
+  .uc-act{position:relative;overflow:hidden}
+  .uc-act::after{content:'';position:absolute;border-radius:50%;background:rgba(26,35,126,.12);width:80px;height:80px;margin-top:-40px;margin-left:-40px;top:50%;left:50%;transform:scale(0);opacity:1}
+  .uc-act:active::after{transform:scale(3);opacity:0;transition:transform .3s,opacity .3s}
+  .bc-btn{position:relative;overflow:hidden}
+  .bc-btn::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.25);width:200px;height:200px;margin-top:-100px;margin-left:-100px;top:50%;left:50%;transform:scale(0);opacity:1}
+  .bc-btn:active::after{transform:scale(3);opacity:0;transition:transform .3s,opacity .3s}
+</style>
+</head><body>
+<div class="topbar">
+  <div class="tb-inner">
+    <div class="tb-brand">
+      <div class="tb-logo"><img src="/images/logo_new.png" onerror="this.style.display='none'" alt="logo"></div>
+      <div><div class="tb-title">All Users</div><div class="tb-sub">Total <b><%= Number(totalAll||0) %></b> registered</div></div>
+    </div>
+    <a class="tb-logout" href="/logout">Logout</a>
+  </div>
+</div>
+<div class="wrap">
+
+  <!-- Search -->
+  <div class="sbox">
+    <form method="GET" action="/agent/users">
+      <div class="srow">
+        <div class="sfield-wrap">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input class="sfield" type="text" name="q" value="<%= q||'' %>" placeholder="Search by name or phone…">
+        </div>
+        <button class="ssub" type="submit"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+        <a class="sreset" href="/agent/users">Reset</a>
+      </div>
+      <div class="smeta">
+        <span>Showing</span>
+        <span class="smeta-count"><%= Number((users||[]).length) %></span>
+        <span>of</span>
+        <span class="smeta-count"><%= Number(filteredCount||0) %></span>
+        <span>users</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- User cards -->
+  <div class="cl">
+    <% if(!(users||[]).length){ %>
+    <div style="text-align:center;padding:32px 16px;background:#fff;border-radius:18px;border:1.5px dashed var(--bd);color:var(--mu)">
+      <div style="font-size:36px;margin-bottom:8px">👥</div>
+      <div style="font-family:'Sora',sans-serif;font-weight:700">No users found</div>
+    </div>
+    <% } %>
+    <% (users||[]).forEach(function(u,i){ %>
+    <div class="uc">
+      <div class="uc-top">
+        <div class="uc-av"><%= (u.name||'?').charAt(0) %></div>
+        <div class="uc-info">
+          <div class="uc-name"><%= u.name||'-' %></div>
+          <div class="uc-phone">📱 <%= u.phone||'-' %></div>
+        </div>
+        <div class="uc-bcount"><%= Number(u.bookings_count||0) %> bookings</div>
+      </div>
+      <div class="uc-foot">
+        <a class="uc-act" href="/agent/users/<%= u.id %>">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          History
+        </a>
+        <a class="uc-act gold-act" href="/agent/bookings/new?customerId=<%= u.id %>">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          Book
+        </a>
+      </div>
+      <!-- Bottom-sheet modal -->
+      <div class="modal" id="modal-<%= i %>">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div class="modal-head"><h3><%= u.name||'-' %></h3></div>
+          <div class="modal-body">
+            <div class="modal-row"><span class="ml">Phone</span><span class="mv"><%= u.phone||'-' %></span></div>
+            <div class="modal-row"><span class="ml">First Seen</span><span class="mv"><%= u.first_seen_at?new Date(u.first_seen_at).toLocaleDateString('en-IN'):'-' %></span></div>
+            <div class="modal-row"><span class="ml">Last Booking</span><span class="mv"><%= u.last_booking_at?new Date(u.last_booking_at).toLocaleDateString('en-IN'):'-' %></span></div>
+            <div class="modal-row"><span class="ml">Total Bookings</span><span class="mv"><%= Number(u.bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Paid</span><span class="mv" style="color:var(--gdk2)"><%= Number(u.paid_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Draft</span><span class="mv"><%= Number(u.draft_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Pending</span><span class="mv" style="color:var(--gdk)"><%= Number(u.pending_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Latest Status</span><span class="mv"><%= u.latest_status||'-' %></span></div>
+            <div style="display:flex;gap:9px;margin-top:16px">
+              <a class="btn btn-gold" style="flex:1" href="/agent/bookings/new?customerId=<%= u.id %>">+ New Booking</a>
+              <button class="btn btn-ghost" onclick="closeModal('<%= i %>')">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <!-- Pagination -->
+  <% const tpU=Math.max(1,Math.ceil((filteredCount||0)/(pageSize||5))); %>
+  <div class="pager">
+    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.max(1,(page||1)-1) %>">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> Prev
+    </a>
+    <% for(let p=1;p<=tpU;p++){ %><a class="pg <%= p===(page||1)?'active':'' %>" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= p %>"><%= p %></a><% } %>
+    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.min(tpU,(page||1)+1) %>">
+      Next <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </a>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a class="bnav-item" href="/agent"><span class="bnav-ico">🏠</span>Home</a>
+  <a class="bnav-item active" href="/agent/users"><span class="bnav-ico">👥</span>Users</a>
+  <a class="bnav-item" href="/agent/history"><span class="bnav-ico">🕘</span>History</a>
+</nav>
+<script>
+  function openModal(i){document.getElementById('modal-'+i)?.classList.add('show')}
+  function closeModal(i){document.getElementById('modal-'+i)?.classList.remove('show')}
+  document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+</script>
+</body></html>

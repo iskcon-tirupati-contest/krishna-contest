@@ -1,230 +1,147 @@
-<%- include('partials/admin-shell-start', {
-  title: 'User 360',
-  mobileTitle: 'User 360',
-  activeTab: 'user360'
-}) %>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Users 360</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1100px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn.primary{background:#1a3cff;color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+    .muted{color:rgba(255,255,255,.7)}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}
+    @media (max-width: 900px){ .sidebar{display:none} }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Admin Panel</div>
+    <div class="nav">
+      <a href="/admin">Overview</a>
+      <a href="/admin/contests">Contests</a>
+      <a href="/admin/user360" class="active">View User</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/admin/submissions">Submissions</a>
+      <a href="/admin/shipments">Shipments</a>
+      <a href="/admin/users">Users</a>
+      <a href="/admin/feedback">Feedback</a>
+      <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+    </div>
+  </aside>
 
-<div class="page-head">
-  <div>
-    <h1>User 360</h1>
-    <div class="sub">Complete profile, orders, shipments, submissions, and feedback.</div>
-  </div>
+  <main class="content">
+    <div class="wrap">
+      <div class="card">
+        <h1 style="margin:0 0 6px 0">Users 360</h1>
+        <div class="muted">Search by name / email / phone / address / pincode. Live search can be toggled.</div>
 
-  <div class="page-actions">
-    <a class="btn ghost" href="/admin/user360">← Back</a>
-  </div>
-</div>
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
 
-<div class="card">
-  <form method="POST" action="/admin/user360/<%= user.id %>/update">
-    <div class="grid grid-2">
-      <div>
-        <label>Name</label>
-        <input name="name" value="<%= user.name || '' %>" />
-      </div>
+        <form method="GET" action="/admin/user360">
+          <div class="row">
+            <div style="flex:1;min-width:260px">
+              <input id="q" name="q" value="<%= q %>" placeholder="Start typing..." autocomplete="off"/>
+            </div>
 
-      <div>
-        <label>Email (display only)</label>
-        <input value="<%= user.email || '' %>" disabled />
-      </div>
+            <label class="pill" style="cursor:pointer">
+              <input type="checkbox" id="live" style="margin-right:6px" <%= live==='1' ? 'checked' : '' %> />
+              Live search
+            </label>
 
-      <div>
-        <label>Phone</label>
-        <input name="phone" value="<%= user.phone || '' %>" />
-        <div class="tiny" style="margin-top:6px">Admin override allowed even if phone is locked.</div>
-      </div>
+            <input type="hidden" id="liveHidden" name="live" value="<%= live %>"/>
+            <button class="btn primary" type="submit">Search</button>
+            <a class="btn ghost" href="/admin/user360">Reset</a>
+          </div>
+        </form>
 
-      <div>
-        <label>Role</label>
-        <select name="role">
-          <option value="user" <%= (user.role || 'user') === 'user' ? 'selected' : '' %>>user</option>
-          <option value="admin" <%= (user.role || 'user') === 'admin' ? 'selected' : '' %>>admin</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Address</label>
-        <textarea name="address"><%= user.address || '' %></textarea>
-      </div>
-
-      <div>
-        <label>City / State / Pincode</label>
-        <div class="grid grid-2">
-          <input name="city" value="<%= user.city || '' %>" placeholder="City" />
-          <input name="state" value="<%= user.state || '' %>" placeholder="State" />
+        <div id="liveHint" class="muted" style="margin-top:10px;display:<%= live==='1' ? 'block' : 'none' %>;">
+          Live search enabled (debounced). If server becomes slow later, turn it off.
         </div>
-        <div style="margin-top:10px">
-          <input name="pincode" value="<%= user.pincode || '' %>" placeholder="Pincode" />
-        </div>
+
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Open</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <% (users || []).forEach(u => { %>
+              <tr>
+                <td><%= u.name %></td>
+                <td><%= u.email %></td>
+                <td><%= u.phone || '-' %></td>
+                <td><span class="pill"><%= u.role || 'user' %></span></td>
+                <td><a class="btn ghost" href="/admin/user360/<%= u.id %>">View</a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+
       </div>
     </div>
-
-    <div class="row" style="margin-top:14px">
-      <button class="btn primary" type="submit">Save User</button>
-      <span class="pill">User ID: <%= user.id %></span>
-      <span class="pill">Created: <%= user.created_at %></span>
-    </div>
-  </form>
+  </main>
 </div>
 
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Orders</div>
-      <div class="tiny">Latest 200</div>
-    </div>
-  </div>
+<script>
+(function(){
+  const live = document.getElementById("live");
+  const liveHidden = document.getElementById("liveHidden");
+  const q = document.getElementById("q");
+  const tbody = document.getElementById("tbody");
+  const liveHint = document.getElementById("liveHint");
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Order</th>
-          <th>Contest</th>
-          <th>Status</th>
-          <th>Amount</th>
-          <th>Book</th>
-          <th>Created</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (orders || []).forEach(o => { %>
-          <tr>
-            <td><%= o.id %></td>
-            <td><%= o.contest_title %></td>
-            <td><span class="pill"><%= o.payment_status %></span></td>
-            <td>₹<%= o.amount %></td>
-            <td><%= o.book_option %></td>
-            <td><%= o.created_at %></td>
-          </tr>
-        <% }) %>
-        <% if (!orders || !orders.length) { %>
-          <tr><td colspan="6" class="muted">No orders found.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-</div>
+  live.addEventListener("change", () => {
+    liveHidden.value = live.checked ? "1" : "0";
+    liveHint.style.display = live.checked ? "block" : "none";
+  });
 
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Shipments</div>
-      <div class="tiny">Latest 200 linked by order</div>
-    </div>
-  </div>
+  let t = null;
+  async function doSearch(val){
+    const v = (val || "").trim();
+    if (!live.checked) return;
+    if (v.length < 2){
+      tbody.innerHTML = "";
+      return;
+    }
+    const resp = await fetch("/admin/user360/search?q=" + encodeURIComponent(v), { headers: { "Accept": "application/json" } });
+    const data = await resp.json();
+    const items = data.items || [];
+    tbody.innerHTML = items.map(u => `
+      <tr>
+        <td>${u.name || ""}</td>
+        <td>${u.email || ""}</td>
+        <td>${u.phone || "-"}</td>
+        <td><span class="pill">${u.role || "user"}</span></td>
+        <td><a class="btn ghost" href="/admin/user360/${u.id}">View</a></td>
+      </tr>
+    `).join("");
+  }
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Order</th>
-          <th>Status</th>
-          <th>Tracking</th>
-          <th>Courier</th>
-          <th>Updated</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (shipments || []).forEach(s => { %>
-          <tr>
-            <td><%= s.order_id %></td>
-            <td><span class="pill"><%= s.status || 'pending' %></span></td>
-            <td><%= s.tracking_id || '-' %></td>
-            <td><%= s.courier_mode || '-' %></td>
-            <td><%= s.updated_at || '-' %></td>
-          </tr>
-        <% }) %>
-        <% if (!shipments || !shipments.length) { %>
-          <tr><td colspan="5" class="muted">No shipments found.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Submissions</div>
-      <div class="tiny">Latest 200. Download appends UUID + contest title.</div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Contest</th>
-          <th>File</th>
-          <th>Uploaded</th>
-          <th>Locked</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (submissions || []).forEach(s => { %>
-          <tr>
-            <td><%= s.contest_title %></td>
-            <td><%= s.original_name %></td>
-            <td><%= s.uploaded_at %></td>
-            <td><span class="pill"><%= s.is_locked ? 'yes' : 'no' %></span></td>
-            <td>
-              <div class="row mobile-stack">
-                <a class="btn ghost" href="/admin/submissions/download?submissionId=<%= s.id %>">Download</a>
-                <form method="POST" action="/admin/submissions/toggle-lock" style="display:inline">
-                  <input type="hidden" name="submissionId" value="<%= s.id %>" />
-                  <button class="btn ghost" type="submit"><%= s.is_locked ? 'Unlock' : 'Lock' %></button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (!submissions || !submissions.length) { %>
-          <tr><td colspan="5" class="muted">No submissions found.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="tiny" style="margin-top:12px">
-    Admin upload-on-behalf can be added later in this same section.
-  </div>
-</div>
-
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Feedback</div>
-      <div class="tiny">Recent feedback raised by this user</div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Message</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Closed</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (feedback || []).forEach(f => { %>
-          <tr>
-            <td><%= f.message %></td>
-            <td><span class="pill"><%= f.status %></span></td>
-            <td><%= f.created_at %></td>
-            <td><%= f.closed_at || '-' %></td>
-          </tr>
-        <% }) %>
-        <% if (!feedback || !feedback.length) { %>
-          <tr><td colspan="4" class="muted">No feedback found.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<%- include('partials/admin-shell-end') %>
+  q.addEventListener("input", (e) => {
+    if (!live.checked) return;
+    clearTimeout(t);
+    t = setTimeout(() => doSearch(e.target.value), 350);
+  });
+})();
+</script>
+</body>
+</html>

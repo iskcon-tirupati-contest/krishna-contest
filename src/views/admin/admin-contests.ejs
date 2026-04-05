@@ -1,162 +1,163 @@
-<%- include('partials/admin-shell-start', {
-  title: 'Contests',
-  mobileTitle: 'Contests',
-  activeTab: 'contests'
-}) %>
-
-<div class="page-head">
-  <div>
-    <h1>Contests</h1>
-    <div class="sub">Create and manage contests.</div>
-  </div>
-
-  <div class="page-actions">
-    <a class="btn ghost" href="/admin/contests/export.csv">Export CSV</a>
-  </div>
-</div>
-
-<div class="card">
-  <div class="strong" style="margin-bottom:6px">Create Contest</div>
-  <div class="tiny">Add a new contest with title, price, description, deadline, and image.</div>
-
-  <div class="section-line"></div>
-
-  <form method="POST" action="/admin/contests/create">
-    <div class="grid grid-2">
-      <div>
-        <label for="title">Title</label>
-        <input id="title" name="title" placeholder="Contest title" required minlength="3" />
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Contests</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1100px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    input,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0e1630;color:#fff}
+    textarea{min-height:70px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
+    .btn.primary{background:#1a3cff;color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    .muted{color:rgba(255,255,255,.7)}
+    .mini{font-size:12px;color:rgba(255,255,255,.7)}
+    @media (max-width: 900px){ .sidebar{display:none} .grid2{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/contests" class="active">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
       </div>
+    </aside>
 
-      <div>
-        <label for="price">Price</label>
-        <input id="price" name="price" inputmode="numeric" placeholder="e.g. 199" />
-        <div class="tiny" style="margin-top:6px">0 allowed</div>
-      </div>
-    </div>
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <h1 style="margin:0 0 6px 0">Contests</h1>
+          <div class="muted">Create and manage contests</div>
+<a class="btn ghost" href="/admin/contests/export.csv">Export CSV</a>
 
-    <div style="margin-top:12px">
-      <label for="description">Description</label>
-      <textarea id="description" name="description"></textarea>
-    </div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
 
-    <div class="grid grid-2" style="margin-top:12px">
-      <div>
-        <label for="submission_deadline">Submission Deadline (ISO)</label>
-        <input id="submission_deadline" name="submission_deadline" placeholder="2026-01-31" />
-      </div>
-
-      <div>
-        <label for="image_url">Image URL</label>
-        <input id="image_url" name="image_url" placeholder="https://..." />
-      </div>
-    </div>
-
-    <div style="margin-top:14px">
-      <button class="btn primary" type="submit">Create Contest</button>
-    </div>
-  </form>
-</div>
-
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Existing Contests</div>
-      <div class="tiny">Edit details, update status, and manage visibility.</div>
-    </div>
-    <span class="pill"><%= (contests || []).length %> contest(s)</span>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th style="min-width:220px">Contest</th>
-          <th style="min-width:420px">Details</th>
-          <th style="min-width:100px">Active</th>
-          <th style="min-width:180px">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (contests || []).forEach(c => { %>
-          <tr>
-            <td>
-              <div class="strong"><%= c.title %></div>
-              <div class="tiny" style="margin-top:4px">
-                ₹<%= c.price %> • Deadline: <%= c.submission_deadline || '-' %>
+          <form method="POST" action="/admin/contests/create">
+            <div class="grid2">
+              <div>
+                <label class="muted">Title</label>
+                <input name="title" placeholder="Contest title" required minlength="3" />
               </div>
+              <div>
+                <label class="muted">Price</label>
+                <input name="price" inputmode="numeric" placeholder="e.g. 199" />
+                <div class="mini">0 allowed</div>
+              </div>
+            </div>
 
-              <% if (c.image_url) { %>
-                <div class="tiny" style="margin-top:8px;word-break:break-all">
-                  <%= c.image_url %>
-                </div>
-              <% } %>
-            </td>
+            <div style="margin-top:12px">
+              <label class="muted">Description</label>
+              <textarea name="description"></textarea>
+            </div>
 
-            <td>
-              <div class="tiny" style="margin-bottom:10px"><%= c.description || '-' %></div>
+            <div class="grid2" style="margin-top:12px">
+              <div>
+                <label class="muted">Submission Deadline (ISO)</label>
+                <input name="submission_deadline" placeholder="2026-01-31" />
+              </div>
+              <div>
+                <label class="muted">Image URL</label>
+                <input name="image_url" placeholder="https://..." />
+              </div>
+            </div>
 
-              <form method="POST" action="/admin/contests/update">
-                <input type="hidden" name="id" value="<%= c.id %>" />
+            <div style="margin-top:12px">
+              <button class="btn primary" type="submit">Create Contest</button>
+            </div>
+          </form>
 
-                <div class="grid grid-2">
-                  <div>
-                    <label>Edit title</label>
-                    <input name="title" value="<%= c.title %>" required minlength="3" />
-                  </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:260px">Contest</th>
+                <th>Details</th>
+                <th style="width:150px">Active</th>
+                <th style="width:220px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% contests.forEach(c => { %>
+                <tr>
+                  <td>
+                    <div style="font-weight:900"><%= c.title %></div>
+                    <div class="mini">₹<%= c.price %> • Deadline: <%= c.submission_deadline || '-' %></div>
+                    <% if (c.image_url) { %>
+                      <div class="mini" style="margin-top:6px;word-break:break-all"><%= c.image_url %></div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="mini"><%= c.description || '-' %></div>
+                    <div style="margin-top:10px">
+                      <form method="POST" action="/admin/contests/update">
+                        <input type="hidden" name="id" value="<%= c.id %>" />
+                        <div class="grid2">
+                          <div>
+                            <div class="mini">Edit title</div>
+                            <input name="title" value="<%= c.title %>" required minlength="3" />
+                          </div>
+                          <div>
+                            <div class="mini">Edit price</div>
+                            <input name="price" value="<%= c.price %>" inputmode="numeric" />
+                          </div>
+                        </div>
+                        <div style="margin-top:10px">
+                          <div class="mini">Edit description</div>
+                          <textarea name="description"><%= c.description || '' %></textarea>
+                        </div>
+                        <div class="grid2" style="margin-top:10px">
+                          <div>
+                            <div class="mini">Edit deadline</div>
+                            <input name="submission_deadline" value="<%= c.submission_deadline || '' %>" />
+                          </div>
+                          <div>
+                            <div class="mini">Edit image_url</div>
+                            <input name="image_url" value="<%= c.image_url || '' %>" />
+                          </div>
+                        </div>
 
-                  <div>
-                    <label>Edit price</label>
-                    <input name="price" value="<%= c.price %>" inputmode="numeric" />
-                  </div>
-                </div>
+                        <div style="margin-top:10px" class="row">
+                          <button class="btn ghost" type="submit">Save Changes</button>
+                        </div>
+                      </form>
+                    </div>
+                  </td>
+                  <td><%= c.is_active ? 'Yes' : 'No' %></td>
+                  <td>
+                    <form method="POST" action="/admin/contests/toggle" style="display:inline">
+                      <input type="hidden" name="id" value="<%= c.id %>" />
+                      <button class="btn ghost" type="submit"><%= c.is_active ? 'Deactivate' : 'Activate' %></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
 
-                <div style="margin-top:10px">
-                  <label>Edit description</label>
-                  <textarea name="description"><%= c.description || '' %></textarea>
-                </div>
-
-                <div class="grid grid-2" style="margin-top:10px">
-                  <div>
-                    <label>Edit deadline</label>
-                    <input name="submission_deadline" value="<%= c.submission_deadline || '' %>" />
-                  </div>
-
-                  <div>
-                    <label>Edit image URL</label>
-                    <input name="image_url" value="<%= c.image_url || '' %>" />
-                  </div>
-                </div>
-
-                <div style="margin-top:12px" class="row mobile-stack">
-                  <button class="btn ghost" type="submit">Save Changes</button>
-                </div>
-              </form>
-            </td>
-
-            <td>
-              <span class="pill"><%= c.is_active ? 'Yes' : 'No' %></span>
-            </td>
-
-            <td>
-              <form method="POST" action="/admin/contests/toggle">
-                <input type="hidden" name="id" value="<%= c.id %>" />
-                <button class="btn ghost" type="submit">
-                  <%= c.is_active ? 'Deactivate' : 'Activate' %>
-                </button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-
-        <% if (!contests || !contests.length) { %>
-          <tr>
-            <td colspan="4" class="muted">No contests found.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+        </div>
+      </div>
+    </main>
   </div>
-</div>
-
-<%- include('partials/admin-shell-end') %>
+</body>
+</html>

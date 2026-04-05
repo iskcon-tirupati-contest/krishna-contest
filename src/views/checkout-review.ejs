@@ -282,7 +282,7 @@
                 <label>Preferred Language</label>
                 <select name="bookLanguage" class="book-language" required>
                   <option value="">Select language</option>
-                  <% (languages||[]).forEach(l=>{ %>
+                  <% (o.available_languages || []).forEach(l=>{ %>
                     <option value="<%= l %>" <%= String(o.saved_book_language||'') === String(l) ? 'selected' : '' %>><%= l %></option>
                   <% }) %>
                 </select>
@@ -309,7 +309,7 @@
                 <label>Language</label>
                 <select name="ssrLanguage" class="ssr-language">
                   <option value="">Select language</option>
-                  <% (languages||[]).forEach(l=>{ %><option value="<%= l %>" <%= ((ssrSelectedLanguages||[])[i]===l)?'selected':'' %>><%= l %></option><% }) %>
+                  <% (ssrLanguages||[]).forEach(l=>{ %><option value="<%= l %>" <%= ((ssrSelectedLanguages||[])[i]===l)?'selected':'' %>><%= l %></option><% }) %>
                 </select>
               </div>
             </div>

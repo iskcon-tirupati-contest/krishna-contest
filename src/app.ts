@@ -17,6 +17,8 @@ import checkoutRoutes from "./routes/checkout";
 import paymentRoutes from "./routes/payment";
 import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
+import agentRoutes from "./routes/agent";
+
 import cors from "cors";
 dotenv.config();
 
@@ -141,7 +143,7 @@ app.use(checkoutRoutes);
 app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
-
+app.use("/", agentRoutes);
 /* Pages */
 
 //app.get("/", (_req, res) => res.render("index"));

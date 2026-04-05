@@ -1,95 +1,561 @@
-<%- include('partials/admin-shell-start', {
-  title: 'Users',
-  mobileTitle: 'Users',
-  activeTab: 'users'
-}) %>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Users</title>
+  <style>
+    :root{
+      --bg:#0b1224;
+      --card:#111b35;
+      --line:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:rgba(255,255,255,.72);
+      --soft:rgba(255,255,255,.08);
+      --blue:#1a3cff;
+      --blue2:#2747ff;
+      --green:#16a34a;
+      --amber:#d97706;
+      --red:#dc2626;
+      --cyan:#0891b2;
+      --violet:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--text)}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1480px;margin:26px auto;padding:0 18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+    .grid{display:grid;grid-template-columns:1.5fr 220px 220px 130px 130px;gap:10px;align-items:end}
+    input,select,textarea,button{font:inherit}
+    input[type="text"],input[type="datetime-local"],select,textarea{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#0e1630;color:#fff
+    }
+    textarea{min-height:88px;resize:vertical}
+    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn.primary{background:linear-gradient(180deg,var(--blue2),var(--blue));color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.10);color:#fff}
+    .btn.soft{background:#0d1430;border:1px solid rgba(255,255,255,.1);color:#fff}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#0d1430;border:1px solid rgba(255,255,255,.12);color:#dbe5ff;font-size:13px}
+    .chip strong{font-size:13px}
+    .divider{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
+    .info-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+    .msg{padding:10px 12px;border-radius:12px;border:1px solid transparent;font-size:14px;margin-top:10px}
+    .msg.success{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
+    .msg.error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35)}
+    .tablewrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px;margin-top:14px}
+    table{width:100%;border-collapse:collapse;min-width:1120px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    th{background:#10182f;position:sticky;top:0;z-index:1}
+    .empty{text-align:center;padding:24px;color:var(--muted)}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08)}
+    .pill.paid{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+    .pill.unpaid{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fde68a}
+    .pill.failed{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fecaca}
+    .pill.interested{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+    .pill.likely_later{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.35);color:#ddd6fe}
+    .pill.payment_issue{background:rgba(220,38,38,.15);border-color:rgba(220,38,38,.35);color:#fecaca}
+    .pill.needs_callback{background:rgba(8,145,178,.15);border-color:rgba(8,145,178,.35);color:#a5f3fc}
+    .pill.not_interested,.pill.wrong_number,.pill.no_response{background:rgba(255,255,255,.08)}
+    .user-name{font-weight:900;font-size:15px}
+    .stack{display:grid;gap:5px}
+    .pager{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .pager-links{display:flex;gap:8px;flex-wrap:wrap}
+    .pager-links a,.pager-links span{
+      min-width:40px;text-align:center;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0d1430;color:#fff;text-decoration:none
+    }
+    .pager-links .active{background:linear-gradient(180deg,var(--blue2),var(--blue));border-color:transparent}
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(4,8,18,.68);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999
+    }
+    .modal{
+      width:min(980px,100%);max-height:90vh;overflow:auto;background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:18px
+    }
+    .modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+    .modal-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    .history-card{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:#0d1430;margin-bottom:10px}
+    .history-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+    .label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .compact-date{line-height:1.35}
+    @media (max-width:1200px){ .grid{grid-template-columns:1fr 220px 220px} }
+    @media (max-width:900px){ .grid{grid-template-columns:1fr 1fr} .modal-grid{grid-template-columns:1fr} }
+    @media (max-width:700px){ .grid{grid-template-columns:1fr} .sidebar{display:none} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/users" class="active">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
 
-<div class="page-head">
-  <div>
-    <h1>Users</h1>
-    <div class="sub">Search users and update admin roles.</div>
-  </div>
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <div class="toolbar">
+            <div>
+              <h1 style="margin:0 0 6px 0">Users</h1>
+              <div class="muted">Segregate users, track payment journey, and save follow-up history</div>
 
-  <div class="page-actions">
-    <a class="btn ghost" href="/admin/users">Reset</a>
-    <a class="btn ghost" href="/admin/users/export.csv?<%= qs %>">Export CSV</a>
-  </div>
-</div>
+              <% if (okMsg) { %>
+                <div class="msg success"><%= okMsg %></div>
+              <% } %>
 
-<div class="card">
-  <form method="GET" action="/admin/users" class="row mobile-stack">
-    <div style="flex:1;min-width:260px">
-      <label for="q">Search</label>
-      <input
-        id="q"
-        name="q"
-        value="<%= q || '' %>"
-        placeholder="Search name / email / phone"
-      />
-    </div>
-    <div style="display:flex;align-items:end">
-      <button class="btn primary" type="submit">Search</button>
-    </div>
-  </form>
-</div>
+              <% if (errMsg) { %>
+                <div class="msg error"><%= errMsg %></div>
+              <% } %>
+            </div>
 
-<div class="card">
-  <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <div>
-      <div class="strong">Users List</div>
-      <div class="tiny">Desktop table with mobile scrolling support</div>
-    </div>
-    <span class="pill"><%= (users || []).length %> result(s)</span>
-  </div>
+            <div class="row">
+              <a class="btn ghost" href="/admin/users">Reset</a>
+              <a class="btn ghost" href="/admin/users/export.csv?<%= qs %>">Export CSV</a>
+            </div>
+          </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Role</th>
-          <th>Created</th>
-          <th>Update Role</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% (users || []).forEach(u => { %>
-          <tr>
-            <td>
-              <div class="strong"><%= u.name || '-' %></div>
-              <div class="tiny">UUID: <%= u.id %></div>
-            </td>
-            <td><%= u.email || '-' %></td>
-            <td><%= u.phone || '-' %></td>
-            <td>
-              <span class="pill"><%= u.role || 'user' %></span>
-            </td>
-            <td class="tiny"><%= u.created_at %></td>
-            <td>
-              <form method="POST" action="/admin/users/role" class="row mobile-stack" style="gap:8px">
-                <input type="hidden" name="userId" value="<%= u.id %>" />
-                <div style="min-width:150px;flex:1">
-                  <select name="role">
-                    <option value="user" <%= (u.role || 'user') === 'user' ? 'selected' : '' %>>user</option>
-                    <option value="admin" <%= (u.role || '') === 'admin' ? 'selected' : '' %>>admin</option>
-                  </select>
+         <div class="chips">
+          <span class="chip">All <strong><%= counts?.all_count || 0 %></strong></span>
+          <span class="chip">Paid <strong><%= counts?.paid_count || 0 %></strong></span>
+          <span class="chip">Added to cart <strong><%= counts?.added_to_cart_count || 0 %></strong></span>
+          <span class="chip">Registered only <strong><%= counts?.registered_only_count || 0 %></strong></span>
+          <span class="chip">No follow-up <strong><%= counts?.no_followup_count || 0 %></strong></span>
+        </div>
+          <div class="divider"></div>
+
+          <form method="GET" action="/admin/users" class="grid">
+            <div>
+              <label class="label">Search</label>
+              <input name="q" value="<%= q || '' %>" placeholder="Search name / email / phone / user id"/>
+            </div>
+
+            <div>
+              <label class="label">Payment category</label>
+              <select name="payment_bucket">
+  <option value="all" <%= paymentBucket==='all' ? 'selected' : '' %>>All</option>
+  <option value="paid" <%= paymentBucket==='paid' ? 'selected' : '' %>>Paid</option>
+  <option value="added_to_cart" <%= paymentBucket==='added_to_cart' ? 'selected' : '' %>>Added to cart</option>
+  <option value="registered_only" <%= paymentBucket==='registered_only' ? 'selected' : '' %>>Registered only</option>
+</select>
+            </div>
+
+            <div>
+              <label class="label">Follow-up category</label>
+              <select name="disposition">
+                <option value="all" <%= disposition==='all' ? 'selected' : '' %>>All</option>
+                <option value="none" <%= disposition==='none' ? 'selected' : '' %>>No follow-up yet</option>
+                <option value="interested" <%= disposition==='interested' ? 'selected' : '' %>>Interested</option>
+                <option value="likely_later" <%= disposition==='likely_later' ? 'selected' : '' %>>Likely later</option>
+                <option value="payment_issue" <%= disposition==='payment_issue' ? 'selected' : '' %>>Payment issue</option>
+                <option value="needs_callback" <%= disposition==='needs_callback' ? 'selected' : '' %>>Needs callback</option>
+                <option value="not_interested" <%= disposition==='not_interested' ? 'selected' : '' %>>Not interested</option>
+                <option value="wrong_number" <%= disposition==='wrong_number' ? 'selected' : '' %>>Wrong number</option>
+                <option value="no_response" <%= disposition==='no_response' ? 'selected' : '' %>>No response</option>
+                <option value="already_joined" <%= disposition==='already_joined' ? 'selected' : '' %>>Already joined</option>
+                <option value="information_only" <%= disposition==='information_only' ? 'selected' : '' %>>Information only</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Page size</label>
+              <select name="page_size">
+                <option value="50" <%= Number(pageSize)===50 ? 'selected' : '' %>>50</option>
+                <option value="100" <%= Number(pageSize)===100 ? 'selected' : '' %>>100</option>
+                <option value="200" <%= Number(pageSize)===200 ? 'selected' : '' %>>200</option>
+              </select>
+            </div>
+
+            <div class="row" style="align-self:end">
+              <button class="btn primary" type="submit">Apply</button>
+              <a class="btn ghost" href="/admin/users">Clear</a>
+            </div>
+          </form>
+
+          <div class="info-bar">
+            <div class="muted">
+              <% if (totalCount > 0) { %>
+                Showing <strong><%= startIndex %></strong>–<strong><%= endIndex %></strong> of <strong><%= totalCount %></strong> users
+              <% } else { %>
+                No users found for the selected filters
+              <% } %>
+            </div>
+            <div class="muted">
+                  Current filters:
+                  <strong>
+                    <%= paymentBucket === 'added_to_cart'
+                      ? 'added to cart'
+                      : (paymentBucket || 'all') %>
+                  </strong>
+                  /
+                  <strong>
+                    <%= disposition === 'none'
+                      ? 'no follow-up yet'
+                      : (disposition || 'all') %>
+                  </strong>
                 </div>
-                <button class="btn ghost" type="submit">Save</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
+          </div>
 
-        <% if (!users || !users.length) { %>
-          <tr>
-            <td colspan="6" class="muted">No users found.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Phone</th>
+                  <th>Category</th>
+                  <th>Journey</th>
+                  <th>Last Attempt</th>
+                  <th>Follow-up</th>
+                  <th>Callback</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (!users || !users.length) { %>
+                  <tr>
+                    <td colspan="9" class="empty">No users found.</td>
+                  </tr>
+                <% } %>
+
+                <% users.forEach(u => { %>
+                  <tr>
+                    <td>
+                      <div class="user-name"><%= u.name || '-' %></div>
+                      <div class="tiny muted"><%= u.email || '-' %></div>
+                      <div class="tiny muted">UUID: <%= u.id %></div>
+                    </td>
+
+                    <td><%= u.phone || '-' %></td>
+
+                    <td>
+                      <span class="pill <%= u.payment_bucket === 'paid' ? 'paid' : 'unpaid' %>">
+                        <%= u.payment_bucket === 'added_to_cart' ? 'added to cart' : (u.payment_bucket || 'registered_only') %>
+                      </span>
+                      <div class="tiny muted" style="margin-top:6px">
+                        <% if (u.payment_bucket === 'paid') { %>
+                          Successful payment
+                        <% } else if (u.payment_bucket === 'added_to_cart') { %>
+                          Order created, not yet paid
+                        <% } else { %>
+                          Registered only
+                        <% } %>
+                      </div>
+                    </td>
+
+                    <td class="tiny">
+                      <div><strong><%= u.journey_label %></strong></div>
+                      <% if (u.payment_bucket === 'paid') { %>
+                        <div class="muted">
+                          Orders: <%= u.total_orders || 0 %>
+                        </div>
+                      <% } else if (u.payment_bucket === 'added_to_cart') { %>
+                        <div class="muted">
+                          Orders: <%= u.total_orders || 0 %>
+                        </div>
+                      <% } else { %>
+                        <div class="muted">No order yet</div>
+                      <% } %>
+                    </td>
+
+                    <td class="tiny compact-date">
+                      <% if (u.last_payment_attempt_at) { %>
+                        <div><%= new Date(u.last_payment_attempt_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %></div>
+                        <div class="muted"><%= new Date(u.last_payment_attempt_at).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true }) %></div>
+                      <% } else { %>
+                        <span class="muted">-</span>
+                      <% } %>
+                    </td>
+
+                    <td class="tiny">
+                      <% if (u.latest_disposition) { %>
+                        <div>
+                          <span class="pill <%= u.latest_disposition %>"><%= u.latest_disposition_label %></span>
+                        </div>
+                        <% if (u.latest_sub_disposition) { %>
+                          <div class="muted" style="margin-top:6px"><%= u.latest_sub_disposition %></div>
+                        <% } %>
+                        <% if (u.latest_followup_at) { %>
+                          <div class="muted" style="margin-top:6px">
+                            <%= new Date(u.latest_followup_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %>
+                          </div>
+                        <% } %>
+                        <div class="muted">History: <%= u.followup_count || 0 %></div>
+                      <% } else { %>
+                        <span class="muted">No follow-up yet</span>
+                      <% } %>
+                    </td>
+
+                    <td class="tiny compact-date">
+                      <% if (u.latest_callback_on) { %>
+                        <div><%= new Date(u.latest_callback_on).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %></div>
+                        <div class="muted"><%= new Date(u.latest_callback_on).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true }) %></div>
+                      <% } else { %>
+                        <span class="muted">-</span>
+                      <% } %>
+                    </td>
+
+                    <td class="tiny compact-date">
+                      <div><%= new Date(u.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %></div>
+                      <div class="muted"><%= new Date(u.created_at).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true }) %></div>
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        class="btn soft open-followup-btn"
+                        data-user-id="<%= u.id %>"
+                        data-user-name="<%= (u.name || '').replace(/"/g, '&quot;') %>"
+                        data-user-phone="<%= (u.phone || '').replace(/"/g, '&quot;') %>"
+                        data-user-email="<%= (u.email || '').replace(/"/g, '&quot;') %>"
+                      >
+                        Follow-up
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <div class="muted">Page <strong><%= page %></strong> of <strong><%= totalPages %></strong></div>
+
+            <div class="pager-links">
+              <% if (page > 1) { %>
+                <a href="/admin/users?<%= qsBase %>&page=1">First</a>
+                <a href="/admin/users?<%= qsBase %>&page=<%= page - 1 %>">Prev</a>
+              <% } else { %>
+                <span>First</span>
+                <span>Prev</span>
+              <% } %>
+
+              <%
+                const startPage = Math.max(1, page - 2);
+                const endPage = Math.min(totalPages, page + 2);
+                for (let p = startPage; p <= endPage; p++) {
+              %>
+                <% if (p === page) { %>
+                  <span class="active"><%= p %></span>
+                <% } else { %>
+                  <a href="/admin/users?<%= qsBase %>&page=<%= p %>"><%= p %></a>
+                <% } %>
+              <% } %>
+
+              <% if (page < totalPages) { %>
+                <a href="/admin/users?<%= qsBase %>&page=<%= page + 1 %>">Next</a>
+                <a href="/admin/users?<%= qsBase %>&page=<%= totalPages %>">Last</a>
+              <% } else { %>
+                <span>Next</span>
+                <span>Last</span>
+              <% } %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
   </div>
-</div>
 
-<%- include('partials/admin-shell-end') %>
+  <div class="modal-backdrop" id="followupModalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 style="margin:0">User Follow-up</h2>
+          <div class="muted tiny" id="modalUserMeta">-</div>
+        </div>
+        <button type="button" class="btn ghost" id="closeFollowupModal">Close</button>
+      </div>
+
+      <div class="modal-grid">
+        <div>
+          <form method="POST" action="/admin/users/followups/add" id="followupForm" class="stack">
+            <input type="hidden" name="user_id" id="followup_user_id">
+            <input type="hidden" name="return_qs" value="<%= qs %>">
+
+            <div>
+              <label class="label">Disposition</label>
+              <select name="disposition" id="followup_disposition" required>
+                <option value="">Select</option>
+                <option value="interested">Interested</option>
+                <option value="likely_later">Likely later</option>
+                <option value="payment_issue">Payment issue</option>
+                <option value="needs_callback">Needs callback</option>
+                <option value="not_interested">Not interested</option>
+                <option value="wrong_number">Wrong number</option>
+                <option value="no_response">No response</option>
+                <option value="already_joined">Already joined</option>
+                <option value="information_only">Information only</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Sub category / short reason</label>
+              <input type="text" name="sub_disposition" placeholder="Ex: technical error / discuss with parent / just exploring">
+            </div>
+
+            <div>
+              <label class="label">Notes</label>
+              <textarea name="notes" placeholder="Write call outcome, promise, concern, language preference, callback note, etc."></textarea>
+            </div>
+
+            <div>
+              <label class="label">Callback on</label>
+              <input type="datetime-local" name="callback_on">
+            </div>
+
+            <div class="row">
+              <button class="btn primary" type="submit">Save Follow-up</button>
+            </div>
+          </form>
+        </div>
+
+        <div>
+          <div class="label">History</div>
+          <div id="followupHistoryWrap">
+            <div class="muted">Select a user to load history...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const modalBackdrop = document.getElementById("followupModalBackdrop");
+      const closeBtn = document.getElementById("closeFollowupModal");
+      const userIdInput = document.getElementById("followup_user_id");
+      const userMeta = document.getElementById("modalUserMeta");
+      const historyWrap = document.getElementById("followupHistoryWrap");
+      const openBtns = Array.from(document.querySelectorAll(".open-followup-btn"));
+      const autoOpenUserId = "<%= openFollowupUserId || '' %>";
+
+      function esc(v) {
+        return String(v == null ? "" : v)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function fmtDateTime(v) {
+        if (!v) return "-";
+        const d = new Date(v);
+        return d.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        });
+      }
+
+      function dispositionLabel(v) {
+        const map = {
+          interested: "Interested",
+          likely_later: "Likely later",
+          payment_issue: "Payment issue",
+          needs_callback: "Needs callback",
+          not_interested: "Not interested",
+          wrong_number: "Wrong number",
+          no_response: "No response",
+          already_joined: "Already joined",
+          information_only: "Information only"
+        };
+        return map[v] || v || "-";
+      }
+
+      function openModal() {
+        modalBackdrop.style.display = "flex";
+      }
+
+      function closeModal() {
+        modalBackdrop.style.display = "none";
+      }
+
+      async function loadHistory(userId, metaText) {
+        userIdInput.value = userId;
+        userMeta.textContent = metaText || "";
+        historyWrap.innerHTML = '<div class="muted">Loading history...</div>';
+        openModal();
+
+        try {
+          const res = await fetch(`/admin/users/${encodeURIComponent(userId)}/followups`, {
+            headers: { "Accept": "application/json" }
+          });
+          const data = await res.json();
+
+          if (!data || !data.ok) {
+            historyWrap.innerHTML = '<div class="muted">Failed to load history.</div>';
+            return;
+          }
+
+          if (!data.items || !data.items.length) {
+            historyWrap.innerHTML = '<div class="muted">No follow-up history yet.</div>';
+            return;
+          }
+
+          historyWrap.innerHTML = data.items.map(function(it){
+            return `
+              <div class="history-card">
+                <div class="history-top">
+                  <div>
+                    <span class="pill ${esc(it.disposition)}">${esc(dispositionLabel(it.disposition))}</span>
+                    ${it.sub_disposition ? `<div class="tiny muted" style="margin-top:6px">${esc(it.sub_disposition)}</div>` : ``}
+                  </div>
+                  <div class="tiny muted" style="text-align:right">
+                    <div>${esc(fmtDateTime(it.created_at))}</div>
+                    <div>${esc(it.created_by_name || "Admin")}</div>
+                  </div>
+                </div>
+                ${it.notes ? `<div style="margin-top:6px">${esc(it.notes)}</div>` : `<div class="muted tiny">No notes</div>`}
+                ${it.callback_on ? `<div class="tiny muted" style="margin-top:8px"><strong>Callback:</strong> ${esc(fmtDateTime(it.callback_on))}</div>` : ``}
+              </div>
+            `;
+          }).join("");
+        } catch (e) {
+          historyWrap.innerHTML = '<div class="muted">Failed to load history.</div>';
+        }
+      }
+
+      openBtns.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          const userId = btn.getAttribute("data-user-id") || "";
+          const name = btn.getAttribute("data-user-name") || "";
+          const phone = btn.getAttribute("data-user-phone") || "";
+          const email = btn.getAttribute("data-user-email") || "";
+          const meta = [name, phone, email].filter(Boolean).join(" • ");
+          loadHistory(userId, meta);
+        });
+      });
+
+      closeBtn.addEventListener("click", closeModal);
+      modalBackdrop.addEventListener("click", function(e){
+        if (e.target === modalBackdrop) closeModal();
+      });
+
+      if (autoOpenUserId) {
+        const btn = document.querySelector(`.open-followup-btn[data-user-id="${autoOpenUserId}"]`);
+        if (btn) btn.click();
+      }
+    })();
+  </script>
+</body>
+</html>

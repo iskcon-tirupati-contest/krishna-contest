@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Agents</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1280px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .muted{color:rgba(255,255,255,.7)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;background:#1a3cff;color:#fff;text-decoration:none;display:inline-block}
+    .btn.secondary{background:rgba(255,255,255,.12);color:#fff}
+    .btn.warn{background:#b42318}
+    .input,.file{
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid rgba(255,255,255,.14);
+      background:#0e1630;
+      color:#fff;
+      border-radius:12px;
+      padding:12px 14px;
+      outline:none;
+    }
+    label{display:block;margin-bottom:8px;font-weight:700}
+    .field{margin-bottom:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    th{color:rgba(255,255,255,.75);font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(26,60,255,.18);
+      border:1px solid rgba(26,60,255,.35);
+      font-size:12px;
+      font-weight:800;
+    }
+    .msg-ok{
+      background:rgba(18,183,106,.14);
+      border:1px solid rgba(18,183,106,.35);
+      color:#8af0b5;
+      padding:12px 14px;
+      border-radius:12px;
+      margin-bottom:14px;
+    }
+    .msg-err{
+      background:rgba(240,68,56,.14);
+      border:1px solid rgba(240,68,56,.35);
+      color:#ffb4ae;
+      padding:12px 14px;
+      border-radius:12px;
+      margin-bottom:14px;
+    }
+    .topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .searchbar{display:flex;gap:10px;flex-wrap:wrap}
+    .searchbar .input{width:280px}
+    .hint{font-size:12px;color:rgba(255,255,255,.65)}
+    @media (max-width:1000px){
+      .grid{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .searchbar .input{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/agent-bookings">Agent Booking</a>
+        <a href="/admin/agents" class="active">Agents</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/shipment-stock">Shipment Stock</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+
+        <div class="card">
+          <div class="topline">
+            <div>
+              <h1 style="margin:0 0 6px 0">Agent Management</h1>
+              <div class="muted">Create, bulk upload, view and edit agent users</div>
+            </div>
+
+            <form method="GET" action="/admin/agents" class="searchbar">
+              <input class="input" type="text" name="q" placeholder="Search by name or mobile number" value="<%= typeof q !== 'undefined' ? q : '' %>">
+              <button class="btn" type="submit">Search</button>
+              <% if (typeof q !== 'undefined' && q) { %>
+                <a class="btn secondary" href="/admin/agents">Clear</a>
+              <% } %>
+            </form>
+          </div>
+        </div>
+
+        <% if (okMsg) { %>
+          <div class="msg-ok"><%= okMsg %></div>
+        <% } %>
+
+        <% if (errMsg) { %>
+          <div class="msg-err"><%= errMsg %></div>
+        <% } %>
+
+        <div class="grid">
+          <div class="card">
+            <h2 style="margin-top:0"><%= editAgent ? 'Edit Agent' : 'Create Agent' %></h2>
+            <div class="muted" style="margin-bottom:14px">
+              <% if (editAgent) { %>
+                Editing existing agent record
+              <% } else { %>
+                Default password for new agents: <strong>agent123</strong>
+              <% } %>
+            </div>
+
+            <% if (editAgent) { %>
+              <form method="POST" action="/admin/agents/<%= editAgent.id %>/update">
+                <div class="field">
+                  <label>Name</label>
+                  <input class="input" type="text" name="name" required value="<%= editAgent.name || '' %>">
+                </div>
+
+                <div class="field">
+                  <label>Mobile Number</label>
+                  <input class="input" type="text" name="phone" required maxlength="10" value="<%= editAgent.phone || '' %>">
+                </div>
+
+                <div class="field">
+                  <label>Role</label>
+                  <input class="input" type="text" value="<%= editAgent.role || 'agent' %>" disabled>
+                </div>
+
+                <div class="row">
+                  <button class="btn" type="submit">Save Changes</button>
+                  <a class="btn secondary" href="/admin/agents">Cancel</a>
+                </div>
+              </form>
+            <% } else { %>
+              <form method="POST" action="/admin/agents/create">
+                <div class="field">
+                  <label>Name</label>
+                  <input class="input" type="text" name="name" required placeholder="Enter agent name">
+                </div>
+
+                <div class="field">
+                  <label>Mobile Number</label>
+                  <input class="input" type="text" name="phone" required maxlength="10" placeholder="Enter 10-digit mobile number">
+                </div>
+
+                <div class="field">
+                  <label>Default Password</label>
+                  <input class="input" type="text" value="agent123" disabled>
+                </div>
+
+                <div class="field">
+                  <label>Role</label>
+                  <input class="input" type="text" value="agent" disabled>
+                </div>
+
+                <button class="btn" type="submit">Create Agent</button>
+              </form>
+            <% } %>
+          </div>
+
+          <div class="card">
+            <h2 style="margin-top:0">Bulk Upload Agents</h2>
+            <div class="muted" style="margin-bottom:14px">
+              Upload CSV or Excel with columns: <strong>name</strong>, <strong>phone</strong>
+            </div>
+
+            <form method="POST" action="/admin/agents/upload" enctype="multipart/form-data">
+              <div class="field">
+                <label>Select File</label>
+                <input class="file" type="file" name="file" accept=".csv,.xlsx,.xls" required>
+              </div>
+
+              <button class="btn" type="submit">Upload Agents</button>
+            </form>
+
+            <div style="height:1px;background:rgba(255,255,255,.12);margin:18px 0"></div>
+
+            <div class="hint">
+              Sample columns:<br>
+              name, phone<br>
+              Ramesh, 9876543210
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="topline">
+            <div>
+              <h2 style="margin:0 0 6px 0">Agent List</h2>
+              <div class="muted">Showing all users with role = agent</div>
+            </div>
+            <div class="pill">Total: <%= agents.length %></div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobile Number</th>
+                <th>Created At</th>
+                <th>Role</th>
+                <th style="width:120px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!agents.length) { %>
+                <tr>
+                  <td colspan="5" class="muted">No agents found.</td>
+                </tr>
+              <% } %>
+
+              <% agents.forEach(a => { %>
+                <tr>
+                  <td><%= a.name || '' %></td>
+                  <td><%= a.phone || '' %></td>
+                  <td><%= a.created_at ? new Date(a.created_at).toLocaleString('en-IN') : '' %></td>
+                  <td><span class="pill"><%= a.role || 'agent' %></span></td>
+                  <td>
+                    <a class="btn secondary" href="/admin/agents?<%= q ? ('q=' + encodeURIComponent(q) + '&') : '' %>editId=<%= encodeURIComponent(a.id) %>">Edit</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+            <a href="/admin"> Go Home</a> <br>
+            <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

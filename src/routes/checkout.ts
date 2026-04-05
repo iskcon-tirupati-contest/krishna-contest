@@ -7,14 +7,40 @@ import { sendContestRegistrationMessageOnce } from "../services/contestConfirmat
 
 const router = express.Router();
 
-const BOOKS = [
-  "Bhagavad Gita",
-  "Krishna Book",
-  "Ramayana",
-  "Bhagavatam"
-];
 
-const LANGUAGES = ["English", "Tamil", "Telugu", "Kannada", "Hindi"];
+
+type BookLanguageMap = Record<string, string[]>;
+
+async function fetchAvailableBookLanguages(): Promise<BookLanguageMap> {
+  const q = await pool.query(
+    `
+    SELECT
+      TRIM(book_title) AS book_title,
+      TRIM(book_language) AS book_language
+    FROM shipment_book_stock
+    WHERE COALESCE(stock_qty, 0) > 0
+      AND COALESCE(TRIM(book_title), '') <> ''
+      AND COALESCE(TRIM(book_language), '') <> ''
+    ORDER BY book_title ASC, book_language ASC
+    `
+  );
+
+  const map: BookLanguageMap = {};
+
+  for (const row of q.rows) {
+    const bookTitle = String(row.book_title || "").trim();
+    const bookLanguage = String(row.book_language || "").trim();
+
+    if (!bookTitle || !bookLanguage) continue;
+    if (!map[bookTitle]) map[bookTitle] = [];
+    if (!map[bookTitle].includes(bookLanguage)) {
+      map[bookTitle].push(bookLanguage);
+    }
+  }
+
+  return map;
+}
+
 
 const RZP_KEY_ID = process.env.RZP_KEY_ID || "";
 const RZP_KEY_SECRET = process.env.RZP_KEY_SECRET || "";
@@ -85,9 +111,15 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     return res.redirect("/cart-review");
   }
 
+  const availableBookLanguages = await fetchAvailableBookLanguages();
+const ssrLanguages = availableBookLanguages["Science of Self Realization"] || [];
+
   const expandedRows: any[] = [];
   for (const row of cartQ.rows) {
     const qty = Number(row.quantity || 0);
+    const fixedBook = String(row.default_book_title || "").trim();
+    const allowedLanguages = availableBookLanguages[fixedBook] || [];
+
     for (let i = 0; i < qty; i++) {
       expandedRows.push({
         cart_item_id: row.cart_item_id,
@@ -95,8 +127,9 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
         age_category: row.age_category,
         contest_title: row.contest_title,
         amount: Number(row.price || 0),
-        default_book_title: String(row.default_book_title || "").trim(),
+        default_book_title: fixedBook,
         saved_book_language: "",
+        available_languages: allowedLanguages,
       });
     }
   }
@@ -115,14 +148,15 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
     paymentId: "",
     orders: expandedRows,
     user: userQ.rows[0] || null,
-    languages: LANGUAGES,
     shipment: null,
     deliveryMode: "deliver",
     error: null,
     ssrCount,
     ssrSelectedLanguages: [],
+    ssrLanguages: ssrLanguages,
   });
 });
+
 
 router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -143,24 +177,33 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
+
   if (!cartQ.rows.length) {
     return res.status(400).send("Cart is empty");
   }
 
-  const expandedRows: any[] = [];
-  for (const row of cartQ.rows) {
-    const qty = Number(row.quantity || 0);
-    for (let i = 0; i < qty; i++) {
-      expandedRows.push({
-        cart_item_id: row.cart_item_id,
-        contest_id: row.contest_id,
-        age_category: row.age_category,
-        contest_title: row.contest_title,
-        amount: Number(row.price || 0),
-        default_book_title: String(row.default_book_title || "").trim(),
-      });
-    }
+  const availableBookLanguages = await fetchAvailableBookLanguages();
+
+
+const expandedRows: any[] = [];
+const ssrLanguages = availableBookLanguages["Science of Self Realization"] || [];
+for (const row of cartQ.rows) {
+  const qty = Number(row.quantity || 0);
+  const fixedBook = String(row.default_book_title || "").trim();
+  const allowedLanguages = availableBookLanguages[fixedBook] || [];
+
+  for (let i = 0; i < qty; i++) {
+    expandedRows.push({
+      cart_item_id: row.cart_item_id,
+      contest_id: row.contest_id,
+      age_category: row.age_category,
+      contest_title: row.contest_title,
+      amount: Number(row.price || 0),
+      default_book_title: fixedBook,
+      available_languages: allowedLanguages,
+    });
   }
+}
 
   const ssrCount = calcSsrCountFromRows(cartQ.rows || []);
 
@@ -192,26 +235,26 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
   const savedSsrLanguages = ssrLangArr.map((x: any) => String(x || "").trim());
 
   const renderError = async (msg: string) => {
-    return renderReview(res, {
-      paymentId: "",
-      orders: hydratedOrders,
-      user: {
-        ...(user || {}),
-        name: req.body.fullName || user?.name || "",
-        phone: req.body.phone || user?.phone || "",
-        address: req.body.address || user?.address || "",
-        city: req.body.city || user?.city || "",
-        state: req.body.state || user?.state || "",
-        pincode: req.body.pincode || user?.pincode || "",
-      },
-      languages: LANGUAGES,
-      shipment: null,
-      deliveryMode: String(req.body.deliveryMode || "deliver"),
-      error: msg,
-      ssrCount,
-      ssrSelectedLanguages: savedSsrLanguages,
-    });
-  };
+  return renderReview(res, {
+    paymentId: "",
+    orders: hydratedOrders,
+    user: {
+      ...(user || {}),
+      name: req.body.fullName || user?.name || "",
+      phone: req.body.phone || user?.phone || "",
+      address: req.body.address || user?.address || "",
+      city: req.body.city || user?.city || "",
+      state: req.body.state || user?.state || "",
+      pincode: req.body.pincode || user?.pincode || "",
+    },
+    shipment: null,
+    deliveryMode: String(req.body.deliveryMode || "deliver"),
+    error: msg,
+    ssrCount,
+    ssrSelectedLanguages: savedSsrLanguages,
+    ssrLanguages: ssrLanguages,
+  });
+};
 
   if (!["deliver", "donate", "temple_pickup"].includes(deliveryMode)) {
     return renderError("Please choose Home Delivery, Donation, or Collect directly from temple.");
@@ -251,43 +294,54 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
       if (!fixedBook) {
         return renderError("One or more contests do not have default book configured.");
       }
+
       if (!lang) {
         return renderError("Please select language for every row.");
       }
+
+    const allowedLanguages = expandedRows[i].available_languages || [];
+        if (!allowedLanguages.includes(lang)) {
+          return renderError(`Selected language is out of stock for ${fixedBook}. Please choose another available language.`);
+        }
+        if (!Array.isArray(allowedLanguages) || allowedLanguages.length === 0) {
+  return renderError(`Currently no language is available for ${fixedBook}. Please try again later or contact support.`);
+}
     }
-  } else {
-    for (let i = 0; i < expandedRows.length; i++) {
-      const finalAge = String(expandedRows[i].age_category || "").trim();
-      if (!["0-25", "above-25"].includes(finalAge)) {
+    }
+    else {
+        for (let i = 0; i < expandedRows.length; i++) {
+        const finalAge = String(expandedRows[i].age_category || "").trim();
+        if (!["0-25", "above-25"].includes(finalAge)) {
         return renderError("Please select age category in cart before continuing.");
       }
     }
   }
 
+
   if (isDeliver) {
-    const address = String(req.body.address || "").trim();
-    const city = String(req.body.city || "").trim();
-    const state = String(req.body.state || "").trim();
-    const pincode = String(req.body.pincode || "").trim();
+  const address = String(req.body.address || "").trim();
+  const city = String(req.body.city || "").trim();
+  const state = String(req.body.state || "").trim();
+  const pincode = String(req.body.pincode || "").trim();
 
-    if (!/^[1-9][0-9]{5}$/.test(pincode)) {
-      return renderError("Please enter a valid 6-digit Indian pincode.");
-    }
-    if (!address || !city || !state) {
-      return renderError("Please fill complete address (Address, City, State, Pincode).");
-    }
+  if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+    return renderError("Please enter a valid 6-digit Indian pincode.");
+  }
+  if (!address || !city || !state) {
+    return renderError("Please fill complete address (Address, City, State, Pincode).");
+  }
 
-    if (ssrLangArr.length !== ssrCount) {
+  if (ssrLangArr.length !== ssrCount) {
+    return renderError("Please select language for all free Science of Self Realization books.");
+  }
+
+  for (let i = 0; i < ssrCount; i++) {
+    const lang = String(ssrLangArr[i] || "").trim();
+    if (!lang) {
       return renderError("Please select language for all free Science of Self Realization books.");
     }
-
-    for (let i = 0; i < ssrCount; i++) {
-      const lang = String(ssrLangArr[i] || "").trim();
-      if (!lang) {
-        return renderError("Please select language for all free Science of Self Realization books.");
-      }
-    }
   }
+}
 
   const paymentId = "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
 

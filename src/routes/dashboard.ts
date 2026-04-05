@@ -14,7 +14,13 @@ const router = express.Router();
  */
 
 const ALLOWED_EXT = new Set([
-  "pdf", "doc", "docx"
+  "pdf",
+  "doc",
+  "docx",
+  "jpg",
+  "jpeg",
+  "png",
+  "webp"
 ]);
 
 const ALLOWED_MIME = new Set([
@@ -23,7 +29,10 @@ const ALLOWED_MIME = new Set([
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 
-
+  // images
+  "image/jpeg",
+  "image/png",
+  "image/webp"
 ]);
 
 const MAX_ATTEMPTS = 3;
@@ -48,6 +57,20 @@ function normAgeCategory(v: string): "0-25" | "above-25" | null {
   if (x === "0-25") return "0-25";
   if (x === "above-25") return "above-25";
   return null;
+}
+
+const COMBO_TITLE = "Combo Contest";
+
+const COMBO_CHILD_TITLES = [
+  "Bhagavad Gita Essay Writing Contest",
+  "Bhagavatam Essay Writing Contest",
+  "Ramayana Essay Writing Contest",
+  "Krishna Essay Writing Contest",
+];
+
+function calcSsrCountFromItems(items: Array<{ quantity?: number }>) {
+  const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  return Math.floor(totalQty / 4);
 }
 
 function parseCartItems(raw: string): Array<{ contestId: string; ageCategory: "0-25" | "above-25" }> {
@@ -94,14 +117,11 @@ function isAllowed(contentType: string, fileName: string) {
 
 function isAllowedMime(mime: string) {
   if (!mime) return false;
-  if (mime === "application/pdf") return true;
-  if (mime === "application/msword") return true;
-  if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return true;
-  return false;
+  return ALLOWED_MIME.has(mime);
 }
 
-const MAX_BYTES = (Number(process.env.MAX_UPLOAD_MB || 500) * 1024 * 1024);
-
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 5);
+const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 /**
  * IST deadline enforcement (server-side, mandatory)
  * We treat contests.submission_deadline as IST time.
@@ -173,16 +193,20 @@ router.post("/dashboard/upload/start", authMiddleware, async (req: any, res) => 
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
-  const size = Number(fileSize);
-  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-    return res.status(400).json({ error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
-  }
+
+
+const size = Number(fileSize);
+if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+  return res.status(400).json({
+    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+  });
+}
 
   if (!isAllowed(String(contentType), String(fileName))) {
-    return res.status(400).json({
-      error: `File type not allowed. Please check Rules.`
-    });
-  }
+  return res.status(400).json({
+    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+  });
+}
 
   // verify paid order belongs to this user
   const orderRes = await pool.query(
@@ -248,18 +272,22 @@ router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) 
   }
 
   // basic validation
-  const size = Number(fileSize);
-  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-    return res.status(400).json({ error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
-  }
+ const size = Number(fileSize);
+if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+  return res.status(400).json({
+    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+  });
+}
 
   if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
     return res.status(403).json({ error: "Invalid upload key." });
   }
 
   if (!isAllowed(String(contentType || ""), String(originalName || ""))) {
-    return res.status(400).json({ error: "File type not allowed. Please check Rules." });
-  }
+  return res.status(400).json({
+    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+  });
+}
 
   // verify paid order belongs to this user
   const orderRes = await pool.query(
@@ -367,26 +395,36 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
-  const activeContests = await pool.query(
-    `SELECT
-        id,
-        title,
-        description,
-        price,
-        registration_deadline,
-        submission_deadline,
-        winner_declaration_date,
-        image_url,
-        prize_details,
-        rules,
-        age_categories,
-        participant_benefits,
-        is_active
-     FROM contests
-     WHERE is_active = true
-     ORDER BY title ASC`
-  );
 
+
+ const activeContests = await pool.query(
+  `SELECT
+      id,
+      title,
+      description,
+      price,
+      registration_deadline,
+      submission_deadline,
+      winner_declaration_date,
+      image_url,
+      prize_details,
+      rules,
+      age_categories,
+      participant_benefits,
+      is_active
+   FROM contests
+   WHERE is_active = true
+   ORDER BY
+     CASE title
+       WHEN 'Ramayana Essay Writing Contest' THEN 1
+       WHEN 'Bhagavatam Essay Writing Contest' THEN 2
+       WHEN 'Krishna Essay Writing Contest' THEN 3
+       WHEN 'Bhagavad Gita Essay Writing Contest' THEN 4
+       WHEN 'Combo Contest' THEN 5
+       ELSE 999
+     END,
+     title ASC`
+);
   return res.render("dashboard-home", {
     user: userRes.rows[0] || null,
     pending: activeContests.rows,
@@ -476,6 +514,7 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     SELECT
       sh.id AS shipment_id,
       sh.payment_id,
+      sh.delivery_mode,
       sh.tracking_id,
       sh.status,
       sh.courier_mode,
@@ -488,7 +527,9 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     WHERE o.user_id = $1
       AND o.payment_status = 'paid'
       AND o.book_option = 'book'
-    GROUP BY sh.id, sh.payment_id, sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
+    GROUP BY
+      sh.id, sh.payment_id, sh.delivery_mode,
+      sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
     ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     `,
     [userId]
@@ -678,4 +719,229 @@ router.get("/dashboard/faqs", authMiddleware, (_req: any, res) => {
   return res.redirect("/dashboard/help");
 });
 
+
+router.get("/api/cart/summary", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const q = await pool.query(
+    `SELECT quantity
+     FROM cart_items
+     WHERE user_id=$1`,
+    [userId]
+  );
+
+  const ssrCount = calcSsrCountFromItems(q.rows || []);
+  return res.json({ ok: true, ssrCount });
+});
+
+router.post("/api/cart/add-combo", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+  const ageCategory = normAgeCategory(String(req.body.ageCategory || ""));
+
+  if (!ageCategory) {
+    return res.status(400).json({ ok: false, message: "Valid age category is required." });
+  }
+
+  const childQ = await pool.query(
+    `SELECT id, title
+     FROM contests
+     WHERE is_active=true
+       AND title = ANY($1::text[])
+     ORDER BY title ASC`,
+    [COMBO_CHILD_TITLES]
+  );
+
+  if (childQ.rows.length !== 4) {
+    return res.status(400).json({
+      ok: false,
+      message: "Combo contests are not configured correctly.",
+    });
+  }
+
+  await pool.query("BEGIN");
+  try {
+    for (const row of childQ.rows) {
+      await pool.query(
+        `INSERT INTO cart_items (user_id, contest_id, age_category, quantity)
+         VALUES ($1,$2,$3,1)
+         ON CONFLICT (user_id, contest_id, age_category)
+         DO UPDATE SET
+           quantity = cart_items.quantity + 1,
+           updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')`,
+        [userId, row.id, ageCategory]
+      );
+    }
+
+    await pool.query("COMMIT");
+    return res.json({ ok: true });
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    console.error("Combo add error:", e);
+    return res.status(500).json({
+      ok: false,
+      message: "Unable to add combo contest right now.",
+    });
+  }
+});
+
+router.post("/api/cart/age", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+  const cartItemId = String(req.body.cartItemId || "").trim();
+  const ageCategory = normAgeCategory(String(req.body.ageCategory || ""));
+
+  if (!cartItemId || !ageCategory) {
+    return res.status(400).json({ ok: false, message: "Invalid request." });
+  }
+
+  const q = await pool.query(
+    `SELECT id, contest_id, quantity
+     FROM cart_items
+     WHERE id=$1 AND user_id=$2
+     LIMIT 1`,
+    [cartItemId, userId]
+  );
+
+  if (q.rows.length === 0) {
+    return res.status(404).json({ ok: false, message: "Cart item not found." });
+  }
+
+  const row = q.rows[0];
+
+  // If same contest already exists in target age bucket, merge quantities.
+  const clash = await pool.query(
+    `SELECT id, quantity
+     FROM cart_items
+     WHERE user_id=$1
+       AND contest_id=$2
+       AND age_category=$3
+       AND id<>$4
+     LIMIT 1`,
+    [userId, row.contest_id, ageCategory, cartItemId]
+  );
+
+  await pool.query("BEGIN");
+  try {
+    if (clash.rows.length > 0) {
+      await pool.query(
+        `UPDATE cart_items
+         SET quantity = quantity + $1,
+             updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')
+         WHERE id=$2 AND user_id=$3`,
+        [Number(row.quantity || 0), clash.rows[0].id, userId]
+      );
+
+      await pool.query(
+        `DELETE FROM cart_items
+         WHERE id=$1 AND user_id=$2`,
+        [cartItemId, userId]
+      );
+    } else {
+      await pool.query(
+        `UPDATE cart_items
+         SET age_category=$1,
+             updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
+         WHERE id=$2 AND user_id=$3`,
+        [ageCategory, cartItemId, userId]
+      );
+    }
+
+    await pool.query("COMMIT");
+    return res.json({ ok: true });
+  } catch (e) {
+    await pool.query("ROLLBACK");
+    console.error("Cart age update error:", e);
+    return res.status(500).json({
+      ok: false,
+      message: "Unable to update age category right now.",
+    });
+  }
+});
+
+router.post("/api/cart/clear", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  await pool.query(
+    `DELETE FROM cart_items WHERE user_id=$1`,
+    [userId]
+  );
+
+  return res.json({ ok: true });
+});
+
+router.get("/dashboard/public-opinion", authMiddleware, async (req: any, res) => {
+  const userId = req.userId;
+
+  const userRes = await pool.query(
+    `SELECT id, name, email, phone
+     FROM users
+     WHERE id=$1
+     LIMIT 1`,
+    [userId]
+  );
+
+  const feedbackRes = await pool.query(
+    `SELECT id, answers, submitted_at, updated_at
+     FROM public_opinion_feedback
+     WHERE user_id=$1
+     LIMIT 1`,
+    [userId]
+  );
+
+  return res.render("dashboard-public-opinion", {
+    user: userRes.rows[0] || null,
+    existingFeedback: feedbackRes.rows[0] || null,
+    activeTab: "help",
+  });
+});
+
+router.post(
+  "/dashboard/public-opinion/submit",
+  authMiddleware,
+  body("answers").isObject().withMessage("Answers are required."),
+  async (req: any, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        ok: false,
+        error: errors.array()[0]?.msg || "Invalid request",
+      });
+    }
+
+    const userId = req.userId;
+    const { answers } = req.body;
+
+    try {
+      await pool.query(
+        `
+        INSERT INTO public_opinion_feedback
+          (user_id, answers, source, form_version, user_agent, ip_address, submitted_at, updated_at)
+        VALUES
+          ($1, $2::jsonb, 'dashboard_public_opinion', 'v1', $3, $4, (NOW() AT TIME ZONE 'Asia/Kolkata'), (NOW() AT TIME ZONE 'Asia/Kolkata'))
+        ON CONFLICT (user_id)
+        DO UPDATE SET
+          answers = EXCLUDED.answers,
+          source = EXCLUDED.source,
+          form_version = EXCLUDED.form_version,
+          user_agent = EXCLUDED.user_agent,
+          ip_address = EXCLUDED.ip_address,
+          updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')
+        `,
+        [
+          userId,
+          JSON.stringify(answers || {}),
+          req.get("user-agent") || null,
+          req.ip || null,
+        ]
+      );
+
+      return res.json({ ok: true });
+    } catch (err) {
+      console.error("public opinion submit error:", err);
+      return res.status(500).json({
+        ok: false,
+        error: "Unable to save feedback right now.",
+      });
+    }
+  }
+);
 export default router;

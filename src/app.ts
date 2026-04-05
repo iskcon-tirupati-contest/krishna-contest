@@ -17,8 +17,11 @@ import checkoutRoutes from "./routes/checkout";
 import paymentRoutes from "./routes/payment";
 import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
-import whatsappRoutes from "./routes/whatsapp";
 import cors from "cors";
+
+import agentRoutes from "./routes/agent";
+
+
 dotenv.config();
 
 const app = express();
@@ -57,6 +60,13 @@ app.use(generalLimiter);
 app.use("/login",sensitiveLimiter);
 app.use("/register",sensitiveLimiter);
 app.use("/dashboard/help/ticket",sensitiveLimiter);
+
+
+app.use("/register/send-otp", sensitiveLimiter);
+app.use("/register/verify-otp", sensitiveLimiter);
+app.use("/forgot-password/send-otp", sensitiveLimiter);
+app.use("/forgot-password/verify-otp", sensitiveLimiter);
+app.use("/forgot-password/reset", sensitiveLimiter);
 
 /* Middleware */
 // Razorpay webhooks need the raw body for signature verification
@@ -135,16 +145,7 @@ app.use(checkoutRoutes);
 app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
-
-app.use(
-  "/api/whatsapp",
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-  whatsappRoutes
-);
+app.use("/", agentRoutes);
 /* Pages */
 
 //app.get("/", (_req, res) => res.render("index"));

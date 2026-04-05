@@ -1,127 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Register - BhakthiVedanta Wisdom Contest 2026</title>
-  <meta charset="UTF-8" />
+  <title>Register - Iskcon Tirupati Essay Writing Contest</title>
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
     body{
-      margin:0;
-      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
-      background:linear-gradient(135deg,#0d1b4d,#1e3a8a);
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:#0d1340;
       min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+      display:flex;align-items:flex-start;justify-content:center;
+      padding:24px 16px 48px;
+      position:relative;overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
     }
-    .card{
-      width:100%;
-      max-width:430px;
-      background:#fff;
-      border-radius:22px;
-      box-shadow:0 18px 45px rgba(0,0,0,.18);
-      padding:28px;
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:
+        radial-gradient(ellipse at 20% 30%,rgba(245,158,11,.13) 0%,transparent 50%),
+        radial-gradient(ellipse at 80% 70%,rgba(57,73,171,.2) 0%,transparent 50%),
+        radial-gradient(ellipse at 50% 100%,rgba(26,35,126,.3) 0%,transparent 55%);
     }
-    h1{
-      margin:0 0 8px;
-      font-size:28px;
-      color:#0f172a;
-      text-align:center;
+    body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);
+      background-size:28px 28px;
     }
-    .sub{
-      text-align:center;
-      color:#64748b;
-      margin-bottom:24px;
-      font-size:14px;
+
+    .wrap{position:relative;z-index:1;width:100%;max-width:420px}
+
+    /* ── Logo header ── */
+    .brand-header{display:flex;flex-direction:column;align-items:center;margin-bottom:20px}
+    .brand-logo{width:68px;height:68px;border-radius:19px;overflow:hidden;
+      background:linear-gradient(135deg,#1a237e,#3949ab);
+      border:2px solid rgba(255,215,0,.3);
+      box-shadow:0 8px 28px rgba(26,35,126,.5);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:11px;
     }
-    .form-group{margin-bottom:14px}
+    .brand-logo img{width:100%;height:100%;object-fit:contain}
+    .brand-name-line1{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#ffd700;text-align:center}
+    .brand-name-line2{font-family:'Sora',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.7);text-align:center;margin-top:2px}
+
+    /* ── Card ── */
+    .card{background:rgba(255,255,255,.97);border-radius:26px;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden;border:1px solid rgba(255,215,0,.15)}
+    .card-stripe{height:5px;background:linear-gradient(90deg,#1a237e,#3949ab,#f59e0b)}
+    .card-body{padding:24px 22px 26px}
+
+    .card-title{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#0f172a;text-align:center;margin-bottom:4px}
+    .card-sub{font-size:13px;color:#64748b;text-align:center;margin-bottom:16px;line-height:1.55}
+
+    /* ── Free book promo ── */
+    .promo{background:linear-gradient(135deg,#78350f 0%,#92400e 60%,#b45309 100%);border-radius:14px;padding:12px 14px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 5px 16px rgba(146,64,14,.3)}
+    .promo-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+    .promo-text{font-size:12px;color:#fef3c7;line-height:1.55;font-weight:600}
+    .promo-text strong{color:#fff}
+
+    /* ── Form ── */
+    .form-group{margin-bottom:13px}
+    .form-label{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#334155;margin-bottom:5px;display:block;letter-spacing:.2px}
+    .input-wrap{position:relative;display:flex;align-items:center}
+    .input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;fill:#94a3b8;pointer-events:none;flex-shrink:0}
     input{
-      width:100%;
-      padding:14px 16px;
-      border:1px solid #dbe2ea;
+      width:100%;padding:12px 13px 12px 40px;
+      border:1.5px solid #dbe2ea;border-radius:13px;
+      font-family:'DM Sans',system-ui,sans-serif;font-size:15px;color:#0f172a;
+      outline:none;background:#fff;transition:border-color .18s,box-shadow .18s;
+    }
+    input:focus{border-color:#1a237e;box-shadow:0 0 0 3px rgba(26,35,126,.1)}
+    input::placeholder{color:#94a3b8}
+    .hint{margin-top:4px;font-size:11px;color:#64748b;padding-left:2px}
+
+    /* eye btn */
+    .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center;transition:color .15s}
+    .eye-btn:hover{color:#334155}
+    .eye-btn svg{width:17px;height:17px;fill:currentColor}
+
+    /* password strength */
+    .strength-bar{height:4px;border-radius:99px;background:#e2e8f0;margin-top:6px;overflow:hidden}
+    .strength-fill{height:100%;border-radius:99px;width:0%;transition:width .3s,background .3s}
+    .strength-label{font-size:11px;font-weight:700;margin-top:3px;min-height:14px}
+
+    /* match hint */
+    .match-hint{font-size:11px;font-weight:700;margin-top:4px;min-height:14px}
+
+    /* submit */
+    .submit-btn{
+      width:100%;border:0;border-radius:13px;padding:14px 16px;margin-top:4px;
+      background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;
+      font-family:'Sora',sans-serif;font-size:15px;font-weight:800;cursor:pointer;
+      box-shadow:0 7px 22px rgba(217,119,6,.35);transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 11px 28px rgba(217,119,6,.48)}
+    .submit-btn:active{transform:scale(.98)}
+    .submit-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
+    .submit-btn svg{width:17px;height:17px;fill:currentColor}
+
+    /* alerts */
+    .alert,.ok{display:none;margin-bottom:13px;padding:11px 13px;border-radius:11px;font-size:13px;font-weight:600}
+    .alert{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+    .ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+
+    /* links */
+    .links{margin-top:16px;text-align:center;font-size:13px;color:#64748b;line-height:1.8}
+    .links a{color:#1a237e;font-weight:700;text-decoration:none;transition:color .15s}
+    .links a:hover{color:#f59e0b}
+
+    /* terms */
+    .terms-note{margin-top:12px;text-align:center;font-size:11px;color:#94a3b8;line-height:1.6}
+    .terms-note a{color:#1a237e;font-weight:600;text-decoration:none}
+
+
+            .otp-box{
+      display:none;
+      margin-top:2px;
+      margin-bottom:14px;
+      padding:12px;
+      border:1.5px solid #e2e8f0;
       border-radius:14px;
-      font-size:15px;
-      outline:none;
+      background:#f8fafc;
     }
-    input:focus{
-      border-color:#1d4ed8;
-      box-shadow:0 0 0 3px rgba(29,78,216,.10);
-    }
-    .hint{
-      margin-top:6px;
+    .otp-box.active{display:block}
+    .otp-sub{
       font-size:12px;
       color:#64748b;
+      margin-bottom:8px;
+      line-height:1.5;
     }
-    button{
-      width:100%;
-      border:0;
-      border-radius:14px;
-      padding:14px 16px;
-      background:#1d4ed8;
+    .otp-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .otp-row .input-wrap{flex:1}
+    .otp-mini-btn{
+      border:none;
+      background:#1a237e;
       color:#fff;
-      font-size:16px;
+      border-radius:10px;
+      padding:10px 12px;
       font-weight:700;
       cursor:pointer;
+      white-space:nowrap;
     }
-    button:disabled{opacity:.7;cursor:not-allowed}
-    .alert,.ok{
-      display:none;
-      margin-bottom:14px;
-      padding:12px 14px;
-      border-radius:12px;
-      font-size:14px;
+    .otp-mini-btn:disabled{
+      opacity:.65;
+      cursor:not-allowed;
     }
-    .alert{background:#fee2e2;color:#991b1b}
-    .ok{background:#dcfce7;color:#166534}
-    .links{
-      margin-top:18px;
-      text-align:center;
-      font-size:14px;
+    .otp-note{
+      margin-top:7px;
+      font-size:11px;
+      color:#64748b;
     }
-    .links a{
-      color:#1d4ed8;
-      text-decoration:none;
-      font-weight:600;
-    }
+
+
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Create Account</h1>
-    <div class="sub">Register with your name, mobile number, and password.</div>
+  <div class="wrap">
 
-    <div id="errBox" class="alert"></div>
-    <div id="okBox" class="ok"></div>
-
-    <form id="regForm" autocomplete="off" novalidate>
-      <div class="form-group">
-        <input id="name" name="name" placeholder="Full Name" autocomplete="name" required />
+    <!-- Logo header -->
+    <div class="brand-header">
+      <div class="brand-logo">
+        <img src="/images/logo_new.png" alt="Iskcon Tirupati" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <svg style="display:none;width:36px;height:36px;fill:#ffd700" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
       </div>
+      <div class="brand-name-line1">Iskcon Tirupati</div>
+      <div class="brand-name-line2">Essay Writing Contest</div>
+    </div>
 
-      <div class="form-group">
-        <input id="phone" name="phone" placeholder="Mobile Number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
-        <div class="hint">Enter your 10-digit Indian mobile number.</div>
+    <!-- Card -->
+    <div class="card">
+      <div class="card-stripe"></div>
+      <div class="card-body">
+        <div class="card-title">Join the Contest 🏆</div>
+        <div class="card-sub">Create your free account to register for the essay contest</div>
+
+        <!-- Free book promo -->
+        <!--<div class="promo">
+          <div class="promo-icon">🎁</div>
+          <div class="promo-text">Register &amp; add <strong>4 contests or Combo</strong> to get a <strong>FREE book worth ₹150</strong> — Science of Self Realization!</div>
+        </div>-->
+
+        <div id="errBox" class="alert"></div>
+        <div id="okBox" class="ok"></div>
+
+        <form id="regForm" autocomplete="off" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+              <input id="name" name="name" placeholder="Enter your full name" autocomplete="name" required/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Mobile Number</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+              <input id="phone" name="phone" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10" autocomplete="tel" required/>
+            </div>
+            <div class="hint">We'll use this number to verify your account.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <input id="password" name="password" type="password" placeholder="Create a password (min 6 chars)" autocomplete="new-password" required/>
+              <button type="button" class="eye-btn" id="eyeBtn1" aria-label="Toggle password">
+                <svg id="eyeIcon1" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-label" id="strengthLabel"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter your password" autocomplete="new-password" required/>
+              <button type="button" class="eye-btn" id="eyeBtn2" aria-label="Toggle confirm password">
+                <svg id="eyeIcon2" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+            <div class="match-hint" id="matchHint"></div>
+          </div>
+
+                    <div id="otpSection" class="otp-box">
+            <div class="otp-sub" id="otpSubtext">
+              We’ve sent a 6-digit OTP to your mobile number.
+            </div>
+
+            <div class="otp-row">
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24">
+                  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+                <input
+                  id="otp"
+                  name="otp"
+                  placeholder="Enter 6-digit OTP"
+                  inputmode="numeric"
+                  maxlength="6"
+                  autocomplete="one-time-code"
+                />
+              </div>
+
+              <button type="button" id="resendOtpBtn" class="otp-mini-btn" disabled>
+                Resend
+              </button>
+            </div>
+
+            <div class="otp-note">
+              Didn’t receive it? Wait <span id="otpCountdown">30</span>s and resend.
+            </div>
+          </div>
+
+
+          <button type="submit" id="registerBtn" class="submit-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Create My Account
+          </button>
+        </form>
+
+        <div class="links">
+          Old user? <a href="/login">Login Here</a>
+          &nbsp;·&nbsp; <a href="/">Go to Home</a>
+        </div>
+
+        <div class="terms-note">
+          By registering you agree to our <a href="/terms">Terms &amp; Conditions</a> and <a href="/privacy-policy">Privacy Policy</a>
+        </div>
       </div>
-
-      <div class="form-group">
-        <input id="password" name="password" type="password" placeholder="Password" autocomplete="new-password" required />
-        <div class="hint">Minimum 6 characters.</div>
-      </div>
-
-      <div class="form-group">
-        <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm Password" autocomplete="new-password" required />
-      </div>
-
-      <button type="submit" id="registerBtn">Register</button>
-    </form>
-
-    <div class="links">
-      Already have an account?
-      <a href="/login">Login Here</a>
-      &nbsp;|&nbsp;
-      <a href="/">Go to Home</a>
     </div>
   </div>
 
@@ -131,10 +287,46 @@
   const phoneEl = document.getElementById("phone");
   const passwordEl = document.getElementById("password");
   const confirmPasswordEl = document.getElementById("confirmPassword");
+  const otpEl = document.getElementById("otp");
+
   const regForm = document.getElementById("regForm");
   const registerBtn = document.getElementById("registerBtn");
+  const resendOtpBtn = document.getElementById("resendOtpBtn");
+
   const errBox = document.getElementById("errBox");
   const okBox = document.getElementById("okBox");
+  const strengthFill = document.getElementById("strengthFill");
+  const strengthLabel = document.getElementById("strengthLabel");
+  const matchHint = document.getElementById("matchHint");
+
+  const otpSection = document.getElementById("otpSection");
+  const otpSubtext = document.getElementById("otpSubtext");
+  const otpCountdown = document.getElementById("otpCountdown");
+
+  const eyeOpen = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
+  const eyeClosed = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>`;
+
+  let otpSent = false;
+  let lastOtpPayloadKey = "";
+  let resendTimer = null;
+  let resendSecs = 30;
+
+  function toggleEye(inputEl, iconEl) {
+    const isPw = inputEl.type === "password";
+    inputEl.type = isPw ? "text" : "password";
+    iconEl.innerHTML = isPw ? eyeClosed : eyeOpen;
+  }
+
+  document.getElementById("eyeBtn1").addEventListener("click", () =>
+    toggleEye(passwordEl, document.getElementById("eyeIcon1"))
+  );
+  document.getElementById("eyeBtn2").addEventListener("click", () =>
+    toggleEye(confirmPasswordEl, document.getElementById("eyeIcon2"))
+  );
+
+  function norm(v){ return String(v || "").trim(); }
+  function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
+  function validOtp(v){ return /^\d{6}$/.test(String(v || "").trim()); }
 
   function showError(msg) {
     errBox.textContent = msg || "Something went wrong";
@@ -153,52 +345,242 @@
     okBox.style.display = "none";
   }
 
-  function norm(v){ return String(v || "").trim(); }
-  function validPhone(v){ return /^[6-9][0-9]{9}$/.test(norm(v)); }
+  function spinner(label) {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg>${label}`;
+  }
+
+  function registerDefaultBtn() {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Create My Account`;
+  }
+
+  function verifyDefaultBtn() {
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Verify OTP & Create Account`;
+  }
+
+  function payloadKey() {
+    return JSON.stringify({
+      name: norm(nameEl.value),
+      phone: norm(phoneEl.value),
+      password: String(passwordEl.value || ""),
+      confirmPassword: String(confirmPasswordEl.value || ""),
+    });
+  }
+
+  function resetOtpFlow(silent) {
+    otpSent = false;
+    lastOtpPayloadKey = "";
+    otpEl.value = "";
+    otpSection.classList.remove("active");
+    registerBtn.innerHTML = registerDefaultBtn();
+    clearInterval(resendTimer);
+    resendOtpBtn.disabled = true;
+    otpCountdown.textContent = "30";
+    if (!silent) clearMsg();
+  }
+
+  function startResendTimer(seconds) {
+    resendSecs = Number(seconds || 30);
+    otpCountdown.textContent = String(resendSecs);
+    resendOtpBtn.disabled = true;
+    clearInterval(resendTimer);
+
+    resendTimer = setInterval(() => {
+      resendSecs -= 1;
+      otpCountdown.textContent = String(Math.max(resendSecs, 0));
+      if (resendSecs <= 0) {
+        clearInterval(resendTimer);
+        resendOtpBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function showOtpSection(phone, channel) {
+    otpSection.classList.add("active");
+    otpSubtext.textContent = `We’ve sent a 6-digit OTP via ${channel || "OTP"} to +91 ${phone}.`;
+    registerBtn.innerHTML = verifyDefaultBtn();
+    otpEl.focus();
+  }
+
+  function validateForm() {
+    const name = norm(nameEl.value);
+    const phone = norm(phoneEl.value);
+    const password = String(passwordEl.value || "");
+    const confirmPassword = String(confirmPasswordEl.value || "");
+
+    if (name.length < 2) throw new Error("Please enter your full name.");
+    if (!validPhone(phone)) throw new Error("Please enter a valid 10-digit mobile number.");
+    if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+    if (password !== confirmPassword) throw new Error("Passwords do not match.");
+
+    return { name, phone, password, confirmPassword };
+  }
 
   phoneEl.addEventListener("input", () => {
     phoneEl.value = phoneEl.value.replace(/\D/g, "").slice(0, 10);
     clearMsg();
+    if (otpSent) resetOtpFlow(true);
+  });
+
+  otpEl.addEventListener("input", () => {
+    otpEl.value = otpEl.value.replace(/\D/g, "").slice(0, 6);
+  });
+
+  [nameEl, passwordEl, confirmPasswordEl].forEach((el) => {
+    el.addEventListener("input", () => {
+      clearMsg();
+      if (otpSent && payloadKey() !== lastOtpPayloadKey) {
+        resetOtpFlow(true);
+      }
+    });
+  });
+
+  passwordEl.addEventListener("input", () => {
+    const v = passwordEl.value;
+    let score = 0;
+    if (v.length >= 6) score++;
+    if (v.length >= 10) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+
+    const levels = [
+      {w:"0%",c:"#e2e8f0",t:""},
+      {w:"25%",c:"#ef4444",t:"Weak"},
+      {w:"50%",c:"#f97316",t:"Fair"},
+      {w:"75%",c:"#eab308",t:"Good"},
+      {w:"90%",c:"#22c55e",t:"Strong"},
+      {w:"100%",c:"#10b981",t:"Very Strong"},
+    ];
+
+    const l = levels[Math.min(score, 5)];
+    strengthFill.style.width = l.w;
+    strengthFill.style.background = l.c;
+    strengthLabel.textContent = l.t;
+    strengthLabel.style.color = l.c;
+    checkMatch();
+  });
+
+  confirmPasswordEl.addEventListener("input", checkMatch);
+
+  function checkMatch() {
+    const pw = passwordEl.value;
+    const cpw = confirmPasswordEl.value;
+    if (!cpw) {
+      matchHint.textContent = "";
+      return;
+    }
+    if (pw === cpw) {
+      matchHint.textContent = "✓ Passwords match";
+      matchHint.style.color = "#16a34a";
+    } else {
+      matchHint.textContent = "✗ Passwords do not match";
+      matchHint.style.color = "#dc2626";
+    }
+  }
+
+  async function sendOtpRequest() {
+    const form = validateForm();
+    registerBtn.disabled = true;
+    registerBtn.innerHTML = spinner("Sending OTP...");
+
+    try {
+      const r = await fetch("/register/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.message || "Failed to send OTP.");
+
+      otpSent = true;
+      lastOtpPayloadKey = payloadKey();
+      showOtpSection(form.phone, data.channel || "WhatsApp");
+      showOk(data.message || "OTP sent successfully.");
+      startResendTimer(Number(data.cooldownSeconds || 30));
+    } catch (e) {
+      showError(e.message || "Failed to send OTP.");
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.innerHTML = otpSent ? verifyDefaultBtn() : registerDefaultBtn();
+    }
+  }
+
+  async function verifyOtpAndRegister() {
+    const form = validateForm();
+    const otp = norm(otpEl.value);
+
+    if (!validOtp(otp)) {
+      return showError("Please enter the 6-digit OTP.");
+    }
+
+    registerBtn.disabled = true;
+    registerBtn.innerHTML = spinner("Creating Account...");
+
+    try {
+      const r = await fetch("/register/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, otp }),
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.message || "Registration failed.");
+
+      showOk("Account created successfully! Redirecting...");
+      window.location.href = data.redirect || "/dashboard";
+    } catch (e) {
+      showError(e.message || "Registration failed.");
+      registerBtn.disabled = false;
+      registerBtn.innerHTML = verifyDefaultBtn();
+    }
+  }
+
+  resendOtpBtn.addEventListener("click", async () => {
+    try {
+      const form = validateForm();
+      resendOtpBtn.disabled = true;
+
+      const r = await fetch("/register/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.message || "Failed to resend OTP.");
+
+      otpEl.value = "";
+      otpEl.focus();
+      showOk(data.message || "OTP resent successfully.");
+      showOtpSection(form.phone, data.channel || "WhatsApp");
+      startResendTimer(Number(data.cooldownSeconds || 30));
+      otpSent = true;
+      lastOtpPayloadKey = payloadKey();
+    } catch (e) {
+      showError(e.message || "Failed to resend OTP.");
+      resendOtpBtn.disabled = false;
+    }
   });
 
   regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearMsg();
 
-    const name = norm(nameEl.value);
-    const phone = norm(phoneEl.value);
-    const password = String(passwordEl.value || "");
-    const confirmPassword = String(confirmPasswordEl.value || "");
-
-    if (name.length < 2) return showError("Please enter your full name.");
-    if (!validPhone(phone)) return showError("Please enter a valid 10-digit Indian mobile number.");
-    if (password.length < 6) return showError("Password must be at least 6 characters.");
-    if (password !== confirmPassword) return showError("Passwords do not match.");
-
-    registerBtn.disabled = true;
-    registerBtn.textContent = "Registering...";
-
-    try {
-      const r = await fetch("/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, password, confirmPassword })
-      });
-
-      const data = await r.json();
-      if (!r.ok || !data.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
-
-      showOk("Registration successful.");
-      window.location.href = data.redirect || "/dashboard";
-    } catch (e) {
-      showError(e.message || "Registration failed");
-    } finally {
-      registerBtn.disabled = false;
-      registerBtn.textContent = "Register";
+    if (!otpSent) {
+      await sendOtpRequest();
+      return;
     }
+
+    if (payloadKey() !== lastOtpPayloadKey) {
+      resetOtpFlow(true);
+      return showError("Details changed. Please request a fresh OTP.");
+    }
+
+    await verifyOtpAndRegister();
   });
+
+  registerBtn.innerHTML = registerDefaultBtn();
 })();
 </script>
 </body>

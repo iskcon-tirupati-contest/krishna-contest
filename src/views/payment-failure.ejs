@@ -1,122 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Payment Failed - BhakthiVedanta Wisdom Contest 2026</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Not Completed</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-      background:linear-gradient(135deg,#ffebee 0%,#ffcdd2 100%);
-      min-height:100vh;display:flex;align-items:center;justify-content:center;
-      padding:20px;
-    }
-    .failure-container{
-      background:#fff;border-radius:25px;box-shadow:0 15px 50px rgba(0,0,0,.1);
-      max-width:550px;width:100%;text-align:center;padding:60px 40px;
-      position:relative;overflow:hidden
-    }
-    .failure-container::before{
-      content:'';position:absolute;top:0;left:0;width:100%;height:6px;
-      background:linear-gradient(90deg,#f44336,#e57373,#f44336);
-      animation:shimmer 2s ease-in-out infinite
-    }
-    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.7}}
-    .failure-icon{
-      width:100px;height:100px;background:linear-gradient(135deg,#f44336 0%,#e57373 100%);
-      border-radius:50%;display:flex;align-items:center;justify-content:center;
-      margin:0 auto 30px;animation:shake .5s ease-out;
-      box-shadow:0 10px 30px rgba(244,67,54,.3)
-    }
-    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
-    .failure-icon::before{content:'✕';color:#fff;font-size:48px;font-weight:bold}
-    h1{color:#c62828;font-size:32px;margin-bottom:15px}
-    .message{color:#546e7a;font-size:16px;line-height:1.7;margin-bottom:12px}
-    .info-box{
-      background:rgba(244,67,54,.08);border:2px solid rgba(244,67,54,.2);
-      border-radius:15px;padding:25px;margin:22px 0
-    }
-    .info-box ul{list-style:none;padding:0;text-align:left;color:#37474f}
-    .info-box li{margin:10px 0;padding-left:25px;position:relative}
-    .info-box li::before{content:'•';position:absolute;left:8px;color:#f44336;font-weight:bold}
-    .meta{
-      background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);
-      border-radius:12px;padding:14px 14px;margin:16px 0;text-align:left;
-      font-size:13px;color:#37474f;line-height:1.5
-    }
-    .meta b{color:#111827}
-    .retry-btn{
-      display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#f44336 0%,#e57373 100%);
-      color:#fff;text-decoration:none;border-radius:30px;font-weight:600;font-size:16px;margin-top:18px;
-      transition:all .3s ease;box-shadow:0 6px 20px rgba(244,67,54,.3)
-    }
-    .retry-btn:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(244,67,54,.4)}
-    .home-link{
-      display:inline-block;margin-top:15px;color:#1a237e;text-decoration:none;font-weight:500;
-      padding:10px 20px;border-radius:8px;transition:all .3s ease
-    }
-    .home-link:hover{background:rgba(26,35,126,.05)}
-    .divider{height:1px;background:linear-gradient(90deg,transparent,#e0e0e0,transparent);margin:30px 0}
-    @media (max-width:480px){
-      .failure-container{padding:50px 30px}
-      h1{font-size:26px}
-      .failure-icon{width:80px;height:80px}
-      .failure-icon::before{font-size:38px}
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:18px;color:#132238}
+    .wrap{max-width:760px;margin:0 auto;background:#fff;border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
+    .top{padding:22px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
+    .top h1{font-size:28px;margin-bottom:6px}
+    .top p{opacity:.95;font-size:14px;line-height:1.6}
+    .content{padding:18px}
+    .box{border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:14px}
+    .title{font-size:20px;font-weight:1000;margin-bottom:10px;color:#0f172a}
+    .muted{color:#64748b;font-size:14px;line-height:1.6}
+    .support{background:#eff6ff;border:1px solid #bfdbfe}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .btn{display:inline-block;border-radius:14px;padding:13px 18px;font-weight:1000;text-decoration:none}
+    .primary{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff}
+    .ghost{background:#fff;border:1px solid #cbd5e1;color:#1e293b}
   </style>
 </head>
 <body>
-  <div class="failure-container">
-    <div class="failure-icon"></div>
+<div class="wrap">
+  <div class="top">
+    <h1>Payment Not Completed ⚠️</h1>
+    <p>Your payment could not be completed successfully.</p>
+  </div>
 
-    <%
-      const _retryUrl =
-        (typeof retryUrl !== 'undefined' && retryUrl) ? String(retryUrl) :
-        (typeof paymentId !== 'undefined' && paymentId) ? ("/payment/embedded?paymentId=" + encodeURIComponent(String(paymentId))) :
-        "/dashboard";
-
-      const _gatewayOrderId = (typeof gatewayOrderId !== 'undefined' && gatewayOrderId) ? String(gatewayOrderId) : "";
-      const _errorCode = (typeof errorCode !== 'undefined' && errorCode) ? String(errorCode) : "";
-      const _errorDescription = (typeof errorDescription !== 'undefined' && errorDescription) ? String(errorDescription) : "";
-      const _errorReason = (typeof errorReason !== 'undefined' && errorReason) ? String(errorReason) : "";
-    %>
-
-    <h1>Payment Failed / Cancelled</h1>
-    <p class="message">Your payment was not completed. Please retry to finish registration.</p>
-
-    <% if (_gatewayOrderId || _errorDescription || _errorCode) { %>
-      <div class="meta">
-        <% if (_gatewayOrderId) { %>
-          <div>Order Number: <b><%= _gatewayOrderId %></b></div>
-        <% } %>
-        <% if (_errorDescription || _errorCode) { %>
-          <div>Reason: <b><%= _errorDescription || _errorCode %></b>
-            <% if (_errorReason) { %> (<%= _errorReason %>) <% } %>
-          </div>
-        <% } %>
+  <div class="content">
+    <div class="box">
+      <div class="title">What to do next</div>
+      <div class="muted">
+        Please go to <b>Profile → Payments</b> to resume your payment.<br>
+        If needed, you can also raise a complaint from the same Payments section.
       </div>
-    <% } %>
-
-    <div class="info-box">
-      <p style="font-weight:600;margin-bottom:15px;color:#c62828;">Possible reasons:</p>
-      <ul>
-        <li>Insufficient balance in your account</li>
-        <li>Network connectivity issues</li>
-        <li>Incorrect payment details</li>
-        <li>Bank server timeout</li>
-      </ul>
     </div>
 
-    <p class="message" style="font-size:15px;font-weight:500;">Please check your details and try again.</p>
-    <p class="message" style="font-size:15px;font-weight:500;">
-      In case money is deducted, please contact us on WhatsApp +91 9493805059 — we will help you, don’t worry.
-    </p>
+    <div class="box support">
+      <div class="title">Need Help?</div>
+      <div class="muted">
+        For any queries, please send <b>Hi</b> to <b>9493805059</b> on WhatsApp. We are ready to help you 24x7.
+      </div>
+    </div>
 
-    <a href="<%= _retryUrl %>" class="retry-btn">Retry Payment</a>
-
-    <div class="divider"></div>
-    <a href="/dashboard" class="home-link">← Back to Dashboard</a>
+    <div class="btnRow">
+      <a class="btn primary" href="/dashboard/profile?tab=payments">Go to Payments</a>
+      <a class="btn ghost" href="/dashboard">Back to Dashboard</a>
+    </div>
   </div>
+</div>
 </body>
 </html>

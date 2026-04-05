@@ -1,745 +1,775 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Krishna Wisdom Contest 2026</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iskcon Tirupati Essay Writing Contest 2026</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Iskcon Tirupati Essay Writing Contest 2026 — Write with devotion. Win amazing prizes."/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --navy:#0e1a5e;--navy2:#1a237e;--navy3:#283593;--navy4:#3949ab;
+      --gold:#f59e0b;--gold-dark:#78350f;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
-    body{
-      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-      background:linear-gradient(135deg,#1a237e 0%,#0d47a1 55%,#01579b 100%);
-      color:#fff;
-      overflow-x:hidden;
-    }
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--navy);color:#fff;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
 
-    body::before{
-      content:'';
-      position:fixed;
-      inset:0;
-      background-image:
-        radial-gradient(circle at 20% 35%, rgba(255,215,0,.10) 0%, transparent 42%),
-        radial-gradient(circle at 80% 75%, rgba(255,193,7,.08) 0%, transparent 44%),
-        radial-gradient(circle at 45% 90%, rgba(255,255,255,.05) 0%, transparent 34%);
-      pointer-events:none;
-      z-index:0;
-    }
-
-    .navbar{
-      position:sticky;
-      top:0;
-      z-index:1000;
-      background:rgba(21,32,66,.94);
-      backdrop-filter:blur(10px);
-      box-shadow:0 4px 18px rgba(0,0,0,.22);
-      padding:15px 0;
-    }
-
-    .navbar-content{
-      max-width:1200px;
-      margin:0 auto;
-      padding:0 20px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-
-    .brand-title{
-      font-size:24px;
-      font-weight:800;
-      text-align:center;
-      background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-      letter-spacing:.2px;
-    }
-
-    .hero{
-      position:relative;
-      z-index:1;
-      max-width:1150px;
-      margin:0 auto;
-      padding:68px 20px 42px;
-      text-align:center;
-    }
-
-    .hero h1{
-      font-size:56px;
-      line-height:1.1;
-      margin-bottom:18px;
-      background:linear-gradient(135deg,#ffd700 0%,#fff 55%,#ffd700 100%);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-    }
-
-    .hero p{
-      font-size:24px;
-      color:#e8f1ff;
-      margin-bottom:10px;
-      font-weight:400;
-    }
-
-    .hero-subtitle{
-      max-width:920px;
-      margin:0 auto 28px;
-      font-size:18px;
-      line-height:1.7;
-      color:#ffe082;
-    }
-
-    .hero-actions{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:185px;
-      padding:16px 30px;
-      border-radius:34px;
-      text-decoration:none;
-      font-size:17px;
-      font-weight:800;
-      transition:.28s ease;
-      border:none;
-      cursor:pointer;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .btn-primary{
-      background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
-      color:#1a237e;
-      box-shadow:0 8px 28px rgba(255,215,0,.42);
-    }
-
-    .btn-primary:hover{
-      transform:translateY(-3px);
-      box-shadow:0 12px 34px rgba(255,215,0,.56);
-    }
-.hero-subtitle{
-  max-width:980px;
-  margin:0 auto 28px;
-  font-size:18px;
-  line-height:1.8;
-  color:#ffe082;
-}
-
-.hero-subtitle strong{
-  color:#fff3b0;
-}
-    .btn-secondary{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.18);
-      color:#fff;
-      box-shadow:0 8px 22px rgba(0,0,0,.16);
-    }
-
-    .btn-secondary:hover{
-      transform:translateY(-3px);
-      border-color:rgba(255,215,0,.45);
-      color:#ffd700;
-      background:rgba(255,255,255,.12);
-    }
-
-    .btn-ghost{
-      background:transparent;
-      border:1px solid rgba(255,215,0,.35);
-      color:#ffe082;
-    }
-
-    .btn-ghost:hover{
-      transform:translateY(-3px);
-      background:rgba(255,215,0,.08);
-      border-color:#ffd700;
-    }
-
-    .section{
-      position:relative;
-      z-index:1;
-      max-width:1280px;
-      margin:0 auto;
-      padding:34px 20px;
-    }
-
-    .section h2{
-      text-align:center;
-      font-size:42px;
-      color:#ffd700;
-      margin-bottom:12px;
-      text-shadow:0 0 16px rgba(255,215,0,.16);
-    }
-
-    .section-subtitle{
-      text-align:center;
-      max-width:900px;
-      margin:0 auto 28px;
-      color:#e3f2fd;
-      font-size:18px;
-      line-height:1.7;
-    }
-
-    .contests-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:24px;
-    }
-
-    .contest-card{
-      background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.025));
-      backdrop-filter:blur(15px);
-      border:2px solid rgba(255,215,0,.24);
-      border-radius:24px;
-      padding:22px;
-      box-shadow:0 10px 34px rgba(0,0,0,.22);
-      transition:.3s ease;
-      overflow:hidden;
-    }
-
-    .contest-card:hover{
-      transform:translateY(-8px);
-      border-color:#ffd700;
-      box-shadow:0 16px 42px rgba(255,215,0,.20);
-    }
-
- .contest-image-wrap{
-  width:100%;
-  height:250px;
-  border-radius:18px;
-  overflow:hidden;
-  margin-bottom:18px;
-  background:linear-gradient(135deg,#fff7d6,#f3e5ab);
-  border:1px solid rgba(255,215,0,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:10px;
-}
-
-.contest-image{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  object-position:center;
-  display:block;
-  border-radius:14px;
-}
-
-
-    .contest-image-fallback{
-      font-size:54px;
-      color:#8d6e00;
-    }
-
-    .contest-card h3{
-      color:#ffd700;
-      text-align:center;
-      font-size:26px;
-      margin-bottom:12px;
-      line-height:1.3;
-    }
-
-    .contest-card p{
-      color:#edf4ff;
-      text-align:center;
-      line-height:1.7;
-      font-size:15.5px;
-      margin-bottom:16px;
-    }
-
-    .info-block,
-    .prizes-section,
-    .benefits-section,
-    .rules-section{
-      background:rgba(0,0,0,.16);
-      border:1px solid rgba(255,215,0,.14);
-      border-radius:16px;
-      padding:16px;
-      margin-top:14px;
-    }
-
-    .info-row{
-      color:#e8f1ff;
-      font-size:14.5px;
-      line-height:1.7;
-    }
-
-    .info-row + .info-row{margin-top:7px}
-
-    .block-title{
-      color:#ffd700;
-      font-size:18px;
-      font-weight:800;
-      text-align:center;
-      margin-bottom:10px;
-    }
-
-    .prize-lines{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .prize-line{
-      color:#fff3cd;
-      line-height:1.6;
-      font-size:15px;
-      text-align:left;
-    }
-
-    .benefits-section ul,
-    .rules-section ul{
-      padding-left:18px;
-      color:#e8f1ff;
-      line-height:1.75;
-      font-size:15px;
-    }
-
-    .benefits-section li + li,
-    .rules-section li + li{
-      margin-top:5px;
-    }
-
-    .participate-btn{
-      display:block;
+    /* ═══ NAV — no login/register buttons to avoid right-gap on scroll ═══ */
+    .nav{
+      position:sticky;top:0;z-index:200;
+      background:rgba(14,26,94,.95);
+      backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,215,0,.12);
+      padding:0 16px;
+      /* FIX: width:100% prevents the right-gap issue */
       width:100%;
-      margin-top:18px;
-      padding:15px;
-      border-radius:30px;
+    }
+    .nav-inner{
+      max-width:1200px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;
+      height:54px;gap:10px;
+    }
+    .nav-brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+    .nav-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--navy3),var(--navy4));display:grid;place-items:center;border:1px solid rgba(255,215,0,.25);flex-shrink:0}
+    .nav-logo svg{width:18px;height:18px;fill:#ffd700}
+    .nav-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;background:linear-gradient(90deg,#ffd700,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nav-btns{display:flex;gap:7px;flex-shrink:0}
+    .nav-btn{padding:7px 14px;border-radius:999px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .18s;white-space:nowrap}
+    .nav-ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff}
+    .nav-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;box-shadow:0 3px 10px rgba(217,119,6,.3)}
+    .nav-gold:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(217,119,6,.45)}
+
+
+.brand{flex:1;min-width:0;display:flex;align-items:center;gap:8px;overflow:hidden}
+    .topbar-logo-wrap{flex-shrink:0;width:clamp(36px,9vw,46px);height:clamp(36px,9vw,46px);display:flex;align-items:center;justify-content:center}
+.topbar-logo-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35))}
+    .topbar-title{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.2}
+    .topbar-title-line1{font-family:'Sora',sans-serif;font-size:clamp(12px,3.2vw,16px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+    .topbar-title-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2.4vw,12px);font-weight:600;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+
+    /* ═══ SLIDESHOW — height = 100dvh - navHeight ═══ */
+    .slideshow{
+      position:relative;overflow:hidden;
+      /* KEY FIX: exact viewport height minus nav */
+      height:calc(100dvh - 54px);
+      min-height:520px;
+      background:linear-gradient(160deg,var(--navy) 0%,#101c6b 60%,#0a1545 100%);
+    }
+    /* fallback for browsers without dvh */
+    @supports not (height: 100dvh){
+      .slideshow{height:calc(100vh - 54px)}
+    }
+    .slideshow::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 15% 40%,rgba(245,158,11,.1) 0%,transparent 50%),radial-gradient(ellipse at 85% 20%,rgba(92,107,192,.15) 0%,transparent 50%)}
+    .slideshow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px}
+
+    .slides{display:flex;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);position:relative;z-index:1}
+    .slide{
+      min-width:100%;height:100%;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
       text-align:center;
-      text-decoration:none;
-      font-size:17px;
-      font-weight:800;
-      background:linear-gradient(135deg,#ffd700 0%,#ffb300 100%);
-      color:#1a237e;
-      box-shadow:0 6px 20px rgba(255,215,0,.35);
-      transition:.28s ease;
+      overflow-y:auto;
+      /* KEY FIX: padding accounts for dot nav at bottom */
+      padding:14px 16px 52px;
+      -ms-overflow-style:none;scrollbar-width:none;
     }
+    .slide::-webkit-scrollbar{display:none}
 
-    .participate-btn:hover{
-      transform:translateY(-3px);
-      box-shadow:0 10px 28px rgba(255,215,0,.48);
+    /* ── Slide badge ── */
+    .slide-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);
+      border-radius:999px;padding:5px 13px;margin-bottom:10px;flex-shrink:0;
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:#fde68a;letter-spacing:.4px;text-transform:uppercase;
     }
+    .slide-badge .bdot{width:6px;height:6px;border-radius:50%;background:#f59e0b;animation:blink 1.8s ease-in-out infinite;flex-shrink:0}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-    .story-wrap{
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:24px;
-      align-items:stretch;
+    /* ── Slide 1 typography ── */
+    .slide h1{font-family:'Sora',sans-serif;font-size:clamp(24px,6vw,52px);font-weight:900;line-height:1.08;margin-bottom:8px;background:linear-gradient(135deg,#ffd700 0%,#fff 45%,#ffd700 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0}
+    .slide-sub{font-size:clamp(12px,3vw,15px);color:#c7d9ff;line-height:1.5;margin-bottom:10px;max-width:600px;flex-shrink:0}
+
+    /* ── Contest name tags on slide 1 ── */
+    .contest-names{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+    .cn-tag{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#e2e8ff}
+
+    /* ── Prize strip ── */
+    .prize-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px;max-width:560px;width:100%}
+    .prize-chip{
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,215,0,.22);
+      border-radius:11px;padding:7px 10px;flex:1;min-width:90px;max-width:120px;
     }
+    .pc-rank{font-size:18px;margin-bottom:2px}
+    .pc-amt{font-family:'Sora',sans-serif;font-size:11px;font-weight:800;color:#ffd700;line-height:1.3;margin-bottom:1px}
+    .pc-label{font-size:10px;color:#94a3b8}
 
-    .story-card,
-    .about-section{
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,215,0,.16);
-      border-radius:24px;
-      padding:28px 26px;
-      backdrop-filter:blur(10px);
-      box-shadow:0 10px 32px rgba(0,0,0,.16);
+    /* ── CTA buttons ── */
+    .slide-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;flex-shrink:0;margin-top:2px}
+    .s-btn{padding:11px 22px;border-radius:999px;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+    .s-btn-gold{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;box-shadow:0 6px 20px rgba(217,119,6,.38)}
+    .s-btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(217,119,6,.52)}
+    .s-btn-outline{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.2);color:#e2e8ff}
+    .s-btn-outline:hover{border-color:rgba(255,215,0,.5);color:#ffd700}
+
+    /* ── Individual contest slides ── */
+    .slide-img{
+      width:min(130px,28vw);height:min(130px,28vw);
+      border-radius:18px;object-fit:cover;object-position:center;
+      border:2px solid rgba(255,215,0,.3);
+      box-shadow:0 8px 28px rgba(0,0,0,.4);
+      margin-bottom:8px;flex-shrink:0;
+      background:linear-gradient(135deg,#fff7d6,#f0e0a0);
     }
-
-    .story-card h3,
-    .about-section h3{
-      color:#ffd700;
-      font-size:30px;
-      margin-bottom:12px;
+    .slide-icon{
+      width:min(80px,20vw);height:min(80px,20vw);
+      border-radius:18px;background:linear-gradient(135deg,#1e2d82,#2a3d9e);
+      border:2px solid rgba(255,215,0,.25);
+      display:flex;align-items:center;justify-content:center;
+      font-size:min(38px,9vw);margin-bottom:8px;flex-shrink:0;
     }
+    .slide h2{font-family:'Sora',sans-serif;font-size:clamp(16px,4.5vw,26px);font-weight:800;color:#ffd700;margin-bottom:5px;line-height:1.2;flex-shrink:0}
+    .slide-desc{font-size:clamp(11px,2.5vw,13px);color:#c7d9ff;max-width:520px;line-height:1.5;margin-bottom:8px;flex-shrink:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-    .story-card p,
-    .about-section p{
-      color:#eaf3ff;
-      line-height:1.8;
-      font-size:16.5px;
-    }
+    /* ── Benefits row ── */
+    .slide-benefits{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-bottom:7px;max-width:560px;width:100%}
+    .sb-item{display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.28);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:600;color:#6ee7b7;flex-shrink:0}
+    .sb-icon{font-size:12px}
+    .sb-val{color:rgba(110,231,183,.75);font-size:10px}
 
-    .story-highlights{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      margin-top:18px;
-    }
+    /* ── Prize rows compact ── */
+    .slide-prizes{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;width:100%;max-width:360px}
+    .sp-row{display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.15);font-size:11px;font-weight:700;color:#fde68a}
+    .sp-row span:first-child{font-size:13px;flex-shrink:0}
+    .sp-place{font-size:10px;color:#64748b;margin-left:auto;font-weight:500}
 
-    .highlight-box{
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,215,0,.15);
-      border-radius:18px;
-      padding:18px 14px;
-      text-align:center;
-    }
+    /* ── Pills ── */
+    .slide-pills{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:8px;flex-shrink:0}
+    .spill{padding:4px 11px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e2e8ff}
+    .spill.gold{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fde68a}
 
-    .highlight-box strong{
-      display:block;
-      font-size:28px;
-      color:#ffd700;
-      margin-bottom:6px;
-    }
+    /* ── Previous contest slide ── */
+    .prev-slide-stats{display:flex;gap:8px;justify-content:center;margin-bottom:10px;flex-wrap:wrap}
+    .pss{background:rgba(255,255,255,.06);border:1px solid rgba(255,215,0,.18);border-radius:12px;padding:8px 14px;text-align:center;min-width:90px}
+    .pss strong{display:block;font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#ffd700;margin-bottom:2px}
+    .pss span{font-size:10px;color:#94a3b8}
 
-    .highlight-box span{
-      color:#eaf3ff;
-      font-size:14px;
-      line-height:1.5;
-    }
+    /* ── Winner photo cards ── */
+    .winner-photos{display:flex;gap:8px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;width:100%;max-width:500px}
+    .wphoto{flex:1;min-width:100px;max-width:150px;border-radius:14px;overflow:hidden;border:2px solid rgba(255,215,0,.25);position:relative;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+    .wphoto img{width:100%;height:110px;object-fit:cover;object-position:top center;display:block}
+    .wphoto-info{background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,transparent 100%);position:absolute;bottom:0;left:0;right:0;padding:5px 7px}
+    .wphoto-rank{font-size:10px;font-weight:800;color:#ffd700;display:block;line-height:1.2}
+    .wphoto-name{font-size:10px;font-weight:600;color:#fff;display:block;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    .winners-mini{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-    }
+    /* ── ISKCON slide ── */
+    .iskcon-big{font-size:clamp(52px,12vw,80px);margin-bottom:6px;flex-shrink:0}
+    .iskcon-pillars{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;width:100%;max-width:400px}
+    .ip{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.12);border-radius:11px;padding:8px 10px;display:flex;gap:7px;align-items:center;text-align:left}
+    .ip-icon{font-size:16px;flex-shrink:0}
+    .ip-text{font-size:11px;color:#c7d9ff;line-height:1.4;font-weight:600}
 
-    .winner-mini-card{
-      background:linear-gradient(135deg,rgba(255,248,220,.92),rgba(255,255,255,.85));
-      color:#2a2a2a;
-      border-radius:18px;
-      padding:16px;
-      border:1px solid rgba(255,183,0,.45);
-      box-shadow:0 8px 20px rgba(0,0,0,.10);
-    }
+    /* ── Slide nav dots ── */
+    .slide-nav{position:absolute;bottom:10px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:6px;z-index:5}
+    .slide-dot{width:7px;height:7px;border-radius:999px;background:rgba(255,255,255,.25);cursor:pointer;transition:all .25s;border:none;padding:0}
+    .slide-dot.active{background:#f59e0b;width:20px}
 
-    .winner-rank{
-      display:inline-block;
-      background:linear-gradient(135deg,#f4c430,#d4a514);
-      color:#2c1f00;
-      font-weight:800;
-      font-size:13px;
-      padding:7px 14px;
-      border-radius:999px;
-      margin-bottom:10px;
-    }
+    /* ── Slide arrows ── */
+    .slide-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;backdrop-filter:blur(6px)}
+    .slide-arrow:hover{background:rgba(245,158,11,.25);border-color:#f59e0b}
+    .slide-arrow svg{width:16px;height:16px;fill:currentColor}
+    .slide-arrow.prev{left:8px}.slide-arrow.next{right:8px}
+    @media(max-width:480px){.slide-arrow{display:none}}
 
-    .winner-name{
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:6px;
-      color:#2a2a2a;
-    }
+    /* ═══ STATS BAR ═══ */
+    .stats-bar{background:linear-gradient(135deg,#d97706,#f59e0b,#d97706);padding:12px 20px}
+    .stats-inner{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:0}
+    .stat-item{display:flex;flex-direction:column;align-items:center;padding:6px 18px;border-right:1px solid rgba(255,255,255,.25);min-width:100px}
+    .stat-item:last-child{border-right:none}
+    .stat-num{font-family:'Sora',sans-serif;font-size:20px;font-weight:900;color:#fff;line-height:1}
+    .stat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.8);margin-top:2px;text-align:center}
+    @media(max-width:600px){.stat-item{border-right:none;padding:4px 12px}}
 
-    .winner-place{
-      font-size:14px;
-      color:#666;
-      margin-bottom:8px;
-      line-height:1.5;
-    }
+    /* ═══ SECTIONS ═══ */
+    .sec{padding:48px 20px;position:relative;z-index:1}
+    .sec-dark{background:rgba(0,0,0,.18)}
+    .sec-title{font-family:'Sora',sans-serif;font-size:clamp(22px,4vw,36px);font-weight:800;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,#ffd700,rgba(255,255,255,.8));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .sec-sub{text-align:center;color:#94a3b8;font-size:14px;max-width:580px;margin:0 auto 32px;line-height:1.6}
+    .sec-wrap{max-width:1160px;margin:0 auto}
 
-    .winner-prize{
-      font-size:18px;
-      font-weight:800;
-      color:#b8860b;
-    }
+    /* ═══ CONTESTS GRID ═══ */
+    .contests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+    .ccard{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,215,0,.16);border-radius:20px;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+    .ccard:hover{transform:translateY(-5px);border-color:#ffd700;box-shadow:0 12px 36px rgba(245,158,11,.18)}
+    .ccard-img{width:100%;height:160px;object-fit:cover;background:linear-gradient(135deg,#1e2d82,#2a3d9e)}
+    .ccard-img-fallback{width:100%;height:160px;background:linear-gradient(135deg,#1e2d82,#2a3d9e);display:flex;align-items:center;justify-content:center;font-size:52px}
+    .ccard-body{padding:14px}
+    .ccard-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#ffd700;margin-bottom:5px;line-height:1.3}
+    .ccard-desc{font-size:12px;color:#94a3b8;line-height:1.55;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .ccard-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+    .ccard-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#c7d9ff}
+    .ccard-benefits{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+    .cb-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#6ee7b7}
+    .cb-icon{font-size:12px;flex-shrink:0}
+    .ccard-prizes{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+    .cp-row{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.12);font-size:11px;font-weight:700;color:#fde68a}
+    .cp-row span:first-child{font-size:13px;flex-shrink:0}
+    .cp-place{font-size:10px;color:#64748b;font-weight:500;margin-left:auto}
+    .ccard-price{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#ffd700;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .ccard-price span{font-size:11px;color:#64748b;font-weight:500}
+    .ccard-btn{display:block;width:100%;padding:10px;border-radius:10px;text-align:center;background:linear-gradient(135deg,var(--navy3),var(--navy4));color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.1);transition:all .18s}
+    .ccard-btn:hover{background:linear-gradient(135deg,#d97706,#f59e0b);border-color:transparent}
+    .ccard.combo{border-color:rgba(245,158,11,.4);background:linear-gradient(145deg,rgba(245,158,11,.07),rgba(26,35,126,.1))}
 
-    .about-section{
-      margin-top:8px;
-    }
+    /* ═══ PROMO BAND ═══ */
+    .promo-band{background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#b45309 100%);border-radius:22px;padding:22px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 10px 36px rgba(120,53,15,.4);margin:0 auto;max-width:900px}
+    .promo-icon{font-size:44px;flex-shrink:0}
+    .promo-text .pt1{font-family:'Sora',sans-serif;font-size:clamp(16px,3.5vw,22px);font-weight:800;color:#fef3c7;margin-bottom:4px}
+    .promo-text .pt2{font-size:13px;color:rgba(254,243,199,.8);line-height:1.6}
+    .promo-btn{margin-left:auto;padding:10px 20px;border-radius:999px;background:#fef3c7;color:#78350f;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;transition:all .18s;white-space:nowrap}
+    .promo-btn:hover{background:#fff;transform:scale(1.04)}
+    @media(max-width:600px){.promo-btn{margin-left:0;width:100%;text-align:center}}
 
-    .footer{
-      background:rgba(13,19,38,.95);
-      padding:34px 20px 22px;
-      margin-top:28px;
-      text-align:center;
-      border-top:2px solid rgba(255,215,0,.16);
-    }
+    /* ═══ HOW IT WORKS ═══ */
+    .steps-row{display:flex;flex-wrap:wrap;justify-content:center;position:relative}
+    .steps-row::before{content:'';position:absolute;top:32px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.4),transparent);z-index:0}
+    .step-box{flex:1;min-width:150px;max-width:190px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 10px;position:relative;z-index:1}
+    .step-num{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy3),var(--navy4));border:2px solid rgba(245,158,11,.4);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#ffd700;margin-bottom:10px;box-shadow:0 4px 14px rgba(26,35,126,.4)}
+    .step-emoji{font-size:20px;margin-bottom:5px}
+    .step-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+    .step-desc{font-size:11px;color:#94a3b8;line-height:1.5}
 
-    .footer-content{max-width:1200px;margin:0 auto}
+    /* ═══ PREVIOUS CONTEST (below slideshow) ═══ */
+    .prev-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;align-items:start}
+    @media(max-width:860px){.prev-grid{grid-template-columns:1fr}}
+    .prev-card{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,215,0,.16);border-radius:22px;padding:22px}
+    .prev-card h3{font-family:'Sora',sans-serif;font-size:clamp(16px,3vw,22px);font-weight:800;color:#ffd700;margin-bottom:8px;line-height:1.3}
+    .prev-period{display:inline-block;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.3);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;color:#fde68a;margin-bottom:12px}
+    .prev-text{font-size:13px;color:#c7d9ff;line-height:1.75;margin-bottom:14px}
+    .prev-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .prev-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.14);border-radius:12px;padding:12px 8px;text-align:center}
+    .prev-stat strong{display:block;font-family:'Sora',sans-serif;font-size:clamp(16px,3vw,22px);font-weight:800;color:#ffd700;margin-bottom:3px}
+    .prev-stat span{font-size:10px;color:#94a3b8;line-height:1.4}
 
-    .footer p{
-      margin:10px 0;
-      color:#b0bec5;
-      font-size:15px;
-      line-height:1.7;
-    }
+    /* winner cards */
+    .winner-list{display:flex;flex-direction:column;gap:10px}
+    .winner-photo-card{border-radius:16px;overflow:hidden;border:1px solid rgba(255,215,0,.3);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+    .wpc-photo{width:100%;height:130px;object-fit:cover;object-position:top center;display:block}
+    .wpc-body{padding:10px 12px}
+    .wpc-rank{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:#fde68a;display:inline-block;margin-bottom:5px}
+    .wpc-name{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+    .wpc-place{font-size:11px;color:#94a3b8;margin-bottom:4px}
+    .wpc-prize{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#ffd700}
+    .winner-photo-card.gold-w{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04));border-color:rgba(255,215,0,.4)}
+    .winner-photo-card.silver-w{background:linear-gradient(135deg,rgba(180,180,200,.1),rgba(180,180,200,.03));border-color:rgba(192,192,220,.3)}
+    .winner-photo-card.bronze-w{background:linear-gradient(135deg,rgba(205,127,50,.1),rgba(205,127,50,.03));border-color:rgba(205,127,50,.3)}
 
-    .footer a{
-      color:#ffd700;
-      text-decoration:none;
-      padding:4px 8px;
-      border-radius:5px;
-      transition:.25s ease;
-    }
+    /* ═══ ABOUT ═══ */
+    .about-wrap{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center;max-width:1000px;margin:0 auto}
+    @media(max-width:760px){.about-wrap{grid-template-columns:1fr}}
+    .about-text h3{font-family:'Sora',sans-serif;font-size:clamp(18px,3.5vw,26px);font-weight:800;color:#ffd700;margin-bottom:10px;line-height:1.3}
+    .about-text p{font-size:13px;color:#c7d9ff;line-height:1.75;margin-bottom:8px}
+    .about-pillars{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+    .pillar{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.14);border-radius:12px;padding:10px;display:flex;gap:8px;align-items:flex-start}
+    .pillar .pi{font-size:18px;flex-shrink:0}
+    .pillar .pt{font-size:11px;color:#c7d9ff;line-height:1.5}
+    .pillar .pt strong{display:block;color:#ffd700;font-family:'Sora',sans-serif;font-size:12px;margin-bottom:2px}
+    .about-cta{background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1.5px solid rgba(255,215,0,.2);border-radius:22px;padding:24px;text-align:center}
+    .about-cta .ac-icon{font-size:44px;margin-bottom:10px}
+    .about-cta h4{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#ffd700;margin-bottom:7px}
+    .about-cta p{font-size:12px;color:#94a3b8;margin-bottom:16px;line-height:1.6}
+    .about-cta .ac-btn{display:inline-block;padding:11px 24px;border-radius:999px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;box-shadow:0 5px 18px rgba(217,119,6,.35);transition:all .2s}
+    .about-cta .ac-btn:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(217,119,6,.5)}
 
-    .footer a:hover{
-      color:#fff;
-      background:rgba(255,215,0,.1);
-    }
+    /* ═══ FOOTER ═══ */
+    .footer{background:#060e30;border-top:1px solid rgba(255,215,0,.12);padding:40px 20px 0}
+    .footer-grid{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:28px;padding-bottom:32px;border-bottom:1px solid rgba(255,255,255,.07)}
+    @media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:520px){.footer-grid{grid-template-columns:1fr}}
+    .fb-logo{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+    .fb-logo-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--navy3),var(--navy4));display:grid;place-items:center;border:1px solid rgba(255,215,0,.2);flex-shrink:0}
+    .fb-logo-icon svg{width:20px;height:20px;fill:#ffd700}
+    .fb-name{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:#ffd700;line-height:1.2}
+    .fb-name span{display:block;font-size:10px;color:#475569;font-weight:500}
+    .footer-brand p{font-size:12px;color:#475569;line-height:1.75;margin-bottom:10px}
+    .footer-brand address{font-style:normal;font-size:11px;color:#334155;line-height:1.8}
+    .contact-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;margin-top:8px}
+    .contact-row a{color:#f59e0b;font-weight:600;transition:color .14s}
+    .contact-row a:hover{color:#ffd700}
+    .footer-col h4{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+    .footer-col ul{list-style:none}
+    .footer-col li{margin-bottom:8px}
+    .footer-col a{font-size:13px;color:#475569;transition:color .18s;display:flex;align-items:center;gap:5px}
+    .footer-col a:hover{color:#ffd700}
+    .footer-bottom{max-width:1160px;margin:0 auto;padding:14px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .footer-bottom p{font-size:11px;color:#334155}
+    .wa-link{display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;padding:7px 14px;border-radius:999px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;transition:all .18s}
+    .wa-link:hover{background:#1ebe5d;transform:scale(1.04)}
+    .wa-link svg{width:14px;height:14px;fill:#fff}
 
-    .footer-links{
-      display:flex;
-      justify-content:center;
-      flex-wrap:wrap;
-      gap:10px;
-      margin:18px 0;
-    }
-
-    @media (max-width: 992px){
-      .story-wrap{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width: 768px){
-      .navbar{padding:14px 0}
-      .brand-title{font-size:21px}
-      .hero{padding:52px 16px 34px}
-      .hero h1{font-size:36px}
-      .hero p{font-size:19px}
-      .hero-subtitle{font-size:16px;margin-bottom:22px}
-      .hero-actions{gap:10px}
-      .btn{width:100%;max-width:320px}
-      .section{padding:28px 16px}
-      .section h2{font-size:31px}
-      .section-subtitle{font-size:16px;margin-bottom:22px}
-      .contests-grid{grid-template-columns:1fr;gap:20px}
-      .story-highlights{grid-template-columns:1fr}
-      .story-card,.about-section{padding:22px 18px}
-      .story-card h3,.about-section h3{font-size:25px}
-    }
-
-    @media (max-width: 480px){
-      .brand-title{font-size:19px}
-      .hero h1{font-size:29px}
-      .hero p{font-size:17px}
-      .section h2{font-size:27px}
-      .contest-card h3{font-size:23px}
-      .winner-name{font-size:20px}
-    }
-
-@media (min-width: 769px){
-  .contest-image-wrap{
-    height:270px;
-  }
-}
+    /* ═══ REVEAL ═══ */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="navbar-content">
-      <div class="brand-title">Krishna Wisdom Contest 2026</div>
+
+<%
+  function getEmoji(title){
+    const t=(title||'').toLowerCase();
+    if(t.includes('gita'))return'📖';
+    if(t.includes('bhagavatam'))return'📿';
+    if(t.includes('ramayana'))return'🏹';
+    if(t.includes('krishna'))return'🪈';
+    if(t.includes('combo'))return'🎯';
+    return'📘';
+  }
+  const allContests = Array.isArray(contests) ? contests.filter(c=>!String(c.title||'').toLowerCase().includes('combo')) : [];
+  const comboContest = Array.isArray(contests) ? contests.find(c=>String(c.title||'').toLowerCase().includes('combo')) : null;
+%>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-inner">
+
+    <div class="brand">
+        <div class="topbar-logo-wrap">
+          <img src="/images/logo_new.png" alt="Iskcon Tirupati" class="topbar-logo-img" onerror="this.style.display='none'">
+        </div>
+        <div class="topbar-title">
+          <span class="topbar-title-line1">Iskcon Tirupati</span>
+          <span class="topbar-title-line2">Essay Writing Contest</span>
+        </div>
     </div>
-  </nav>
 
-  <section class="hero">
-  <h1>Krishna Wisdom Contest 2026</h1>
-  <p>Write with devotion. Reflect with wisdom. Express through essays.</p>
-  <div class="hero-subtitle">
-    Join our essay writing contests inspired by the <strong>Bhagavad Gita</strong>, <strong>Bhagavatam</strong>, <strong>Ramayana</strong>, and <strong>Krishna book wisdom</strong>.
-    Choose your category, read deeply, write thoughtfully, and participate in a meaningful spiritual learning journey.
+    <div class="nav-btns">
+      <a class="nav-btn nav-ghost" href="/login">Login</a>
+      <a class="nav-btn nav-gold" href="/register">Register</a>
+    </div>
   </div>
+</nav>
 
-  <div class="hero-actions">
-    <a href="/register" class="btn btn-primary">Register Now</a>
-    <a href="/login" class="btn btn-secondary">Login</a>
-    <a href="#contests" class="btn btn-ghost">Explore Contests ↓</a>
-  </div>
-</section>
+<!-- ═══ SLIDESHOW ═══ -->
+<div class="slideshow" id="slideshow">
+  <button class="slide-arrow prev" id="prevBtn" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg></button>
+  <button class="slide-arrow next" id="nextBtn" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
 
-  <section class="section" id="contests">
-    <h2>Essay Writing Contests</h2>
-    <p class="section-subtitle">
-      Explore the active contests, view important dates, understand the prizes, and register for the category that matches your age group.
-    </p>
+  <div class="slides" id="slidesTrack">
 
-    <div class="contests-grid">
-      <% contests.forEach((c) => {
-        const rawBenefits = Array.isArray(c.participant_benefits) ? [...c.participant_benefits] : [];
-        const hasCertificate = rawBenefits.some(b => String(b || '').toLowerCase().includes('certificate'));
-        if (!hasCertificate) rawBenefits.push('Digital participation certificate');
+    <!-- ── SLIDE 1: Overview ── -->
+    <div class="slide">
 
-        const prizeLines = String(c.prize_details || '')
-          .split(/\r?\n|\|/g)
-          .map(s => String(s || '').trim())
-          .filter(Boolean);
+      <h1>ISKCON Tirupati<br>Presents 🙏</h1>
+      <p class="slide-sub">India's biggest essay writing contest on sacred texts — write with devotion, win amazing prizes!</p>
 
-        const enhancedPrizeLines = prizeLines.length
-          ? prizeLines.map((line) => {
-              const t = line.toLowerCase();
-              if (t.includes('1st')) return line + ' 🥇';
-              if (t.includes('2nd')) return line + ' 🥈';
-              if (t.includes('3rd')) return line + ' 🥉';
-              if (t.includes('darshan')) return line + ' 🙏';
-              return line + ' ✨';
-            })
-          : ['1st Prize – Special award 🥇', '2nd Prize – Special award 🥈', '3rd Prize – Special award 🥉'];
-      %>
-        <div class="contest-card">
-          <div class="contest-image-wrap">
-            <% if (c.image_url) { %>
-              <img
-                src="<%= c.image_url %>"
-                alt="<%= c.title %>"
-                class="contest-image"
-                loading="lazy"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-              />
-              <div class="contest-image-fallback" style="display:none;">📘</div>
-            <% } else { %>
-              <div class="contest-image-fallback">📘</div>
-            <% } %>
-          </div>
+      <div class="contest-names">
+        <span class="cn-tag">📖 Bhagavad Gita</span>
+        <span class="cn-tag">📿 Bhagavatam</span>
+        <span class="cn-tag">🏹 Ramayana</span>
+        <span class="cn-tag">🪈 Krishna</span>
+        <span class="cn-tag" style="background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fde68a">🎯 Combo Pack</span>
+      </div>
 
-          <h3><%= c.title %></h3>
-          <p><%= c.description %></p>
+      <div class="prize-strip">
+        <div class="prize-chip"><div class="pc-rank">🥇</div><div class="pc-amt">10g Pure Gold Medal</div><div class="pc-label">1st Prize</div></div>
+        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">2nd Prize</div></div>
+        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">3rd Prize</div></div>
+        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">4th Prize</div></div>
+        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">5th Prize</div></div>
+      </div>
+      <div class="slide-badge"><span class="bdot"></span>Registration Open · 27 Mar – 04 Sep 2026</div>
+      <div class="slide-btns">
+        <a class="s-btn s-btn-gold" href="/register"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Register Now — Free!</a>
+        <a class="s-btn s-btn-outline" href="#contests">Explore ↓</a>
+      </div>
+    </div>
 
-          <div class="info-block">
-  <div class="info-row">
-    <strong>Age Categories:</strong>
-    <%= Array.isArray(c.age_categories) ? c.age_categories.join(', ') : '-' %>
-  </div>
+    <!-- ── SLIDES: Individual Contests ── -->
+    <% allContests.forEach((c) => {
+      const emoji = getEmoji(c.title);
+    %>
+    <div class="slide">
+      <% if(c.image_url){ %>
+        <img class="slide-img" src="<%= c.image_url %>" alt="<%= c.title %>" loading="lazy" onerror="this.style.display='none'">
+      <% } else { %>
+        <div class="slide-icon"><%= emoji %></div>
+      <% } %>
+      <h2><%= c.title %></h2>
+      <p class="slide-desc"><%= c.description %></p>
 
-  <div class="info-row">
-    <strong>Contest Period:</strong>
-    27/03/2026 to 04/09/2026
-  </div>
+      <div class="slide-benefits">
+        <div class="sb-item"><span class="sb-icon">📚</span>Free Book <span class="sb-val">(₹399 value)</span></div>
+        <div class="sb-item"><span class="sb-icon">💻</span>Free Course <span class="sb-val">(₹4,999 value)</span></div>
+        <div class="sb-item"><span class="sb-icon">🎓</span>Digital Certificate</div>
+      </div>
 
-  <div class="info-row">
-    <strong>Submit your essay before:</strong>
-    04/09/2026
-  </div>
+      <div class="slide-prizes">
+        <div class="sp-row"><span>🥇</span><span>10g Pure Gold Medal</span><span class="sp-place">1st Prize</span></div>
+        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">2nd</span></div>
+        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">3rd</span></div>
+        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">4th</span></div>
+        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">5th</span></div>
+      </div>
 
-  <div class="info-row">
-    <strong>Results / Winners Announcement:</strong>
-    <%= c.winner_declaration_date ? new Date(c.winner_declaration_date).toLocaleDateString('en-GB') : '-' %>
+      <div class="slide-pills">
+        <span class="spill gold">₹<%= Number(c.price||399) %> per entry</span>
+        <% if(Array.isArray(c.age_categories)){ c.age_categories.forEach(a=>{ %><span class="spill"><%= a %></span><% }) } %>
+        <span class="spill">📅 Submit by 09/09/2026</span>
+      </div>
+      <div class="slide-btns">
+        <a class="s-btn s-btn-gold" href="/register">Join This Contest</a>
+      </div>
+    </div>
+    <% }) %>
+
+    <!-- ── Combo Slide ── -->
+    <% if(comboContest){ %>
+    <div class="slide">
+      <div class="slide-icon">🎯</div>
+      <div class="slide-badge" style="background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.5)">🔥 Best Value — Most Popular</div>
+      <h2><%= comboContest.title %></h2>
+      <p class="slide-desc">All 4 contests in one pack — Gita · Bhagavatam · Ramayana · Krishna</p>
+      <div class="slide-benefits">
+        <div class="sb-item"><span class="sb-icon">📚</span>Free Book <span class="sb-val">Science of Self Realization</span></div>
+        <div class="sb-item"><span class="sb-icon">💻</span>Free Course <span class="sb-val">(₹4,999 value)</span></div>
+        <div class="sb-item"><span class="sb-icon">🎓</span>Digital Certificate</div>
+      </div>
+      <div class="slide-prizes">
+        <div class="sp-row"><span>🥇</span><span>10g Pure Gold Medal</span><span class="sp-place">1st Prize</span></div>
+        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">2nd</span></div>
+        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">3rd</span></div>
+        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">4th</span></div>
+        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">5th</span></div>
+      </div>
+      <div class="slide-pills">
+        <span class="spill gold">₹<%= Number(comboContest.price||1596) %> for all 4 contests</span>
+        <span class="spill gold">🎁 FREE Book included</span>
+        <span class="spill">📅 Submit by 09/09/2026</span>
+      </div>
+      <div class="slide-btns"><a class="s-btn s-btn-gold" href="/register">Get the Combo Deal 🔥</a></div>
+    </div>
+    <% } %>
+
+    <!-- ── Previous Contest Slide ── -->
+    <div class="slide">
+      <div class="slide-badge" style="background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.35);color:#6ee7b7"><span class="bdot" style="background:#10b981"></span>Proven Track Record</div>
+      <h2 style="color:#ffd700;margin-bottom:6px">Previous Contest<br>Huge Success! 🏆</h2>
+      <p class="slide-desc" style="margin-bottom:10px">Value Based Bhagavad Gita Contest · Dec 2025 – Jan 2026</p>
+
+      <div class="prev-slide-stats">
+        <div class="pss"><strong>25,000+</strong><span>Participants</span></div>
+        <div class="pss"><strong>1 Book</strong><span>Per participant</span></div>
+        <div class="pss"><strong>₹7 Lakh</strong><span>Total prizes</span></div>
+      </div>
+
+      <!-- Winner photos -->
+      <div class="winner-photos">
+        <div class="wphoto">
+          <img src="/images/winner1.png" alt="Venkatesh Reddy" onerror="this.parentElement.style.display='none'">
+          <div class="wphoto-info"><span class="wphoto-rank">🥇 1st Place</span><span class="wphoto-name">Venkatesh Reddy</span></div>
+        </div>
+        <div class="wphoto">
+          <img src="/images/winner2.png" alt="Rani Durgamba" onerror="this.parentElement.style.display='none'">
+          <div class="wphoto-info"><span class="wphoto-rank">🥈 2nd Place</span><span class="wphoto-name">Rani Durgamba</span></div>
+        </div>
+        <div class="wphoto">
+          <img src="/images/winner3.png" alt="P Kiranmai" onerror="this.parentElement.style.display='none'">
+          <div class="wphoto-info"><span class="wphoto-rank">🥉 3rd Place</span><span class="wphoto-name">P Kiranmai</span></div>
+        </div>
+      </div>
+
+      <div class="slide-btns"><a class="s-btn s-btn-gold" href="/register">Join 2026 Edition →</a></div>
+    </div>
+
+    <!-- ── ISKCON Slide ── -->
+    <div class="slide">
+      <img class="slide-img" src="/images/iskcon_tirupati.png" alt="" loading="lazy" onerror="this.style.display='none'">
+      <h2 style="margin-bottom:5px">Organised by<br>ISKCON Tirupati</h2>
+      <p class="slide-desc" style="margin-bottom:10px">International Society for Krishna Consciousness — spreading Vedic wisdom, values & devotion since decades</p>
+      <div class="iskcon-pillars">
+        <div class="ip"><span class="ip-icon">🎓</span><span class="ip-text">Spiritual Education</span></div>
+        <div class="ip"><span class="ip-icon">📖</span><span class="ip-text">Book Distribution</span></div>
+        <div class="ip"><span class="ip-icon">🙏</span><span class="ip-text">Youth Programs</span></div>
+        <div class="ip"><span class="ip-icon">🏛️</span><span class="ip-text">Tirupati, AP</span></div>
+        <div class="ip"><span class="ip-icon">📞</span><span class="ip-text">+91-9493805059</span></div>
+        <div class="ip"><span class="ip-icon"><a href="https://wa.me/919493805059?text=Hi" target="_blank"></span><span class="ip-text">WhatsApp 24×7</span></div>
+      </div>
+      <div class="slide-btns">
+        <a class="s-btn s-btn-gold" href="/register">Be Part of This Mission</a>
+        <a class="s-btn s-btn-outline" href="#about">Learn More ↓</a>
+      </div>
+    </div>
+
+  </div><!-- /slides -->
+  <div class="slide-nav" id="dotNav"></div>
+</div><!-- /slideshow -->
+
+<!-- ═══ STATS BAR ═══ -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">25,000+</div><div class="stat-label">Previous Participants</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Essay Contests</div></div>
+    <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">Amazing Prizes</div></div>
+    <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Age Categories</div></div>
+    <div class="stat-item"><div class="stat-num">FREE</div><div class="stat-label">Book + Course Bonus</div></div>
   </div>
 </div>
-          <div class="prizes-section">
-            <div class="block-title">🏅 Prize Details</div>
-            <div class="prize-lines">
-              <% enhancedPrizeLines.forEach((line) => { %>
-                <div class="prize-line">• <%= line %></div>
-              <% }) %>
-            </div>
+
+<!-- ═══ PROMO ═══ -->
+<div class="sec" style="padding-bottom:0">
+  <div class="sec-wrap">
+    <div class="promo-band reveal">
+      <div class="promo-icon">🎁</div>
+      <div class="promo-text">
+        <div class="pt1">🔥 FREE Book + Course Worth ₹5,149!</div>
+        <div class="pt2">Register for <strong>any 4 contests</strong> or the <strong>Combo Pack</strong> and receive <em>Science of Self Realization book</em> + <em>WorkLife Balance Online Course (₹4,999)</em> — absolutely FREE!</div>
+      </div>
+      <a class="promo-btn" href="/register">Claim Now →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<div class="sec" id="how">
+  <div class="sec-wrap">
+    <h2 class="sec-title reveal">How It Works</h2>
+    <p class="sec-sub reveal">4 simple steps to participate and win</p>
+    <div class="steps-row">
+      <div class="step-box reveal"><div class="step-num">1</div><div class="step-emoji">📝</div><div class="step-title">Register</div><div class="step-desc">Create free account with mobile number</div></div>
+      <div class="step-box reveal" style="transition-delay:.1s"><div class="step-num">2</div><div class="step-emoji">🛒</div><div class="step-title">Choose Contest</div><div class="step-desc">Pick contests & add to cart</div></div>
+      <div class="step-box reveal" style="transition-delay:.2s"><div class="step-num">3</div><div class="step-emoji">✍️</div><div class="step-title">Write Essay</div><div class="step-desc">Read the sacred text & write 1,000–2,000 words</div></div>
+      <div class="step-box reveal" style="transition-delay:.3s"><div class="step-num">4</div><div class="step-emoji">🏆</div><div class="step-title">Win Prizes</div><div class="step-desc">Upload PDF/DOCX before deadline · Win gold medal, VIP darshan & more!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTESTS GRID ═══ -->
+<div class="sec sec-dark" id="contests">
+  <div class="sec-wrap">
+    <h2 class="sec-title reveal">Essay Writing Contests</h2>
+    <p class="sec-sub reveal">Choose your sacred text. Express your wisdom. Win big.</p>
+    <div class="contests-grid">
+      <% (Array.isArray(contests)?contests:[]).forEach((c,i) => {
+        const isCombo = String(c.title||'').toLowerCase().includes('combo');
+        const emoji = getEmoji(c.title);
+      %>
+      <div class="ccard <%= isCombo?'combo':'' %> reveal" style="transition-delay:<%=i*0.07%>s">
+        <% if(c.image_url && !isCombo){ %>
+          <img class="ccard-img" src="<%= c.image_url %>" alt="<%= c.title %>" loading="lazy" onerror="this.parentElement.innerHTML='<div class=ccard-img-fallback><%=emoji%></div>'">
+        <% } else { %>
+          <div class="ccard-img-fallback"><%= emoji %></div>
+        <% } %>
+        <div class="ccard-body">
+          <div class="ccard-title"><%= c.title %></div>
+          <div class="ccard-desc"><%= c.description %></div>
+          <div class="ccard-meta">
+            <% if(Array.isArray(c.age_categories)){ c.age_categories.slice(0,2).forEach(a=>{ %><span class="ccard-tag"><%= a %></span><% }) } %>
+            <span class="ccard-tag">📅 09 Sep 2026</span>
           </div>
-
-          <% if (rawBenefits.length) { %>
-            <div class="benefits-section">
-              <div class="block-title">🎁 Participant Benefits</div>
-              <ul>
-                <% rawBenefits.forEach((b) => { %>
-                  <li><%= b %></li>
-                <% }) %>
-              </ul>
-            </div>
+          <% if(!isCombo){ %>
+          <div class="ccard-benefits">
+            <div class="cb-row"><span class="cb-icon">📚</span><span>Free Book Delivered <em style="color:#64748b;font-style:normal">(₹399 value)</em></span></div>
+            <div class="cb-row"><span class="cb-icon">💻</span><span>Free Online Course <em style="color:#64748b;font-style:normal">(₹4,999 value)</em></span></div>
+            <div class="cb-row"><span class="cb-icon">🎓</span><span>Digital Certificate</span></div>
+          </div>
           <% } %>
-
-          <% if (Array.isArray(c.rules) && c.rules.length) { %>
-            <div class="rules-section">
-              <div class="block-title">📜 Rules & Guidelines</div>
-              <ul>
-                <% c.rules.forEach((r) => { %>
-                  <li><%= r %></li>
-                <% }) %>
-              </ul>
-            </div>
-          <% } %>
-
-          <a href="/register" class="participate-btn">Register for This Contest →</a>
+          <div class="ccard-prizes">
+            <div class="cp-row"><span>🥇</span><span>10g Pure Gold Medal</span><span class="cp-place">1st Prize</span></div>
+            <div class="cp-row"><span>🛕</span><span>VIP Darshan – Tirumala Balaji</span><span class="cp-place">2nd</span></div>
+            <div class="cp-row"><span>🛕</span><span>VIP Darshan – Tirumala Balaji</span><span class="cp-place">3rd</span></div>
+            <div class="cp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="cp-place">4th</span></div>
+            <div class="cp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="cp-place">5th</span></div>
+          </div>
+          <div class="ccard-price">
+            <span>₹<%= Number(c.price||399) %></span>
+            <% if(isCombo){ %><span style="color:#f59e0b;font-size:11px;font-weight:700">🔥 Best Value</span><% }else{ %><span>per entry</span><% } %>
+          </div>
+          <a href="/register" class="ccard-btn">Register for This Contest →</a>
         </div>
+      </div>
       <% }) %>
     </div>
-  </section>
+  </div>
+</div>
 
-  <section class="section">
-  <div class="story-wrap">
-    <div class="story-card">
-      <h3>Previous Successful Event — Value Based Bhagavad Gita Contest</h3>
-      <p style="color:#ffe082;font-weight:700;margin-bottom:10px;">
-        Conducted from 01/12/2025 to 15/01/2026
-      </p>
-      <p>
-        Before the Krishna Wisdom Contest 2026, ISKCON Tirupati successfully conducted the
-        <strong>Value Based Bhagavad Gita Contest</strong>, a spiritual learning event that received an inspiring response from around
-        <strong>25,000 participants</strong>.
-      </p>
-      <p style="margin-top:12px;">
-        Every registered participant received a <strong>Bhagavad Gita book</strong>, studied the teachings sincerely,
-        and took part in a structured quiz by submitting their answers. The event beautifully combined
-        reading, reflection, participation, and recognition.
-      </p>
-      <p style="margin-top:12px;">
-        The success of that previous contest has now inspired the launch of the
-        <strong>Krishna Wisdom Contest 2026</strong>, where essay writing becomes a deeper medium for expression,
-        understanding, and devotion.
-      </p>
-
-      <div class="story-highlights">
-        <div class="highlight-box">
-          <strong>25,000+</strong>
-          <span>participants joined the previous contest enthusiastically.</span>
-        </div>
-        <div class="highlight-box">
-          <strong>1 Book Each</strong>
-          <span>Bhagavad Gita book was given to every registered participant.</span>
-        </div>
-        <div class="highlight-box">
-          <strong>Top 3 Awards</strong>
-          <span>cash prizes were awarded to the leading performers.</span>
+<!-- ═══ PREVIOUS CONTEST ═══ -->
+<div class="sec" id="previous">
+  <div class="sec-wrap">
+    <h2 class="sec-title reveal">Proven Track Record 🎖️</h2>
+    <p class="sec-sub reveal">Our previous contest was a massive success — you can trust us!</p>
+    <div class="prev-grid">
+      <div class="prev-card reveal">
+        <h3>Value Based Bhagavad Gita Contest</h3>
+        <span class="prev-period">📅 Dec 01, 2025 – Jan 15, 2026</span>
+        <p class="prev-text">ISKCON Tirupati conducted this spiritual contest where <strong>25,000+ participants</strong> received a free Bhagavad Gita book, read it, and submitted their answers. Every participant was recognised with top performers winning life-changing prizes.</p>
+        <p class="prev-text" style="margin-bottom:16px">The success inspired the <strong>Iskcon Tirupati Essay Writing Contest 2026</strong> — bigger, better, open to all!</p>
+        <div class="prev-stats">
+          <div class="prev-stat"><strong>25,000+</strong><span>Participants across India</span></div>
+          <div class="prev-stat"><strong>1 Book</strong><span>Gifted to every participant</span></div>
+          <div class="prev-stat"><strong>₹7L+</strong><span>In prizes awarded</span></div>
         </div>
       </div>
-    </div>
-
-    <div class="winners-mini">
-      <div class="winner-mini-card">
-        <div class="winner-rank">🏆 1st Place</div>
-        <div class="winner-name">Venkatesh Reddy Singireddy</div>
-        <div class="winner-place">📍 Siddipet, Telangana</div>
-        <div class="winner-prize">₹3,50,000</div>
-      </div>
-
-      <div class="winner-mini-card">
-        <div class="winner-rank">🥈 2nd Place</div>
-        <div class="winner-name">P Kiranmai</div>
-        <div class="winner-place">📍 Balijagadda, Tirupati, Andhra Pradesh</div>
-        <div class="winner-prize">₹2,50,000</div>
-      </div>
-
-      <div class="winner-mini-card">
-        <div class="winner-rank">🥉 3rd Place</div>
-        <div class="winner-name">Rani Durgamba</div>
-        <div class="winner-place">📍 Visakhapatnam, Andhra Pradesh</div>
-        <div class="winner-prize">₹1,00,000</div>
+      <div class="winner-list reveal" style="transition-delay:.15s">
+        <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:#ffd700;margin-bottom:10px">🏆 2025 Winners</div>
+        <div class="winner-photo-card gold-w">
+          <img class="wpc-photo" src="/images/winner1.png" alt="Venkatesh Reddy Singireddy" onerror="this.style.display='none'">
+          <div class="wpc-body">
+            <div class="wpc-rank">🥇 1st Place</div>
+            <div class="wpc-name">Venkatesh Reddy Singireddy</div>
+            <div class="wpc-place">📍 Siddipet, Telangana</div>
+            <div class="wpc-prize">₹3,50,000</div>
+          </div>
+        </div>
+        <div class="winner-photo-card silver-w">
+          <img class="wpc-photo" src="/images/winner2.png" alt="Rani Durgamba" onerror="this.style.display='none'">
+          <div class="wpc-body">
+            <div class="wpc-rank">🥈 2nd Place</div>
+            <div class="wpc-name">Rani Durgamba</div>
+            <div class="wpc-place">📍 Visakhapatnam, AP</div>
+            <div class="wpc-prize">₹2,50,000</div>
+          </div>
+        </div>
+        <div class="winner-photo-card bronze-w">
+          <img class="wpc-photo" src="/images/winner3.png" alt="P Kiranmai" onerror="this.style.display='none'">
+          <div class="wpc-body">
+            <div class="wpc-rank">🥉 3rd Place</div>
+            <div class="wpc-name">P Kiranmai</div>
+            <div class="wpc-place">📍 Balijagadda, Tirupati, AP</div>
+            <div class="wpc-prize">₹1,00,000</div>
+          </div>
+        </div>
+        <a href="/register" class="ccard-btn" style="margin-top:4px;border-radius:10px">You Could Be Next →</a>
       </div>
     </div>
   </div>
-</section>
-  <section class="section">
-    <div class="about-section">
-      <h3>About the Organizer — ISKCON Tirupati</h3>
-      <p>
-        <strong>International Society for Krishna Consciousness (ISKCON), Tirupati</strong> is dedicated to spiritual education,
-        value-based learning, devotional culture, and the practical application of timeless Vedic wisdom in everyday life.
-        Through outreach programs, youth initiatives, educational events, book distribution, cultural festivals, and public
-        spiritual engagement, ISKCON Tirupati has been serving society with a focus on character-building and inner growth.
-      </p>
-      <p style="margin-top:14px;">
-        The Krishna Wisdom Contest 2026 is designed not merely as a competition, but as an uplifting educational movement.
-        It encourages participants to read, think, reflect, and articulate spiritual wisdom through essay writing. By combining
-        learning, inspiration, and recognition, the contest aims to help students and families connect more deeply with the
-        teachings of Lord Krishna in an engaging and meaningful format.
-      </p>
-    </div>
-  </section>
+</div>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <p><strong>International Society for Krishna Consciousness (ISKCON), Tirupati</strong></p>
-      <p><strong>Registered Address:</strong> Hare Krishna Land, Hare Krishna Road, Vinayaka Nagar, Tirupati - 517501, Andhra Pradesh, India.</p>
-      <p><strong>Email:</strong> <a href="mailto:support@iskconcontest.org">support@iskconcontest.org</a> | <strong>Phone:</strong> +91-9493805059</p>
+<!-- ═══ ABOUT ═══ -->
+<div class="sec sec-dark" id="about">
+  <div class="sec-wrap">
+    <h2 class="sec-title reveal">About the Organiser</h2>
+    <div class="about-wrap">
+      <div class="about-text reveal">
 
-      <div class="footer-links">
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
-        <a href="/privacy-policy">Privacy Policy</a>
-        <a href="/terms">Terms & Conditions</a>
-        <a href="/refund-policy">Refund Policy</a>
+        <h3>ISKCON Tirupati 🙏</h3>
+        <p>International Society for Krishna Consciousness (ISKCON), Tirupati — spreading Vedic wisdom, values and devotion through education, outreach & youth programs.</p>
+        <p>This contest is a spiritual learning journey that helps you connect deeply with ancient wisdom.</p>
+        <div class="about-pillars">
+          <div class="pillar"><div class="pi">📖</div><div class="pt"><strong>Spiritual Education</strong>Read sacred texts & understand teachings</div></div>
+          <div class="pillar"><div class="pi">✍️</div><div class="pt"><strong>Essay Expression</strong>Articulate wisdom in your own words</div></div>
+
+          <div class="pillar"><div class="pi">🎓</div><div class="pt"><strong>Recognition</strong>Digital certificates for all participants</div></div>
+          <div class="pillar"><div class="pi">🏆</div><div class="pt"><strong>5 Amazing Prizes</strong>Gold medal · VIP Darshan · Patron Memberships</div></div>
+        </div>
       </div>
-
-      <p style="margin-top:18px;color:#78909c;">© 2026 Krishna Wisdom Contest. All Rights Reserved.</p>
+      <div class="about-cta reveal" style="transition-delay:.15s">
+        <div class="ac-icon">✨</div>
+        <h4>Ready to Begin?</h4>
+        <p>Join thousands of devotees in this meaningful journey of reading, reflection and writing.</p>
+        <a class="ac-btn" href="/register">Register Now — It's Free!</a>
+        <div style="margin-top:10px;font-size:11px;color:#334155">📞 +91-9493805059 · WhatsApp 24×7</div>
+      </div>
     </div>
-  </footer>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="fb-logo">
+        <div class="fb-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg></div>
+        <div class="fb-name">Iskcon Tirupati<span>Essay Contest 2026</span></div>
+      </div>
+      <p>A spiritual essay writing movement inspiring thousands to read, reflect and express Vedic wisdom.</p>
+      <address>Hare Krishna Land, Hare Krishna Road,<br>Vinayaka Nagar, Tirupati – 517501<br>Andhra Pradesh, India</address>
+      <div class="contact-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><a href="tel:+919493805059">+91-9493805059</a></div>
+      <div class="contact-row" style="margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><a href="mailto:iskcontirupaticontest@gmail.com">iskcontirupaticontest@gmail.com</a></div>
+    </div>
+    <div class="footer-col">
+      <h4>Contests</h4>
+      <ul>
+        <li><a href="/register">📖 Bhagavad Gita Essay</a></li>
+        <li><a href="/register">📿 Bhagavatam Essay</a></li>
+        <li><a href="/register">🏹 Ramayana Essay</a></li>
+        <li><a href="/register">🪈 Krishna Essay</a></li>
+        <li><a href="/register">🎯 Combo Pack</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="/register">👤 Register</a></li>
+        <li><a href="/login">🔑 Login</a></li>
+        <li><a href="/dashboard">🏠 Dashboard</a></li>
+        <li><a href="/dashboard/my-contests">🏆 My Contests</a></li>
+        <li><a href="/dashboard/help">💬 Support</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/privacy-policy">Privacy Policy</a></li>
+        <li><a href="/terms">Terms & Conditions</a></li>
+        <li><a href="/refund-policy">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 ISKCON Tirupati. All rights reserved. · Hare Krishna 🙏</p>
+    <a class="wa-link" href="https://wa.me/919493805059?text=Hi" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      WhatsApp Us
+    </a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* ── Slideshow ── */
+  const track = document.getElementById('slidesTrack');
+  const dotNav = document.getElementById('dotNav');
+  const slideEls = track.querySelectorAll('.slide');
+  const n = slideEls.length;
+  let cur = 0, autoTimer;
+
+  for(let i = 0; i < n; i++){
+    const d = document.createElement('button');
+    d.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label','Slide '+(i+1));
+    d.addEventListener('click', () => goTo(i, true));
+    dotNav.appendChild(d);
+  }
+
+  function goTo(idx, stopAuto){
+    // scroll current slide back to top when leaving
+    slideEls[cur].scrollTop = 0;
+    cur = ((idx % n) + n) % n;
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dotNav.querySelectorAll('.slide-dot').forEach((d,i) => d.classList.toggle('active', i === cur));
+    if(stopAuto){ clearInterval(autoTimer); autoTimer = setInterval(() => goTo(cur+1, false), 7000); }
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(cur-1, true));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(cur+1, true));
+
+  /* touch swipe */
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if(Math.abs(dx) > 40) goTo(cur + (dx < 0 ? 1 : -1), true); }, {passive:true});
+
+  /* slower auto-advance — 7 seconds */
+  autoTimer = setInterval(() => goTo(cur+1, false), 7000);
+
+  /* ── Scroll reveal ── */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+  }, {threshold: .1});
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+})();
+</script>
 </body>
 </html>

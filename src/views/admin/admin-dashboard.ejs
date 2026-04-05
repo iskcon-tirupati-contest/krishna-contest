@@ -4,40 +4,109 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin - Overview</title>
+
+
   <style>
-    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
-    .layout{display:flex;min-height:100vh}
-    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
-    .brand{font-weight:900;margin-bottom:18px}
-    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
-    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
-    .content{flex:1}
-    .wrap{max-width:1200px;margin:26px auto;padding:0 18px}
-    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;margin-bottom:14px}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-    .stat{background:#0e1630;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px}
-    .muted{color:rgba(255,255,255,.7)}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.1);color:#fff}
-    .btn.active{background:#1a3cff}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
-    @media (max-width: 1000px){ .grid{grid-template-columns:repeat(2,1fr)} .sidebar{display:none} }
-  </style>
+  body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+  .layout{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);
+    padding:18px;flex-shrink:0
+  }
+  .brand{font-weight:900;margin-bottom:18px}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+  .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+  .content{flex:1;min-width:0}
+  .wrap{max-width:1200px;margin:26px auto;padding:0 18px}
+  .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .stat{background:#0e1630;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px}
+  .muted{color:rgba(255,255,255,.7)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.10);color:#fff}
+  .btn.active{background:#1a3cff}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+
+  .mobile-topbar{
+    display:none;
+    position:sticky;
+    top:0;
+    z-index:1200;
+    padding:12px 14px;
+    background:#0a1022;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .mobile-title{font-weight:900}
+  .menu-btn{
+    border:none;
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:900;
+    cursor:pointer;
+    background:#1a3cff;
+    color:#fff;
+  }
+
+  .sidebar-backdrop{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:1198;
+  }
+
+  @media (max-width: 1000px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .mobile-topbar{display:flex}
+    .sidebar{
+      position:fixed;
+      left:0;
+      top:0;
+      bottom:0;
+      z-index:1199;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      overflow:auto;
+    }
+    body.menu-open .sidebar{transform:translateX(0)}
+    body.menu-open .sidebar-backdrop{display:block}
+    .wrap{margin:18px auto;padding:0 14px}
+  }
+
+  @media (max-width: 700px){
+    .grid{grid-template-columns:1fr}
+  }
+</style>
 </head>
 <body>
+    <div class="mobile-topbar">
+  <button type="button" class="menu-btn" onclick="toggleAdminMenu()">☰ Menu</button>
+  <div class="mobile-title">Admin Panel</div>
+</div>
+
+<div class="sidebar-backdrop" onclick="closeAdminMenu()"></div>
   <div class="layout">
     <aside class="sidebar">
       <div class="brand">Admin Panel</div>
       <div class="nav">
         <a href="/admin" class="active">Overview</a>
+        <a href="/admin/offline-dashboard">Offline Dashboard</a>
         <a href="/admin/contests">Contests</a>
         <a href="/admin/user360">View User</a>
         <a href="/admin/orders">Orders</a>
         <a href="/admin/submissions">Submissions</a>
         <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/shipment-stock">Shipment Stock</a>
         <a href="/admin/users">Users</a>
         <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/admin/agents">Agents</a>
+        <a href="/admin/offline-orders">Offline Orders</a>
         <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
       </div>
     </aside>
@@ -152,6 +221,10 @@
           </div>
         </div>
 
+        <a href="/admin/agents"> Handle Agents</a>
+
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+
       </div>
     </main>
   </div>
@@ -221,5 +294,19 @@
   render("daily");
 </script>
 
+
+<script>
+  function toggleAdminMenu() {
+    document.body.classList.toggle("menu-open");
+  }
+
+  function closeAdminMenu() {
+    document.body.classList.remove("menu-open");
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeAdminMenu();
+  });
+</script>
 </body>
 </html>

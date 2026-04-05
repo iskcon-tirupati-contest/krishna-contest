@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Offline Dashboard</title>
+  <style>
+    body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#0b1224;color:#fff}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:260px;background:#0a1022;border-right:1px solid rgba(255,255,255,.08);padding:18px}
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
+    .content{flex:1}
+    .wrap{max-width:1200px;margin:26px auto;padding:0 18px}
+    .card{background:#111b35;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .stat{background:#0e1630;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px}
+    .muted{color:rgba(255,255,255,.7)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.10);color:#fff}
+    .btn.active{background:#1a3cff}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}
+    @media (max-width: 1000px){ .grid{grid-template-columns:repeat(2,1fr)} .sidebar{display:none} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/offline-dashboard" class="active">Offline Dashboard</a>
+        <a href="/admin/offline-orders">Offline Orders</a>
+        <a href="/admin/agent-bookings">Agent Booking</a>
+        <a href="/admin/contests">Contests</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/submissions">Submissions</a>
+        <a href="/admin/shipments">Shipments</a>
+        <a href="/admin/shipment-stock">Shipment Stock</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/feedback">Feedback</a>
+        <a href="/admin/payments/reconcile-bulk">Bulk Reconcile</a>
+        <a href="/admin/agents">Agents</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="card">
+          <h1 style="margin:0 0 6px 0">Offline Dashboard</h1>
+          <div class="muted">Quick stats</div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+          <div class="grid">
+            <div class="stat"><div class="muted">Users</div><div style="font-size:28px;font-weight:900"><%= stats.users %></div></div>
+            <div class="stat"><div class="muted">Total Orders</div><div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div></div>
+            <div class="stat"><div class="muted">Paid Orders</div><div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div></div>
+            <div class="stat"><div class="muted">Pending/Failed</div><div style="font-size:28px;font-weight:900"><%= stats.pendingOrders %></div></div>
+
+            <div class="stat"><div class="muted">Gift Book (paid)</div><div style="font-size:28px;font-weight:900"><%= stats.gift %></div></div>
+            <div class="stat"><div class="muted">Donation (paid)</div><div style="font-size:28px;font-weight:900"><%= stats.donate %></div></div>
+            <div class="stat"><div class="muted">Total Revenue</div><div style="font-size:28px;font-weight:900">₹<%= stats.revenue %></div></div>
+            <div class="stat"><div class="muted">Today's Revenue</div><div style="font-size:28px;font-weight:900">₹<%= stats.todayRevenue %></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h2 style="margin:0 0 6px 0">Sales</h2>
+              <div class="muted">Revenue trend (paid offline bookings)</div>
+            </div>
+            <div class="row">
+              <button class="btn active" id="btnDaily">Daily</button>
+              <button class="btn" id="btnWeekly">Weekly</button>
+              <button class="btn" id="btnMonthly">Monthly</button>
+            </div>
+          </div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+          <canvas id="salesChart" height="90"></canvas>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 6px 0">Paid Book Details</h2>
+          <div class="muted">Books handed over in paid offline bookings</div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Book Name</th>
+                <th>Language</th>
+                <th>Type</th>
+                <th>Count Given</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% paidBookDetails.forEach(r => { %>
+                <tr>
+                  <td><%= r.book_title %></td>
+                  <td><%= r.book_language %></td>
+                  <td>
+                    <span class="pill"><%= r.book_kind %></span>
+                  </td>
+                  <td><%= r.given_count %></td>
+                </tr>
+              <% }) %>
+              <% if (!paidBookDetails.length) { %>
+                <tr>
+                  <td colspan="4" class="muted">No paid handover book data found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 6px 0">Contest Registrations</h2>
+          <div class="muted">Offline paid registrations only</div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Contest</th>
+                <th>Registrations (paid)</th>
+                <th>Submitted</th>
+                <th>Not Submitted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% contestStats.forEach(c => { %>
+                <tr>
+                  <td><%= c.title %></td>
+                  <td><%= c.registrations %></td>
+                  <td><%= c.submitted %></td>
+                  <td><%= c.not_submitted %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const series = {
+    daily: <%- JSON.stringify(series.daily) %>,
+    weekly: <%- JSON.stringify(series.weekly) %>,
+    monthly: <%- JSON.stringify(series.monthly) %>
+  };
+
+  const ctx = document.getElementById("salesChart");
+
+  function buildData(mode){
+    const rows = series[mode] || [];
+    const labels = rows.map(r => (r.d || r.w || r.m));
+    const values = rows.map(r => Number(r.revenue || 0));
+    return { labels, values };
+  }
+
+  let chart;
+
+  function render(modeNow){
+    const { labels, values } = buildData(modeNow);
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Revenue (₹)",
+          data: values,
+          borderColor: "#35a2ff",
+          backgroundColor: "rgba(53,162,255,.18)",
+          tension: 0.3,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: "#fff" } } },
+        scales: {
+          x: { ticks: { color: "rgba(255,255,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
+          y: { ticks: { color: "rgba(255,255,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } }
+        }
+      }
+    });
+
+    document.getElementById("btnDaily").classList.toggle("active", modeNow === "daily");
+    document.getElementById("btnWeekly").classList.toggle("active", modeNow === "weekly");
+    document.getElementById("btnMonthly").classList.toggle("active", modeNow === "monthly");
+  }
+
+  document.getElementById("btnDaily").addEventListener("click", () => render("daily"));
+  document.getElementById("btnWeekly").addEventListener("click", () => render("weekly"));
+  document.getElementById("btnMonthly").addEventListener("click", () => render("monthly"));
+
+  render("daily");
+</script>
+</body>
+</html>

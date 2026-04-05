@@ -1,48 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Help - Krishna Wisdom Contest 2026</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help - Iskcon Tirupati Essay Contest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#f6f7fb;--card:#fff;--ink:#132238;--muted:#64748b;--line:#e7ecf3;
-      --primary:#1a237e;--primary2:#283593;--shadow:0 10px 26px rgba(15,23,42,.07);
-      --safe-bottom:calc(96px + env(safe-area-inset-bottom));
-    }
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:var(--safe-bottom)}
-    a{text-decoration:none;color:inherit}
-    input,textarea,button,select{font:inherit}
+    :root{--navy:#1a237e;--navy-mid:#283593;--navy-lt:#3949ab;--navy-ghost:#eef2ff;--green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;--bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;--text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;--text-faint:#94a3b8;--sh-sm:0 4px 16px rgba(26,35,126,.10);--sh-md:0 10px 30px rgba(26,35,126,.16);--safe-bottom:calc(76px + env(safe-area-inset-bottom))}
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding-bottom:var(--safe-bottom);-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}input,textarea,select,button{font:inherit}
     .app{max-width:560px;margin:0 auto;min-height:100vh}
-    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding-top:max(10px, env(safe-area-inset-top))}
-    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 14px}
-    .brand{display:flex;align-items:center;gap:10px}
-    .logo{width:40px;height:40px;border-radius:14px;overflow:hidden;background:#fff1;border:1px solid rgba(255,255,255,.18)}
-    .logo img{width:100%;height:100%;object-fit:cover}
-    .brandTitle{font-size:16px;font-weight:900;line-height:1.15}
-    .iconBtn{min-width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.12);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-    .page{padding:14px 12px 22px}
-    .hero,.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
-    .hero{margin-bottom:14px}
-    .hero h1{margin:0 0 6px;font-size:21px;color:#111827}
-    .hero p{margin:0;font-size:13px;color:#475569;line-height:1.6}
-    .sectionTitle{font-size:18px;font-weight:900;color:#111827;margin:0 0 10px}
-    .faq{border:1px solid #e7edf6;border-radius:16px;padding:14px;margin-bottom:10px;background:#fbfdff}
-    .faq q{font-weight:900;display:block;margin-bottom:8px;color:#0f172a}
-    .muted{color:var(--muted);font-size:13px;line-height:1.6}
-    label{display:block;font-size:12px;color:#64748b;font-weight:800;margin-bottom:6px}
-    textarea,input,select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid rgba(15,23,42,.14);background:#fff;color:#132238}
+    .topbar{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,#1a237e 0%,#283593 55%,#3949ab 100%);color:#fff;padding-top:max(10px,env(safe-area-inset-top));box-shadow:0 6px 24px rgba(26,35,126,.3)}
+    .topbarInner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px 13px;min-height:68px}
+    .brand{flex:1;min-width:0;display:flex;align-items:center;gap:10px;overflow:hidden}
+    .topbar-logo-wrap{flex-shrink:0;width:clamp(42px,11vw,54px);height:clamp(42px,11vw,54px);display:flex;align-items:center;justify-content:center}
+    .topbar-logo-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,.4))}
+    .topbar-title{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.25}
+    .topbar-title-line1{font-family:'Sora',sans-serif;font-size:clamp(14px,4vw,19px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}
+    .topbar-title-line2{font-family:'Sora',sans-serif;font-size:clamp(10px,2.8vw,13px);font-weight:600;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+    .topActions{flex-shrink:0;display:flex;align-items:center;gap:8px}
+    .iconBtn{position:relative;width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.13);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .16s,transform .12s}
+    .iconBtn:hover{background:rgba(255,255,255,.22)}.iconBtn:active{transform:scale(.93)}
+    .iconBtn svg{width:20px;height:20px;fill:currentColor}.iconBtn.danger svg{fill:#fca5a5}
+    @media(max-width:420px){.topbarInner{min-height:62px;padding:8px 12px 11px;gap:8px}.topbar-logo-wrap{width:38px;height:38px}.topbar-title-line1{font-size:clamp(13px,3.8vw,16px)}.topbar-title-line2{font-size:clamp(9px,2.6vw,11px)}.iconBtn{width:38px;height:38px}.iconBtn svg{width:18px;height:18px}}
+
+    .page {
+     padding: 14px 12px calc(var(--safe-bottom) + 20px);display:flex;flex-direction:column;gap:14px
+}
+    .hero{background:linear-gradient(135deg,#eef4ff 0%,#fff 60%,#fff8e6 100%);border:1.5px solid #d8e0f8;border-radius:24px;padding:16px;box-shadow:var(--sh-sm)}
+    .hero h1{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text-h);margin-bottom:4px}
+    .hero p{font-size:13px;color:var(--text-muted);line-height:1.6}
+    .card{background:#fff;border:1.5px solid var(--border-lt);border-radius:22px;padding:16px;box-shadow:0 6px 22px rgba(26,35,126,.12)}
+    .cardTitle{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text-h);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+    /* FAQ accordion */
+    .faq{border:1.5px solid var(--border-lt);border-radius:14px;overflow:hidden;margin-bottom:8px;transition:border-color .16s}
+    .faq:last-child{margin-bottom:0}.faq:hover{border-color:var(--border)}
+    .faqQ{width:100%;padding:13px 14px;text-align:left;background:#fafbff;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;font-weight:600;color:var(--text-h);transition:background .14s}
+    .faqQ:hover{background:var(--navy-ghost)}.faqQ.open{background:var(--navy-ghost);color:var(--navy)}
+    .faqArrow{width:18px;height:18px;flex-shrink:0;color:var(--text-muted);transition:transform .2s;fill:currentColor}
+    .faqQ.open .faqArrow{transform:rotate(180deg);color:var(--navy)}
+    .faqA{display:none;padding:12px 14px;font-size:13px;color:var(--text-mid);line-height:1.7;background:#fff;border-top:1.5px solid var(--border-lt)}
+    .faqA.show{display:block}
+    /* wa banner */
+    .waCta{background:linear-gradient(135deg,#1a237e 0%,#283593 100%);border-radius:18px;padding:16px;display:flex;gap:14px;align-items:center}
+    .waIcon{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.15);display:grid;place-items:center;flex-shrink:0}
+    .waText .waTitle{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
+    .waText .waNum{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:2px;letter-spacing:.5px}
+    .waText .waSub{font-size:12px;color:rgba(255,255,255,.75)}
+    /* form */
+    label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;letter-spacing:.2px}
+    input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid #d1d8f0;border-radius:12px;background:#fff;color:var(--text-b);font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s}
+    input:focus,select:focus,textarea:focus{border-color:var(--navy-lt);box-shadow:0 0 0 3px rgba(92,107,192,.16)}
     textarea{min-height:90px;resize:vertical}
-    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer}
-    .btn.primary{background:var(--primary);color:#fff;width:100%}
-    .ticket{border:1px solid #e7edf6;border-radius:16px;padding:12px;background:#fbfdff;margin-top:10px}
-    .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;background:#f8fafc;border:1px solid #e2e8f0;color:#334155}
-    .bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px, 100%);background:#fff;border-top:1px solid #e6edf6;box-shadow:0 -10px 24px rgba(15,23,42,.08);padding-bottom:max(10px, env(safe-area-inset-bottom));z-index:98}
-    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 0}
-    .navBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#64748b;font-size:10px;font-weight:800;border-radius:14px;text-align:center}
-    .navBtn svg{width:20px;height:20px;fill:currentColor}
-    .navBtn.active{color:var(--primary);background:#eef2ff}
+    .formField{margin-bottom:12px}.formField:last-child{margin-bottom:0}
+    .submitBtn{width:100%;border:none;border-radius:12px;padding:13px 16px;background:linear-gradient(135deg,var(--navy),var(--navy-lt));color:#fff;font-family:'Sora',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(26,35,126,.28);transition:transform .15s,box-shadow .15s;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:7px}
+    .submitBtn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(26,35,126,.38)}.submitBtn:active{transform:scale(.97)}
+    /* tickets */
+    .ticketList{display:flex;flex-direction:column;gap:10px}
+    .ticket{border:1.5px solid var(--border-lt);border-radius:14px;padding:12px;background:#fafbff}
+    .ticketHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
+    .ticketCat{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text-h);text-transform:capitalize}
+    .pill{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;color:var(--text-mid)}
+    .ticketMsg{font-size:13px;color:var(--text-mid);line-height:1.6;margin-bottom:4px}
+    .ticketMeta{font-size:11px;color:var(--text-faint)}
+    .emptyMsg{font-size:14px;color:var(--text-muted);text-align:center;padding:8px 0}
+    /* FLOATING WhatsApp button */
+    .waFloat{
+      position:fixed;bottom:calc(76px + env(safe-area-inset-bottom) + 14px);right:16px;
+      width:56px;height:56px;border-radius:50%;
+      background:linear-gradient(135deg,#25d366,#128c7e);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 20px rgba(37,211,102,.45);
+      text-decoration:none;z-index:99;
+      transition:transform .18s,box-shadow .18s;
+      border:3px solid rgba(255,255,255,.3);
+    }
+    .waFloat:hover{transform:scale(1.08);box-shadow:0 10px 28px rgba(37,211,102,.6)}
+    .waFloat:active{transform:scale(.95)}
+    .waFloat svg{width:30px;height:30px;fill:#fff}
+    .waFloat-pulse{position:absolute;inset:-4px;border-radius:50%;background:rgba(37,211,102,.3);animation:waPulse 2s ease-out infinite}
+    @keyframes waPulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+        .bottomNav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(560px,100%);
+      background:#fff;
+      border-top:1.5px solid #e8eaf6;
+      box-shadow:0 -6px 24px rgba(26,35,126,.09);
+      padding-bottom:max(10px,env(safe-area-inset-bottom));
+      z-index:98;
+    }
+    .bottomNavInner{display:grid;grid-template-columns:repeat(5,1fr);padding:0 4px 0}
+    .navBtn{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+      min-height:58px;color:#64748b;font-size:10px;font-weight:700;
+      text-align:center;transition:color .15s;position:relative;padding-top:6px;
+    }
+    .navBtn svg{width:21px;height:21px;fill:currentColor;transition:transform .2s}
+    .navBtn::before{
+      content:'';position:absolute;top:0;left:50%;transform:translateX(-50%) scaleX(0);
+      width:32px;height:3px;border-radius:0 0 4px 4px;
+      background:linear-gradient(90deg,var(--navy),var(--navy-lt));
+      transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .2s;
+      opacity:0;
+    }
+    .navBtn.active{color:var(--navy)}
+    .navBtn.active::before{transform:translateX(-50%) scaleX(1);opacity:1}
+    .navBtn.active svg{transform:translateY(-1px)}
   </style>
 </head>
 <body>
@@ -50,115 +116,91 @@
   <header class="topbar">
     <div class="topbarInner">
       <div class="brand">
-        <div class="logo"><img src="/images/icon.png" alt="" onerror="this.style.display='none'"></div>
-        <div class="brandTitle">Krishna Wisdom Contest 2026</div>
+        <div class="topbar-logo-wrap">
+          <img src="/images/logo_new.png" alt="Iskcon Tirupati" class="topbar-logo-img" onerror="this.style.display='none'">
+        </div>
+        <div class="topbar-title">
+          <span class="topbar-title-line1">Iskcon Tirupati</span>
+          <span class="topbar-title-line2">Essay Writing Contest</span>
+        </div>
       </div>
-      <a class="iconBtn" href="/logout" title="Logout" aria-label="Logout">
-        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg>
-      </a>
+      <div class="topActions">
+        <a class="iconBtn danger" href="/logout" id="logoutBtn" title="Logout">
+          <svg viewBox="0 0 24 24"><path d="M10 17l1.41-1.41L8.83 13H20v-2H8.83l2.58-2.59L10 7l-5 5zm-6 2h8v2H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h8v2H4z"/></svg>
+        </a>
+      </div>
     </div>
   </header>
-
   <main class="page">
-    <section class="hero">
-      <h1>Help & Support</h1>
-      <p>Find answers to common questions or submit a support request for payment or general issues.</p>
-    </section>
+    <section class="hero"><h1>Help & Support 🙏</h1><p>Find quick answers below or submit a ticket. We're here 24×7.</p></section>
 
-    <div class="card" style="margin-bottom:14px;">
-      <div class="sectionTitle">Common Questions</div>
-
-      <div class="faq">
-        <q>My payment is pending. What should I do?</q>
-        <div class="muted">Open Profile → My Payments and use Resume Payment. If money was deducted but status is still pending, submit a support ticket with the payment reference.</div>
-      </div>
-
-      <div class="faq">
-        <q>My payment failed, but the amount was deducted.</q>
-        <div class="muted">Check Profile → My Payments and raise a complaint using the grouped payment reference. Our team will verify it against the gateway records.</div>
-      </div>
-
-      <div class="faq">
-        <q>How do I upload my essay?</q>
-        <div class="muted">Go to My Contests, open your purchased contest, and upload PDF, DOC, or DOCX. Maximum 3 attempts are allowed.</div>
-      </div>
-
-      <div class="faq">
-        <q>Can I change my mobile number after saving?</q>
-        <div class="muted">Mobile number is locked after saving to maintain payment and participant record integrity.</div>
-      </div>
+    <div class="card" style="background:linear-gradient(135deg,#fff7ed 0%,#ffffff 60%,#eff6ff 100%);border:1.5px solid #fed7aa;">
+  <div class="cardTitle">🗣 Public Opinion</div>
+  <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:14px;">
+    Help us improve the website experience. Please share your honest opinion after using the website.
+  </p>
+  <a
+    href="/dashboard/public-opinion"
+    style="display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--navy-lt));color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;box-shadow:0 6px 18px rgba(26,35,126,.22);"
+  >
+    📝 Open Public Opinion Form
+  </a>
+</div>
+    <div class="waCta">
+      <div class="waIcon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg></div>
+      <div class="waText"><div class="waTitle">WhatsApp Support</div><div class="waNum">9493805059</div><div class="waSub">Send "Hi" to start · Available 24×7</div></div>
     </div>
-
-    <div class="card" style="margin-bottom:14px;">
-      <div class="sectionTitle">Submit a Support Request</div>
+    <div class="card">
+      <div class="cardTitle">❓ Common Questions</div>
+      <div class="faq"><button class="faqQ" type="button" onclick="toggleFaq(this)">My payment is pending. What should I do?<svg class="faqArrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg></button><div class="faqA">Open Profile → My Payments and use <b>Resume Payment</b>. If money was deducted but status is pending, submit a ticket with the payment reference number.</div></div>
+      <div class="faq"><button class="faqQ" type="button" onclick="toggleFaq(this)">My payment failed but the amount was deducted.<svg class="faqArrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg></button><div class="faqA">Go to Profile → My Payments and raise a complaint. Our team will verify against gateway records within 24–48 hours.</div></div>
+      <div class="faq"><button class="faqQ" type="button" onclick="toggleFaq(this)">How do I upload my essay?<svg class="faqArrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg></button><div class="faqA">Go to <b>My Contests</b>, open your contest, and upload a PDF or DOCX file. Max 3 attempts. Each upload replaces the previous one. Essay must be 1,000–2,000 words.</div></div>
+      <div class="faq"><button class="faqQ" type="button" onclick="toggleFaq(this)">Can I change my mobile number after saving?<svg class="faqArrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg></button><div class="faqA">Mobile number is locked after saving to maintain payment and participant record integrity. Contact support for genuine concerns.</div></div>
+    </div>
+    <div class="card">
+      <div class="cardTitle">📝 Submit a Support Request</div>
       <form method="POST" action="/dashboard/help/ticket">
-        <label>Category</label>
-        <select name="category">
-          <option value="general">General</option>
-          <option value="payment">Payment</option>
-          <option value="contest">Contest</option>
-          <option value="delivery">Delivery</option>
-          <option value="technical">Technical</option>
-        </select>
-
-        <div style="height:12px"></div>
-
-        <label>Transaction / Payment Reference (optional)</label>
-        <input name="transactionRef" placeholder="Enter internal payment reference if any" />
-
-        <div style="height:12px"></div>
-
-        <label>Message</label>
-        <textarea name="message" placeholder="Describe your issue clearly" required></textarea>
-
-        <div style="height:14px"></div>
-        <button class="btn primary" type="submit">Submit Ticket</button>
+        <div class="formField"><label>Category</label><select name="category"><option value="general">General</option><option value="payment">Payment</option><option value="contest">Contest</option><option value="delivery">Delivery</option><option value="technical">Technical</option></select></div>
+        <div class="formField"><label>Transaction / Payment Reference (optional)</label><input name="transactionRef" placeholder="Enter internal payment reference if any"></div>
+        <div class="formField"><label>Describe Your Issue</label><textarea name="message" placeholder="Please describe your issue clearly..." required></textarea></div>
+        <button class="submitBtn" type="submit"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>Submit Ticket</button>
       </form>
     </div>
-
     <div class="card">
-      <div class="sectionTitle">My Recent Support Tickets</div>
-      <% if (!tickets || !tickets.length) { %>
-        <div class="muted">No support tickets submitted yet.</div>
-      <% } else { %>
-        <% tickets.forEach((t) => { %>
-          <div class="ticket">
-            <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
-              <div>
-                <div style="font-weight:900;"><%= t.category || 'general' %></div>
-                <div class="muted"><%= t.message %></div>
-                <% if (t.transaction_ref) { %>
-                  <div class="muted">Ref: <%= t.transaction_ref %></div>
-                <% } %>
-                <div class="muted"><%= t.created_at ? new Date(t.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '-' %></div>
-              </div>
-              <span class="pill"><%= t.status || 'open' %></span>
+      <div class="cardTitle">🎫 My Support Tickets</div>
+      <% if(!tickets||!tickets.length){ %><div class="emptyMsg">No support tickets submitted yet.</div>
+      <% }else{ %>
+        <div class="ticketList">
+          <% tickets.forEach(t=>{ %>
+            <div class="ticket">
+              <div class="ticketHead"><div class="ticketCat"><%= t.category||'general' %></div><span class="pill"><%= t.status||'open' %></span></div>
+              <div class="ticketMsg"><%= t.message %></div>
+              <% if(t.transaction_ref){%><div class="ticketMeta">Ref: <%= t.transaction_ref %></div><%}%>
+              <div class="ticketMeta"><%= t.created_at?new Date(t.created_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}):'-' %></div>
             </div>
-          </div>
-        <% }) %>
+          <% }) %>
+        </div>
       <% } %>
     </div>
   </main>
-
   <nav class="bottomNav">
     <div class="bottomNavInner">
-      <a class="navBtn" href="/dashboard">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span>
-      </a>
-      <a class="navBtn" href="/dashboard/my-contests">
-        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span>
-      </a>
-      <a class="navBtn" href="/dashboard/profile">
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span>
-      </a>
-      <a class="navBtn" href="/dashboard/delivery">
-        <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span>
-      </a>
-      <a class="navBtn active" href="/dashboard/help">
-        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span>
-      </a>
+      <a class="navBtn" href="/dashboard"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
+      <a class="navBtn" href="/dashboard/my-contests"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13Z"/></svg><span>My Contests</span></a>
+      <a class="navBtn" href="/dashboard/profile"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg><span>Profile</span></a>
+      <a class="navBtn" href="/dashboard/delivery"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4ZM6 18.5A1.5 1.5 0 1 1 6 15a1.5 1.5 0 0 1 0 3.5Zm12 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM17 9.5h2.2l1.3 1.8H17V9.5Z"/></svg><span>Track</span></a>
+      <a class="navBtn active" href="/dashboard/help"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm0 17a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5Zm1.37-7.75-.57.39c-.86.59-1.3 1.08-1.3 2.11v.25h-2v-.31c0-1.63.75-2.47 1.85-3.22l.79-.54c.46-.31.74-.71.74-1.25 0-.92-.74-1.56-1.79-1.56-1.02 0-1.76.58-2.02 1.55l-1.94-.47C7.6 5.88 9.08 5 11.06 5c2.2 0 3.81 1.31 3.81 3.32 0 1.18-.55 2.11-1.5 2.77Z"/></svg><span>Help</span></a>
     </div>
   </nav>
 </div>
+<!-- Floating WhatsApp button -->
+<a class="waFloat" href="https://wa.me/919493805059?text=Hi" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <div class="waFloat-pulse"></div>
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+</a>
+<script>
+function toggleFaq(btn){const faqA=btn.nextElementSibling;const isOpen=btn.classList.contains('open');document.querySelectorAll('.faqQ.open').forEach(b=>{b.classList.remove('open');b.nextElementSibling.classList.remove('show')});if(!isOpen){btn.classList.add('open');faqA.classList.add('show')}}
+document.getElementById('logoutBtn')?.addEventListener('click',function(e){if(!confirm('Are you sure you want to logout?'))e.preventDefault()});
+</script>
 </body>
 </html>

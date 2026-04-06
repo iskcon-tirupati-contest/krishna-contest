@@ -514,6 +514,7 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     SELECT
       sh.id AS shipment_id,
       sh.payment_id,
+      sh.delivery_mode,
       sh.tracking_id,
       sh.status,
       sh.courier_mode,
@@ -526,7 +527,9 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     WHERE o.user_id = $1
       AND o.payment_status = 'paid'
       AND o.book_option = 'book'
-    GROUP BY sh.id, sh.payment_id, sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
+    GROUP BY
+      sh.id, sh.payment_id, sh.delivery_mode,
+      sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
     ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     `,
     [userId]

@@ -59,16 +59,6 @@
     z-index:1198;
   }
 
-.stat{
-  background:#0e1630;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:16px;
-  padding:14px;
-  min-height:110px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
   @media (max-width: 1000px){
     .grid{grid-template-columns:repeat(2,1fr)}
     .mobile-topbar{display:flex}
@@ -87,8 +77,6 @@
     body.menu-open .sidebar-backdrop{display:block}
     .wrap{margin:18px auto;padding:0 14px}
   }
-
-
 
   @media (max-width: 700px){
     .grid{grid-template-columns:1fr}
@@ -125,94 +113,24 @@
 
     <main class="content">
       <div class="wrap">
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-    <div>
-      <h1 style="margin:0 0 6px 0">Admin Overview</h1>
-      <div class="muted">Today vs overall contest performance</div>
-    </div>
-    <a class="btn ghost" href="/admin/export/overview.csv">Export CSV</a>
-  </div>
+        <div class="card">
+          <h1 style="margin:0 0 6px 0">Admin Overview</h1>
+          <div class="muted">Quick stats</div>
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+            <a class="btn ghost" href="/admin/export/overview.csv">Export CSV</a>
 
-  <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+          <div class="grid">
+            <div class="stat"><div class="muted">Users</div><div style="font-size:28px;font-weight:900"><%= stats.users %></div></div>
+            <div class="stat"><div class="muted">Total Orders</div><div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div></div>
+            <div class="stat"><div class="muted">Paid Orders</div><div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div></div>
+            <div class="stat"><div class="muted">Pending/Failed</div><div style="font-size:28px;font-weight:900"><%= stats.pendingOrders %></div></div>
 
-  <h2 style="margin:0 0 10px 0;font-size:22px">📅 Today's Stats</h2>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-    <div class="stat">
-      <div class="muted">Orders Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayOrdersAll %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Paid Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayPaidOrders %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Pending/Failed Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayPendingOrders %></div>
-    </div>
-
-    <div class="stat">
-      <div class="muted">Gift Book Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayGift %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Donation Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayDonate %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Today's Revenue</div>
-      <div style="font-size:28px;font-weight:900">₹<%= stats.todayRevenue %></div>
-    </div>
-  </div>
-
-  <h2 style="margin:0 0 10px 0;font-size:22px">📊 Total Stats</h2>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-    <div class="stat">
-      <div class="muted">Total Orders</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Paid Orders</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Pending/Failed</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.pendingOrders %></div>
-    </div>
-
-    <div class="stat">
-      <div class="muted">Gift Book (paid)</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.gift %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Donation (paid)</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.donate %></div>
-    </div>
-    <div class="stat">
-      <div class="muted">Total Revenue</div>
-      <div style="font-size:28px;font-weight:900">₹<%= stats.revenue %></div>
-    </div>
-  </div>
-
-  <h2 style="margin:0 0 10px 0;font-size:22px">👥 User Split</h2>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat">
-      <div class="muted">Paid Users</div>
-      <div style="font-size:28px;font-weight:900"><%= userStats?.paid_users || 0 %></div>
-      <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.65)">Successful payment users</div>
-    </div>
-    <div class="stat">
-      <div class="muted">Pending Users</div>
-      <div style="font-size:28px;font-weight:900"><%= userStats?.pending_users || 0 %></div>
-      <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.65)">Added to cart / not yet paid</div>
-    </div>
-    <div class="stat">
-      <div class="muted">Registered Only</div>
-      <div style="font-size:28px;font-weight:900"><%= userStats?.registered_only_users || 0 %></div>
-      <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.65)">No order yet</div>
-    </div>
-  </div>
-</div>
+            <div class="stat"><div class="muted">Gift Book (paid)</div><div style="font-size:28px;font-weight:900"><%= stats.gift %></div></div>
+            <div class="stat"><div class="muted">Donation (paid)</div><div style="font-size:28px;font-weight:900"><%= stats.donate %></div></div>
+            <div class="stat"><div class="muted">Total Revenue</div><div style="font-size:28px;font-weight:900">₹<%= stats.revenue %></div></div>
+            <div class="stat"><div class="muted">Today's Revenue</div><div style="font-size:28px;font-weight:900">₹<%= stats.todayRevenue %></div></div>
+          </div>
+        </div>
 
         <div class="card">
           <div class="row" style="justify-content:space-between">
@@ -334,14 +252,12 @@
 
   const ctx = document.getElementById("salesChart");
 
-
-
   function buildData(mode){
-  const rows = series[mode] || [];
-  const labels = rows.map(r => String(r.d || r.w || r.m || ""));
-  const values = rows.map(r => Number(r.revenue || 0));
-  return { labels, values };
-}
+    const rows = series[mode] || [];
+    const labels = rows.map(r => (r.d || r.w || r.m));
+    const values = rows.map(r => Number(r.revenue || 0));
+    return { labels, values };
+  }
 
   let mode = "daily";
   let chart;
@@ -358,48 +274,10 @@
         datasets: [{ label: "Revenue (₹)", data: values, tension: 0.25 }]
       },
       options: {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true,
-      labels: { color: "#fff" }
-    },
-    tooltip: {
-      callbacks: {
-        title: function(items){
-          return items?.[0]?.label || "";
-        },
-        label: function(ctx){
-          return "Revenue: ₹" + Number(ctx.raw || 0).toLocaleString("en-IN");
-        }
+        responsive: true,
+        plugins: { legend: { display: true } },
+        scales: { y: { beginAtZero: true } }
       }
-    }
-  },
-  scales: {
-    x: {
-      ticks: {
-        color: "rgba(255,255,255,.78)",
-        maxRotation: 0,
-        minRotation: 0
-      },
-      grid: {
-        color: "rgba(255,255,255,.06)"
-      }
-    },
-    y: {
-      beginAtZero: true,
-      ticks: {
-        color: "rgba(255,255,255,.78)",
-        callback: function(v){
-          return "₹" + Number(v || 0).toLocaleString("en-IN");
-        }
-      },
-      grid: {
-        color: "rgba(255,255,255,.06)"
-      }
-    }
-  }
-}
     });
   }
 

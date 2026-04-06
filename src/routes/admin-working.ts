@@ -1397,14 +1397,13 @@ router.post(
   }
 );
 
+
+
 // --------------------
 // OVERVIEW
 // --------------------
-router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => {
-  const IST_TODAY = `(NOW() AT TIME ZONE 'Asia/Kolkata')::date`;
-  const ORDER_IST_DATE = `(o.created_at AT TIME ZONE 'Asia/Kolkata')::date`;
 
-  // online only
+router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => {
   const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);
 
   const ordersAllQ = await pool.query(`
@@ -1416,22 +1415,19 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
   const paidOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='paid'
   `);
 
   const pendingOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='pending'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='pending'
   `);
 
   const failedOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='failed'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='failed'
   `);
 
   const giftQ = await pool.query(`
@@ -1453,58 +1449,7 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
   const revenueQ = await pool.query(`
     SELECT COALESCE(SUM(o.amount),0)::int AS total
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-  `);
-
-  // today stats with SAME old business logic, just IST-scoped
-  const todayOrdersAllQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayPaidOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayPendingOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='pending'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayFailedOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='failed'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayGiftQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND o.book_option='book'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayDonateQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND o.book_option='donation'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='paid'
   `);
 
   const todayRevenueQ = await pool.query(`
@@ -1512,47 +1457,39 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND DATE(o.created_at)=CURRENT_DATE
   `);
 
-  // sales chart - keep old intent, fix IST grouping
   const salesDailyQ = await pool.query(`
-  SELECT
-    TO_CHAR((o.created_at AT TIME ZONE 'Asia/Kolkata')::date, 'DD/MM/YY') AS d,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '30 days')
-  GROUP BY (o.created_at AT TIME ZONE 'Asia/Kolkata')::date
-  ORDER BY (o.created_at AT TIME ZONE 'Asia/Kolkata')::date ASC
-`);
+    SELECT DATE(o.created_at) AS d, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '30 days')
+    GROUP BY DATE(o.created_at)
+    ORDER BY d ASC
+  `);
 
-const salesWeeklyQ = await pool.query(`
-  SELECT
-    TO_CHAR(DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date, 'DD/MM/YY') AS w,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '84 days')
-  GROUP BY DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date
-  ORDER BY DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date ASC
-`);
+  const salesWeeklyQ = await pool.query(`
+    SELECT DATE_TRUNC('week', o.created_at)::date AS w, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '84 days')
+    GROUP BY DATE_TRUNC('week', o.created_at)
+    ORDER BY w ASC
+  `);
 
-const salesMonthlyQ = await pool.query(`
-  SELECT
-    TO_CHAR(DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date, 'DD/MM/YY') AS m,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '365 days')
-  GROUP BY DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date
-  ORDER BY DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date ASC
-`);
+  const salesMonthlyQ = await pool.query(`
+    SELECT DATE_TRUNC('month', o.created_at)::date AS m, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '365 days')
+    GROUP BY DATE_TRUNC('month', o.created_at)
+    ORDER BY m ASC
+  `);
 
-  // keep your shipment logic untouched except online-only filter
   const shipStatusQ = await pool.query(`
     SELECT COALESCE(LOWER(sh.status),'pending') AS status, COUNT(*)::int AS c
     FROM orders o
@@ -1591,83 +1528,58 @@ const salesMonthlyQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='book'
-      AND COALESCE(LOWER(sh.status),'pending') IN ('pending','under_packing','packed')
+      AND COALESCE(LOWER(sh.status),'pending') NOT IN ('dispatched','delivered')
   `);
 
   const contestStatsQ = await pool.query(`
     SELECT
-      c.title,
-      COUNT(o.id) FILTER (WHERE o.payment_status='paid' AND ${onlineOrdersWhere("o")})::int AS registrations,
-      COUNT(s.id)::int AS submitted,
-      (
-        COUNT(o.id) FILTER (WHERE o.payment_status='paid' AND ${onlineOrdersWhere("o")})
-        - COUNT(s.id)
-      )::int AS not_submitted
+      c.id, c.title,
+      COUNT(o.id)::int AS registrations,
+      COUNT(s.id)::int AS submitted
     FROM contests c
-    LEFT JOIN orders o ON o.contest_id = c.id
-    LEFT JOIN submissions s ON s.order_id = o.id
+    LEFT JOIN orders o
+      ON o.contest_id=c.id
+     AND o.payment_status='paid'
+     AND ${onlineOrdersWhere("o")}
+    LEFT JOIN submissions s ON s.order_id=o.id
     GROUP BY c.id, c.title
-    ORDER BY c.title ASC
+    ORDER BY registrations DESC, c.title ASC
   `);
 
-  const uploadQ = await pool.query(`
+  const uploadSizeQ = await pool.query(`
     SELECT
+      COALESCE(SUM(COALESCE(file_size,0)),0)::bigint AS bytes,
       COUNT(*)::int AS files,
-      COALESCE(SUM(file_size),0)::bigint AS bytes,
       COUNT(*) FILTER (WHERE file_size IS NULL)::int AS missing_size
     FROM submissions
   `);
 
-  const userSplitQ = await pool.query(`
-  ${getUsersRollupCte()}
-  SELECT
-    COUNT(*) FILTER (WHERE payment_bucket = 'paid')::int AS paid_users,
-    COUNT(*) FILTER (WHERE payment_bucket = 'added_to_cart')::int AS pending_users,
-    COUNT(*) FILTER (WHERE payment_bucket = 'registered_only')::int AS registered_only_users
-  FROM user_rollup ur
-`);
-
-
-
-  return res.render("admin/admin-dashboard", {
-    activeTab: "overview",
+  res.render("admin/admin-dashboard", {
+    activeTab: "admin",
     stats: {
       users: usersQ.rows[0].c,
       ordersAll: ordersAllQ.rows[0].c,
       paidOrders: paidOrdersQ.rows[0].c,
-      pendingOrders: pendingOrdersQ.rows[0].c + failedOrdersQ.rows[0].c,
+      pendingOrders: Number(pendingOrdersQ.rows[0].c) + Number(failedOrdersQ.rows[0].c),
+      failedOrders: failedOrdersQ.rows[0].c,
       gift: giftQ.rows[0].c,
       donate: donateQ.rows[0].c,
       revenue: revenueQ.rows[0].total,
       todayRevenue: todayRevenueQ.rows[0].total,
-
-      todayOrdersAll: todayOrdersAllQ.rows[0].c,
-      todayPaidOrders: todayPaidOrdersQ.rows[0].c,
-      todayPendingOrders: todayPendingOrdersQ.rows[0].c + todayFailedOrdersQ.rows[0].c,
-      todayGift: todayGiftQ.rows[0].c,
-      todayDonate: todayDonateQ.rows[0].c,
-
-      pendingDispatch: pendingDispatchQ.rows[0].c,
+      packed: packedQ.rows[0].c,
       dispatched: dispatchedQ.rows[0].c,
-      packed: packedQ.rows[0].c
+      pendingDispatch: pendingDispatchQ.rows[0].c,
     },
-    series: {
-      daily: salesDailyQ.rows,
-      weekly: salesWeeklyQ.rows,
-      monthly: salesMonthlyQ.rows
-    },
-    userStats: userSplitQ.rows[0] || {
-  paid_users: 0,
-  pending_users: 0,
-  registered_only_users: 0
-},
+    series: { daily: salesDailyQ.rows, weekly: salesWeeklyQ.rows, monthly: salesMonthlyQ.rows },
     shipStatus: shipStatusQ.rows,
-    contestStats: contestStatsQ.rows,
-    upload: uploadQ.rows[0]
+    contestStats: contestStatsQ.rows.map((r: any) => ({
+      ...r,
+      not_submitted: Math.max(0, Number(r.registrations) - Number(r.submitted))
+    })),
+    upload: uploadSizeQ.rows[0],
+    qs: ""
   });
 });
-
-
 
 router.get("/admin/export/overview.csv", authMiddleware, adminMiddleware, async (_req: any, res) => {
   const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);

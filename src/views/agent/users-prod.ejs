@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Checkout Review – Agent Portal</title>
+<title>Users – Agent Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -42,8 +42,8 @@
   .ssub{width:42px;height:42px;border:none;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(26,35,126,.22);transition:transform .14s}
   .ssub:hover{transform:scale(1.05)}
   .ssub svg{width:18px;height:18px;fill:#fff}
-  .sreset{height:42px;padding:0 14px;border:1.5px solid var(--bd);background:#fff;border-radius:11px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--tm);cursor:pointer;flex-shrink:0;transition:all .14s}
-  .sreset:hover{border-color:var(--navy3);color:var(--navy)}
+  .sreset{height:42px;padding:0 14px;border:1.5px solid var(--navy);background:var(--ng);border-radius:11px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;flex-shrink:0;transition:all .14s;active:scale(.95)}
+  .sreset:hover{background:var(--navy);color:#fff}.sreset:active{transform:scale(.95);background:var(--navy2)}
   .smeta{margin-top:10px;font-size:12px;color:var(--mu);display:flex;align-items:center;gap:5px}
   .smeta-count{background:var(--ng);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:var(--navy)}
 
@@ -163,9 +163,11 @@
   .co-row-fields .field input,.co-row-fields .field select{padding:9px 10px;font-size:13px}
 
   /* BOTTOM NAV */
-  .bnav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid var(--bdl);display:flex;justify-content:space-around;z-index:100;box-shadow:0 -4px 14px rgba(26,35,126,.07)}
-  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 6px;color:#475569;font-family:'Sora',sans-serif;font-size:10px;font-weight:800;cursor:pointer;transition:color .14s}
-  .bnav-item.active{color:var(--navy)}
+  .bnav{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a237e,#283593);display:flex;justify-content:space-around;z-index:100;box-shadow:0 -4px 20px rgba(26,35,126,.3);padding-bottom:env(safe-area-inset-bottom)}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 7px;color:rgba(255,255,255,.55);font-family:'Sora',sans-serif;font-size:10px;font-weight:800;cursor:pointer;transition:all .18s;position:relative}
+  .bnav-item.active{color:#ffd700}
+  .bnav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;background:#ffd700;border-radius:0 0 4px 4px}
+  .bnav-item:not(.active):hover{color:rgba(255,255,255,.82)}
   .bnav-ico{font-size:20px;line-height:1}
 
   /* MODAL */
@@ -198,246 +200,124 @@
   .alert-ok{background:var(--glt2);border:1.5px solid #a7f3d0;color:var(--gdk2);padding:11px 13px;border-radius:12px;margin-bottom:13px;font-size:13px;font-weight:600;display:flex;gap:8px}
   .hide{display:none!important}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* Ripple effect */
+  .ripple{position:relative;overflow:hidden}
+  .ripple::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.35);width:100px;height:100px;margin-top:-50px;margin-left:-50px;top:50%;left:50%;transform:scale(0);opacity:1;transition:transform .4s,opacity .4s}
+  .ripple:active::after{transform:scale(3);opacity:0;transition:0s}
+  .uc-act{position:relative;overflow:hidden}
+  .uc-act::after{content:'';position:absolute;border-radius:50%;background:rgba(26,35,126,.12);width:80px;height:80px;margin-top:-40px;margin-left:-40px;top:50%;left:50%;transform:scale(0);opacity:1}
+  .uc-act:active::after{transform:scale(3);opacity:0;transition:transform .3s,opacity .3s}
+  .bc-btn{position:relative;overflow:hidden}
+  .bc-btn::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.25);width:200px;height:200px;margin-top:-100px;margin-left:-100px;top:50%;left:50%;transform:scale(0);opacity:1}
+  .bc-btn:active::after{transform:scale(3);opacity:0;transition:transform .3s,opacity .3s}
 </style>
-</head><body style="padding-bottom:20px">
+</head><body>
 <div class="topbar">
   <div class="tb-inner">
     <div class="tb-brand">
       <div class="tb-logo"><img src="/images/logo_new.png" onerror="this.style.display='none'" alt="logo"></div>
-      <div><div class="tb-title">Checkout Review</div><div class="tb-sub"><%= booking.customer_name %> · <%= booking.customer_phone %></div></div>
+      <div><div class="tb-title">All Users</div><div class="tb-sub">Total <b><%= Number(totalAll||0) %></b> registered</div></div>
     </div>
+    <a class="tb-logout" href="/logout">Logout</a>
   </div>
 </div>
 <div class="wrap">
 
-  <% if(error){ %><div class="alert-err"><span>⚠️</span><%= error %></div><% } %>
-
-  <form method="POST" action="/agent/bookings/<%= booking.id %>/checkout" id="checkoutForm">
-
-    <!-- Delivery & Payment -->
-    <div class="fcard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 006 0h6a3 3 0 006 0h2v-5l-3-4z"/></svg></div>
-        <div><div class="fcard-title">Delivery & Payment</div><div class="fcard-sub">How to deliver and how payment was received</div></div>
-      </div>
-      <div class="fcard-body">
-        <div class="field">
-          <label>Delivery Mode</label>
-          <div class="rcards">
-            <label class="rcard">
-              <input type="radio" name="deliveryMode" value="handover" <%= deliveryMode==='handover'||!deliveryMode?'checked':'' %>>
-              <span class="rcard-ico">🤝</span> Direct Delivery
-            </label>
-            <label class="rcard">
-              <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode==='donate'?'checked':'' %>>
-              <span class="rcard-ico">🛕</span> Donate Book to Temple
-            </label>
-          </div>
+  <!-- Search -->
+  <div class="sbox">
+    <form method="GET" action="/agent/users">
+      <div class="srow">
+        <div class="sfield-wrap">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input class="sfield" type="text" name="q" value="<%= q||'' %>" placeholder="Search by name or phone…">
         </div>
-        <div class="field">
-          <label>Payment Method</label>
-          <select name="offlineMethod" required style="width:100%;padding:11px 13px;border:1.5px solid var(--bd);border-radius:11px;font-size:14px;background:#f8fafc;outline:none">
-            <option value="cash" <%= String(booking.payment_method||'')==='cash'?'selected':'' %>>💵 Cash</option>
-            <option value="phonepe" <%= String(booking.payment_method||'')==='phonepe'?'selected':'' %>>📱 UPI / PhonePe</option>
-          </select>
-        </div>
+        <button class="ssub" type="submit"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+        <a class="sreset" href="/agent/users">Reset</a>
       </div>
-    </div>
+      <div class="smeta">
+        <span>Showing</span>
+        <span class="smeta-count"><%= Number((users||[]).length) %></span>
+        <span>of</span>
+        <span class="smeta-count"><%= Number(filteredCount||0) %></span>
+        <span>users</span>
+      </div>
+    </form>
+  </div>
 
-    <!-- Contest Details — each in row format -->
-    <div class="fcard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16h16V8l-6-6z"/></svg></div>
-        <div><div class="fcard-title">Contest Details</div><div class="fcard-sub">Age, book & language for each entry</div></div>
-      </div>
-      <div class="fcard-body">
-        <% (orders||[]).forEach(function(o){ %>
-        <div class="co-row" data-book-row>
-          <div class="co-row-top">
-            <div class="co-row-name"><%= o.contest_title %></div>
-            <div class="co-row-amt">₹<%= Number(o.amount||0) %></div>
-          </div>
-          <div class="co-row-fields">
-            <div class="field">
-              <label>Age</label>
-              <select name="ageCategory" required>
-                <option value="0-25" <%= String(o.age_category||'')==='0-25'?'selected':'' %>>0–25 yrs</option>
-                <option value="above-25" <%= String(o.age_category||'')==='above-25'?'selected':'' %>>Above 25</option>
-              </select>
-            </div>
-            <div class="field book-section">
-              <label>Book</label>
-              <select name="bookTitle" class="book-title">
-                <option value="">Select</option>
-                <% (o.available_books||[]).forEach(function(b){ %><option value="<%= b %>" <%= String(o.selected_book_title||'')===String(b)?'selected':'' %>><%= b %></option><% }) %>
-              </select>
-            </div>
-            <div class="field book-section">
-              <label>Language</label>
-              <select name="bookLanguage" class="book-language">
-                <option value="">Select</option>
-                <% (o.available_languages||[]).forEach(function(l){ %><option value="<%= l %>" <%= String(o.saved_book_language||'')===String(l)?'selected':'' %>><%= l %></option><% }) %>
-              </select>
-            </div>
-          </div>
-        </div>
-        <% }) %>
-      </div>
-    </div>
-
-    <!-- Bonus books -->
-    <% if((ssrCount||0)>0){ %>
-    <div class="fcard" id="bonusBookCard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
-        <div><div class="fcard-title">🎁 Free Bonus Books (<%= ssrCount %>)</div><div class="fcard-sub">Science of Self Realization</div></div>
-      </div>
-      <div class="fcard-body">
-        <% for(let i=0;i<ssrCount;i++){ %>
-        <div class="field">
-          <label>Bonus Book Language <%= i+1 %></label>
-          <select name="ssrLanguage">
-            <option value="">Select language</option>
-            <% (ssrLanguages||[]).forEach(function(l){ %><option value="<%= l %>" <%= String((ssrSelectedLanguages||[])[i]||'')===String(l)?'selected':'' %>><%= l %></option><% }) %>
-          </select>
-        </div>
-        <% } %>
-      </div>
+  <!-- User cards -->
+  <div class="cl">
+    <% if(!(users||[]).length){ %>
+    <div style="text-align:center;padding:32px 16px;background:#fff;border-radius:18px;border:1.5px dashed var(--bd);color:var(--mu)">
+      <div style="font-size:36px;margin-bottom:8px">👥</div>
+      <div style="font-family:'Sora',sans-serif;font-weight:700">No users found</div>
     </div>
     <% } %>
-
-    <!-- Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <a class="btn btn-ghost" href="/agent/bookings/<%= booking.id %>/contests">← Back</a>
-      <button class="btn btn-gold" type="submit" id="checkoutSubmitBtn">
-        <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-        Continue to Payment
-      </button>
+    <% (users||[]).forEach(function(u,i){ %>
+    <div class="uc">
+      <div class="uc-top">
+        <div class="uc-av"><%= (u.name||'?').charAt(0) %></div>
+        <div class="uc-info">
+          <div class="uc-name"><%= u.name||'-' %></div>
+          <div class="uc-phone">📱 <%= u.phone||'-' %></div>
+        </div>
+        <div class="uc-bcount"><%= Number(u.bookings_count||0) %> bookings</div>
+      </div>
+      <div class="uc-foot">
+        <a class="uc-act" href="/agent/users/<%= u.id %>">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          History
+        </a>
+        <a class="uc-act gold-act" href="/agent/bookings/new?customerId=<%= u.id %>">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          Book
+        </a>
+      </div>
+      <!-- Bottom-sheet modal -->
+      <div class="modal" id="modal-<%= i %>">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div class="modal-head"><h3><%= u.name||'-' %></h3></div>
+          <div class="modal-body">
+            <div class="modal-row"><span class="ml">Phone</span><span class="mv"><%= u.phone||'-' %></span></div>
+            <div class="modal-row"><span class="ml">First Seen</span><span class="mv"><%= u.first_seen_at?new Date(u.first_seen_at).toLocaleDateString('en-IN'):'-' %></span></div>
+            <div class="modal-row"><span class="ml">Last Booking</span><span class="mv"><%= u.last_booking_at?new Date(u.last_booking_at).toLocaleDateString('en-IN'):'-' %></span></div>
+            <div class="modal-row"><span class="ml">Total Bookings</span><span class="mv"><%= Number(u.bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Paid</span><span class="mv" style="color:var(--gdk2)"><%= Number(u.paid_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Draft</span><span class="mv"><%= Number(u.draft_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Pending</span><span class="mv" style="color:var(--gdk)"><%= Number(u.pending_bookings_count||0) %></span></div>
+            <div class="modal-row"><span class="ml">Latest Status</span><span class="mv"><%= u.latest_status||'-' %></span></div>
+            <div style="display:flex;gap:9px;margin-top:16px">
+              <a class="btn btn-gold" style="flex:1" href="/agent/bookings/new?customerId=<%= u.id %>">+ New Booking</a>
+              <button class="btn btn-ghost" onclick="closeModal('<%= i %>')">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </form>
+    <% }) %>
+  </div>
+
+  <!-- Pagination -->
+  <% const tpU=Math.max(1,Math.ceil((filteredCount||0)/(pageSize||5))); %>
+  <div class="pager">
+    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.max(1,(page||1)-1) %>">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> Prev
+    </a>
+    <% for(let p=1;p<=tpU;p++){ %><a class="pg <%= p===(page||1)?'active':'' %>" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= p %>"><%= p %></a><% } %>
+    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.min(tpU,(page||1)+1) %>">
+      Next <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </a>
+  </div>
 </div>
 
+<nav class="bnav">
+  <a class="bnav-item" href="/agent"><span class="bnav-ico">🏠</span>Home</a>
+  <a class="bnav-item active" href="/agent/users"><span class="bnav-ico">👥</span>Users</a>
+  <a class="bnav-item" href="/agent/history"><span class="bnav-ico">🕘</span>History</a>
+</nav>
 <script>
-  const bookLanguageMap = <%- JSON.stringify(availableBookLanguages || {}) %>;
-
-  function syncDonate() {
-    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-
-    document.querySelectorAll('.book-section').forEach(function(el) {
-      el.classList.toggle('hide', mode === 'donate');
-    });
-
-    const bonusCard = document.getElementById('bonusBookCard');
-    if (bonusCard) bonusCard.classList.toggle('hide', mode === 'donate');
-
-    document.querySelectorAll('.book-title').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-
-    document.querySelectorAll('.book-language').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-
-    document.querySelectorAll('select[name="ssrLanguage"]').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-  }
-
-  function refillLanguage(bookSelect, langSelect) {
-    const selectedBook = (bookSelect.value || '').trim();
-    const previousLang = (langSelect.getAttribute('data-current') || '').trim();
-    const languages = bookLanguageMap[selectedBook] || [];
-
-    langSelect.innerHTML = '<option value="">Select</option>';
-
-    languages.forEach(function(lang) {
-      const opt = document.createElement('option');
-      opt.value = lang;
-      opt.textContent = lang;
-      if (lang === previousLang) opt.selected = true;
-      langSelect.appendChild(opt);
-    });
-
-    if (!languages.includes(langSelect.value)) {
-      langSelect.value = '';
-    }
-
-    langSelect.setAttribute('data-current', langSelect.value || '');
-  }
-
-  document.querySelectorAll('[data-book-row]').forEach(function(row) {
-    const bookSelect = row.querySelector('.book-title');
-    const langSelect = row.querySelector('.book-language');
-    if (!bookSelect || !langSelect) return;
-
-    langSelect.setAttribute('data-current', langSelect.value || '');
-    refillLanguage(bookSelect, langSelect);
-
-    bookSelect.addEventListener('change', function() {
-      langSelect.setAttribute('data-current', '');
-      refillLanguage(bookSelect, langSelect);
-    });
-
-    langSelect.addEventListener('change', function() {
-      langSelect.setAttribute('data-current', langSelect.value || '');
-    });
-  });
-
-  document.querySelectorAll('input[name="deliveryMode"]').forEach(function(r) {
-    r.addEventListener('change', syncDonate);
-  });
-
-  syncDonate();
-
-  document.getElementById('checkoutForm')?.addEventListener('submit', function(e) {
-    const deliveryMode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-
-    if (deliveryMode !== 'donate') {
-      let firstInvalid = null;
-
-      document.querySelectorAll('[data-book-row]').forEach(function(row) {
-        const bookSelect = row.querySelector('.book-title');
-        const langSelect = row.querySelector('.book-language');
-        if (!bookSelect || !langSelect) return;
-
-        if (!String(bookSelect.value || '').trim()) {
-          firstInvalid = firstInvalid || bookSelect;
-          return;
-        }
-
-        if (!String(langSelect.value || '').trim()) {
-          firstInvalid = firstInvalid || langSelect;
-          return;
-        }
-      });
-
-      if (firstInvalid) {
-        e.preventDefault();
-        alert('Please select book and language for every contest row.');
-        firstInvalid.focus();
-        return;
-      }
-
-      const badBonus = Array.from(document.querySelectorAll('select[name="ssrLanguage"]'))
-        .find(function(el) {
-          return !String(el.value || '').trim();
-        });
-
-      if (badBonus) {
-        e.preventDefault();
-        alert('Please select language for all free bonus books.');
-        badBonus.focus();
-        return;
-      }
-    }
-
-    const b = document.getElementById('checkoutSubmitBtn');
-    if (b) {
-      b.disabled = true;
-      b.style.opacity = '.6';
-      b.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Processing…';
-    }
-  });
+  function openModal(i){document.getElementById('modal-'+i)?.classList.add('show')}
+  function closeModal(i){document.getElementById('modal-'+i)?.classList.remove('show')}
+  document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
 </script>
-
 </body></html>

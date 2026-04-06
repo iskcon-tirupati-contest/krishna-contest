@@ -966,23 +966,22 @@ router.get("/agent/bookings/:bookingId/summary", authMiddleware, agentMiddleware
   if (!booking)
     return res.status(404).send("Booking not found");
 
-  const bookingCreatedAtValue =
-  booking?.created_at instanceof Date
-    ? booking.created_at
-    : new Date(String(booking?.created_at || "").replace(" ", "T"));
+  const bookingTimeQ = await pool.query(
+  `
+  SELECT to_char(
+    booking_ts AT TIME ZONE 'Asia/Kolkata',
+    'FMDD Mon YYYY "at" FMHH12:MI am'
+  ) AS booking_created_at_ist
+  FROM (
+    SELECT $1::timestamptz AS booking_ts
+  ) t
+  `,
+  [booking.created_at]
+);
 
-  const bookingCreatedAtIst = booking?.created_at
-    ? new Intl.DateTimeFormat("en-IN", {
-        timeZone: "Asia/Kolkata",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
+const bookingCreatedAtIst =
+  bookingTimeQ.rows[0]?.booking_created_at_ist || "-";
 
-      }).format(bookingCreatedAtValue)
-    : "-";
   const lines = await loadBookingLines(bookingId);
 
   const bonusQ = await pool.query(

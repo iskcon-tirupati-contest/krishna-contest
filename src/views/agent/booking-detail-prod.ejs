@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Checkout Review – Agent Portal</title>
+<title>Booking Detail – Agent Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -204,240 +204,79 @@
   <div class="tb-inner">
     <div class="tb-brand">
       <div class="tb-logo"><img src="/images/logo_new.png" onerror="this.style.display='none'" alt="logo"></div>
-      <div><div class="tb-title">Checkout Review</div><div class="tb-sub"><%= booking.customer_name %> · <%= booking.customer_phone %></div></div>
+      <div>
+        <div class="tb-title">Booking Detail</div>
+        <div class="tb-sub">Ref: <%= booking.payment_id||'-' %> &nbsp;·&nbsp; <span class="bc-pill pill-<%= String(booking.status||'draft').replace(/[^a-z_]/gi,'_') %>" style="font-size:11px;padding:2px 9px"><%= booking.status||'-' %></span></div>
+      </div>
     </div>
   </div>
 </div>
 <div class="wrap">
 
-  <% if(error){ %><div class="alert-err"><span>⚠️</span><%= error %></div><% } %>
-
-  <form method="POST" action="/agent/bookings/<%= booking.id %>/checkout" id="checkoutForm">
-
-    <!-- Delivery & Payment -->
-    <div class="fcard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 006 0h6a3 3 0 006 0h2v-5l-3-4z"/></svg></div>
-        <div><div class="fcard-title">Delivery & Payment</div><div class="fcard-sub">How to deliver and how payment was received</div></div>
-      </div>
-      <div class="fcard-body">
-        <div class="field">
-          <label>Delivery Mode</label>
-          <div class="rcards">
-            <label class="rcard">
-              <input type="radio" name="deliveryMode" value="handover" <%= deliveryMode==='handover'||!deliveryMode?'checked':'' %>>
-              <span class="rcard-ico">🤝</span> Direct Delivery
-            </label>
-            <label class="rcard">
-              <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode==='donate'?'checked':'' %>>
-              <span class="rcard-ico">🛕</span> Donate Book to Temple
-            </label>
-          </div>
-        </div>
-        <div class="field">
-          <label>Payment Method</label>
-          <select name="offlineMethod" required style="width:100%;padding:11px 13px;border:1.5px solid var(--bd);border-radius:11px;font-size:14px;background:#f8fafc;outline:none">
-            <option value="cash" <%= String(booking.payment_method||'')==='cash'?'selected':'' %>>💵 Cash</option>
-            <option value="phonepe" <%= String(booking.payment_method||'')==='phonepe'?'selected':'' %>>📱 UPI / PhonePe</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contest Details — each in row format -->
-    <div class="fcard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16h16V8l-6-6z"/></svg></div>
-        <div><div class="fcard-title">Contest Details</div><div class="fcard-sub">Age, book & language for each entry</div></div>
-      </div>
-      <div class="fcard-body">
-        <% (orders||[]).forEach(function(o){ %>
-        <div class="co-row" data-book-row>
-          <div class="co-row-top">
-            <div class="co-row-name"><%= o.contest_title %></div>
-            <div class="co-row-amt">₹<%= Number(o.amount||0) %></div>
-          </div>
-          <div class="co-row-fields">
-            <div class="field">
-              <label>Age</label>
-              <select name="ageCategory" required>
-                <option value="0-25" <%= String(o.age_category||'')==='0-25'?'selected':'' %>>0–25 yrs</option>
-                <option value="above-25" <%= String(o.age_category||'')==='above-25'?'selected':'' %>>Above 25</option>
-              </select>
-            </div>
-            <div class="field book-section">
-              <label>Book</label>
-              <select name="bookTitle" class="book-title">
-                <option value="">Select</option>
-                <% (o.available_books||[]).forEach(function(b){ %><option value="<%= b %>" <%= String(o.selected_book_title||'')===String(b)?'selected':'' %>><%= b %></option><% }) %>
-              </select>
-            </div>
-            <div class="field book-section">
-              <label>Language</label>
-              <select name="bookLanguage" class="book-language">
-                <option value="">Select</option>
-                <% (o.available_languages||[]).forEach(function(l){ %><option value="<%= l %>" <%= String(o.saved_book_language||'')===String(l)?'selected':'' %>><%= l %></option><% }) %>
-              </select>
-            </div>
-          </div>
-        </div>
-        <% }) %>
-      </div>
-    </div>
-
-    <!-- Bonus books -->
-    <% if((ssrCount||0)>0){ %>
-    <div class="fcard" id="bonusBookCard">
-      <div class="fcard-head">
-        <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
-        <div><div class="fcard-title">🎁 Free Bonus Books (<%= ssrCount %>)</div><div class="fcard-sub">Science of Self Realization</div></div>
-      </div>
-      <div class="fcard-body">
-        <% for(let i=0;i<ssrCount;i++){ %>
-        <div class="field">
-          <label>Bonus Book Language <%= i+1 %></label>
-          <select name="ssrLanguage">
-            <option value="">Select language</option>
-            <% (ssrLanguages||[]).forEach(function(l){ %><option value="<%= l %>" <%= String((ssrSelectedLanguages||[])[i]||'')===String(l)?'selected':'' %>><%= l %></option><% }) %>
-          </select>
-        </div>
-        <% } %>
-      </div>
-    </div>
+  <!-- Action buttons -->
+  <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+    <% if(String(booking.status||'')==='draft'||String(booking.status||'')==='checkout_pending'){ %>
+      <a class="btn btn-navy" style="flex:1" href="/agent/bookings/<%= booking.id %>/contests">✏️ Edit Booking</a>
+    <% } else { %>
+      <a class="btn btn-navy" style="flex:1" href="/agent/bookings/<%= booking.id %>/edit-details">✏️ Edit Details</a>
     <% } %>
+    <a class="btn btn-gold" style="flex:1" href="/agent/bookings/new?customerId=<%= booking.customer_user_id %>">+ New Booking</a>
+    <a class="btn btn-ghost btn-block" href="/agent/users/<%= booking.customer_user_id %>">← User History</a>
+  </div>
 
-    <!-- Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <a class="btn btn-ghost" href="/agent/bookings/<%= booking.id %>/contests">← Back</a>
-      <button class="btn btn-gold" type="submit" id="checkoutSubmitBtn">
-        <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-        Continue to Payment
-      </button>
+  <!-- Booking + Participant info -->
+  <div class="fcard">
+    <div class="fcard-head">
+      <div class="fcard-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16h16V8l-6-6z"/></svg></div>
+      <div><div class="fcard-title">Booking Summary</div></div>
     </div>
-  </form>
+    <div class="fcard-body">
+      <div class="ir"><span class="il">Participant</span><span class="iv"><%= booking.full_name||booking.customer_name||'-' %></span></div>
+      <div class="ir"><span class="il">Phone</span><span class="iv"><%= booking.phone||booking.customer_phone||'-' %></span></div>
+      <div class="ir"><span class="il">Payment Method</span><span class="iv" style="text-transform:capitalize"><%= booking.payment_method||'-' %></span></div>
+      <div class="ir"><span class="il">Delivery Mode</span><span class="iv" style="text-transform:capitalize"><%= booking.delivery_mode||'-' %></span></div>
+      <div class="ir"><span class="il">Total Amount</span><span class="iv" style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--navy)">₹<%= Number(booking.total_amount||0).toLocaleString('en-IN') %></span></div>
+      <div class="ir"><span class="il">Bonus Books</span><span class="iv"><%= Number(booking.bonus_book_count||0) %></span></div>
+      <div class="ir"><span class="il">Date</span><span class="iv" style="font-size:12px"><%= booking.created_at?new Date(booking.created_at).toLocaleString('en-IN'):'-' %></span></div>
+    </div>
+  </div>
+
+  <!-- Contest lines as cards -->
+  <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:var(--th);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+    📚 Contest Lines
+  </div>
+  <div class="cl">
+    <% if(!(orders||[]).length){ %>
+    <div style="text-align:center;padding:24px;background:#fff;border-radius:16px;border:1.5px dashed var(--bd);color:var(--mu)">No contest lines found</div>
+    <% } %>
+    <% (orders||[]).forEach(function(o){ %>
+    <div class="fcard" style="margin-bottom:10px">
+      <div class="fcard-body" style="padding:13px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <span style="font-family:'Sora',sans-serif;font-weight:800;font-size:14px;color:var(--navy);flex:1;padding-right:8px"><%= o.contest_title||'-' %></span>
+          <span style="font-family:'Sora',sans-serif;font-weight:800;color:var(--gdk);flex-shrink:0">₹<%= Number(o.unit_amount||0) %></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:var(--ng);border:1px solid var(--bd);border-radius:7px;padding:3px 9px;font-size:12px;color:var(--navy);font-weight:600"><%= o.age_category==='above-25'?'Above 25 yrs':'0–25 yrs' %></span>
+          <% if(o.book_title||o.default_book_title){ %><span style="background:#f8fafc;border:1px solid var(--bdl);border-radius:7px;padding:3px 9px;font-size:12px;color:var(--tm)">📗 <%= o.book_title||o.default_book_title %></span><% } %>
+          <% if(o.book_language){ %><span style="background:#f8fafc;border:1px solid var(--bdl);border-radius:7px;padding:3px 9px;font-size:12px;color:var(--tm)">🌐 <%= o.book_language %></span><% } %>
+          <span class="bc-pill pill-<%= String(o.line_status||'draft').replace(/[^a-z_]/gi,'_') %>" style="font-size:11px"><%= o.line_status||'-' %></span>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <!-- Bonus books -->
+  <% if((bonusItems||[]).length>0){ %>
+  <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:var(--th);margin-bottom:10px;display:flex;align-items:center;gap:6px">🎁 Bonus Books</div>
+  <div class="fcard">
+    <div class="fcard-body">
+      <% (bonusItems||[]).forEach(function(b){ %>
+      <div class="ir"><span class="il"><%= b.book_title||'-' %></span><span class="iv"><%= b.book_language||'-' %> · Qty <%= Number(b.quantity||0) %></span></div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
 </div>
-
-<script>
-  const bookLanguageMap = <%- JSON.stringify(availableBookLanguages || {}) %>;
-
-  function syncDonate() {
-    const mode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-
-    document.querySelectorAll('.book-section').forEach(function(el) {
-      el.classList.toggle('hide', mode === 'donate');
-    });
-
-    const bonusCard = document.getElementById('bonusBookCard');
-    if (bonusCard) bonusCard.classList.toggle('hide', mode === 'donate');
-
-    document.querySelectorAll('.book-title').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-
-    document.querySelectorAll('.book-language').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-
-    document.querySelectorAll('select[name="ssrLanguage"]').forEach(function(el) {
-      el.required = mode !== 'donate';
-    });
-  }
-
-  function refillLanguage(bookSelect, langSelect) {
-    const selectedBook = (bookSelect.value || '').trim();
-    const previousLang = (langSelect.getAttribute('data-current') || '').trim();
-    const languages = bookLanguageMap[selectedBook] || [];
-
-    langSelect.innerHTML = '<option value="">Select</option>';
-
-    languages.forEach(function(lang) {
-      const opt = document.createElement('option');
-      opt.value = lang;
-      opt.textContent = lang;
-      if (lang === previousLang) opt.selected = true;
-      langSelect.appendChild(opt);
-    });
-
-    if (!languages.includes(langSelect.value)) {
-      langSelect.value = '';
-    }
-
-    langSelect.setAttribute('data-current', langSelect.value || '');
-  }
-
-  document.querySelectorAll('[data-book-row]').forEach(function(row) {
-    const bookSelect = row.querySelector('.book-title');
-    const langSelect = row.querySelector('.book-language');
-    if (!bookSelect || !langSelect) return;
-
-    langSelect.setAttribute('data-current', langSelect.value || '');
-    refillLanguage(bookSelect, langSelect);
-
-    bookSelect.addEventListener('change', function() {
-      langSelect.setAttribute('data-current', '');
-      refillLanguage(bookSelect, langSelect);
-    });
-
-    langSelect.addEventListener('change', function() {
-      langSelect.setAttribute('data-current', langSelect.value || '');
-    });
-  });
-
-  document.querySelectorAll('input[name="deliveryMode"]').forEach(function(r) {
-    r.addEventListener('change', syncDonate);
-  });
-
-  syncDonate();
-
-  document.getElementById('checkoutForm')?.addEventListener('submit', function(e) {
-    const deliveryMode = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-
-    if (deliveryMode !== 'donate') {
-      let firstInvalid = null;
-
-      document.querySelectorAll('[data-book-row]').forEach(function(row) {
-        const bookSelect = row.querySelector('.book-title');
-        const langSelect = row.querySelector('.book-language');
-        if (!bookSelect || !langSelect) return;
-
-        if (!String(bookSelect.value || '').trim()) {
-          firstInvalid = firstInvalid || bookSelect;
-          return;
-        }
-
-        if (!String(langSelect.value || '').trim()) {
-          firstInvalid = firstInvalid || langSelect;
-          return;
-        }
-      });
-
-      if (firstInvalid) {
-        e.preventDefault();
-        alert('Please select book and language for every contest row.');
-        firstInvalid.focus();
-        return;
-      }
-
-      const badBonus = Array.from(document.querySelectorAll('select[name="ssrLanguage"]'))
-        .find(function(el) {
-          return !String(el.value || '').trim();
-        });
-
-      if (badBonus) {
-        e.preventDefault();
-        alert('Please select language for all free bonus books.');
-        badBonus.focus();
-        return;
-      }
-    }
-
-    const b = document.getElementById('checkoutSubmitBtn');
-    if (b) {
-      b.disabled = true;
-      b.style.opacity = '.6';
-      b.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="animation:spin 1s linear infinite"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg> Processing…';
-    }
-  });
-</script>
-
 </body></html>

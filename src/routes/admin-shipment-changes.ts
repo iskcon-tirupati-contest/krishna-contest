@@ -21,6 +21,20 @@ const normLike = (v: any) => `%${norm(v)}%`;
 
 const upload = multer({ dest: path.join(process.cwd(), "tmp") });
 
+const SHIPMENT_STATUS = {
+  PENDING: "pending",
+  UNDER_PACKING: "under_packing",
+  PACKED: "packed",
+  DISPATCHED: "dispatched",
+  DELIVERED: "delivered",
+  RETURNED: "returned",
+};
+
+const DELIVERY_MODE = {
+  HOME: "home_delivery",
+  TEMPLE: "temple_pickup",
+  DONATION: "donation",
+};
 
 function offlineOrdersWhere(alias = "o") {
   return `
@@ -1397,14 +1411,13 @@ router.post(
   }
 );
 
+
+
 // --------------------
 // OVERVIEW
 // --------------------
-router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => {
-  const IST_TODAY = `(NOW() AT TIME ZONE 'Asia/Kolkata')::date`;
-  const ORDER_IST_DATE = `(o.created_at AT TIME ZONE 'Asia/Kolkata')::date`;
 
-  // online only
+router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => {
   const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);
 
   const ordersAllQ = await pool.query(`
@@ -1416,22 +1429,19 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
   const paidOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='paid'
   `);
 
   const pendingOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='pending'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='pending'
   `);
 
   const failedOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='failed'
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='failed'
   `);
 
   const giftQ = await pool.query(`
@@ -1453,58 +1463,7 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
   const revenueQ = await pool.query(`
     SELECT COALESCE(SUM(o.amount),0)::int AS total
     FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-  `);
-
-  // today stats with SAME old business logic, just IST-scoped
-  const todayOrdersAllQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayPaidOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayPendingOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='pending'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayFailedOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='failed'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayGiftQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND o.book_option='book'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
-  `);
-
-  const todayDonateQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
-      AND o.book_option='donation'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    WHERE ${onlineOrdersWhere("o")} AND o.payment_status='paid'
   `);
 
   const todayRevenueQ = await pool.query(`
@@ -1512,47 +1471,39 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND DATE(o.created_at)=CURRENT_DATE
   `);
 
-  // sales chart - keep old intent, fix IST grouping
   const salesDailyQ = await pool.query(`
-  SELECT
-    TO_CHAR((o.created_at AT TIME ZONE 'Asia/Kolkata')::date, 'DD/MM/YY') AS d,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '30 days')
-  GROUP BY (o.created_at AT TIME ZONE 'Asia/Kolkata')::date
-  ORDER BY (o.created_at AT TIME ZONE 'Asia/Kolkata')::date ASC
-`);
+    SELECT DATE(o.created_at) AS d, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '30 days')
+    GROUP BY DATE(o.created_at)
+    ORDER BY d ASC
+  `);
 
-const salesWeeklyQ = await pool.query(`
-  SELECT
-    TO_CHAR(DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date, 'DD/MM/YY') AS w,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '84 days')
-  GROUP BY DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date
-  ORDER BY DATE_TRUNC('week', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date ASC
-`);
+  const salesWeeklyQ = await pool.query(`
+    SELECT DATE_TRUNC('week', o.created_at)::date AS w, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '84 days')
+    GROUP BY DATE_TRUNC('week', o.created_at)
+    ORDER BY w ASC
+  `);
 
-const salesMonthlyQ = await pool.query(`
-  SELECT
-    TO_CHAR(DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date, 'DD/MM/YY') AS m,
-    COALESCE(SUM(o.amount),0)::int AS revenue
-  FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND o.payment_status='paid'
-    AND (o.created_at AT TIME ZONE 'Asia/Kolkata') >= ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '365 days')
-  GROUP BY DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date
-  ORDER BY DATE_TRUNC('month', (o.created_at AT TIME ZONE 'Asia/Kolkata'))::date ASC
-`);
+  const salesMonthlyQ = await pool.query(`
+    SELECT DATE_TRUNC('month', o.created_at)::date AS m, COALESCE(SUM(o.amount),0)::int AS revenue
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='paid'
+      AND o.created_at >= (CURRENT_DATE - INTERVAL '365 days')
+    GROUP BY DATE_TRUNC('month', o.created_at)
+    ORDER BY m ASC
+  `);
 
-  // keep your shipment logic untouched except online-only filter
   const shipStatusQ = await pool.query(`
     SELECT COALESCE(LOWER(sh.status),'pending') AS status, COUNT(*)::int AS c
     FROM orders o
@@ -1591,83 +1542,58 @@ const salesMonthlyQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='book'
-      AND COALESCE(LOWER(sh.status),'pending') IN ('pending','under_packing','packed')
+      AND COALESCE(LOWER(sh.status),'pending') NOT IN ('dispatched','delivered')
   `);
 
   const contestStatsQ = await pool.query(`
     SELECT
-      c.title,
-      COUNT(o.id) FILTER (WHERE o.payment_status='paid' AND ${onlineOrdersWhere("o")})::int AS registrations,
-      COUNT(s.id)::int AS submitted,
-      (
-        COUNT(o.id) FILTER (WHERE o.payment_status='paid' AND ${onlineOrdersWhere("o")})
-        - COUNT(s.id)
-      )::int AS not_submitted
+      c.id, c.title,
+      COUNT(o.id)::int AS registrations,
+      COUNT(s.id)::int AS submitted
     FROM contests c
-    LEFT JOIN orders o ON o.contest_id = c.id
-    LEFT JOIN submissions s ON s.order_id = o.id
+    LEFT JOIN orders o
+      ON o.contest_id=c.id
+     AND o.payment_status='paid'
+     AND ${onlineOrdersWhere("o")}
+    LEFT JOIN submissions s ON s.order_id=o.id
     GROUP BY c.id, c.title
-    ORDER BY c.title ASC
+    ORDER BY registrations DESC, c.title ASC
   `);
 
-  const uploadQ = await pool.query(`
+  const uploadSizeQ = await pool.query(`
     SELECT
+      COALESCE(SUM(COALESCE(file_size,0)),0)::bigint AS bytes,
       COUNT(*)::int AS files,
-      COALESCE(SUM(file_size),0)::bigint AS bytes,
       COUNT(*) FILTER (WHERE file_size IS NULL)::int AS missing_size
     FROM submissions
   `);
 
-  const userSplitQ = await pool.query(`
-  ${getUsersRollupCte()}
-  SELECT
-    COUNT(*) FILTER (WHERE payment_bucket = 'paid')::int AS paid_users,
-    COUNT(*) FILTER (WHERE payment_bucket = 'added_to_cart')::int AS pending_users,
-    COUNT(*) FILTER (WHERE payment_bucket = 'registered_only')::int AS registered_only_users
-  FROM user_rollup ur
-`);
-
-
-
-  return res.render("admin/admin-dashboard", {
-    activeTab: "overview",
+  res.render("admin/admin-dashboard", {
+    activeTab: "admin",
     stats: {
       users: usersQ.rows[0].c,
       ordersAll: ordersAllQ.rows[0].c,
       paidOrders: paidOrdersQ.rows[0].c,
-      pendingOrders: pendingOrdersQ.rows[0].c + failedOrdersQ.rows[0].c,
+      pendingOrders: Number(pendingOrdersQ.rows[0].c) + Number(failedOrdersQ.rows[0].c),
+      failedOrders: failedOrdersQ.rows[0].c,
       gift: giftQ.rows[0].c,
       donate: donateQ.rows[0].c,
       revenue: revenueQ.rows[0].total,
       todayRevenue: todayRevenueQ.rows[0].total,
-
-      todayOrdersAll: todayOrdersAllQ.rows[0].c,
-      todayPaidOrders: todayPaidOrdersQ.rows[0].c,
-      todayPendingOrders: todayPendingOrdersQ.rows[0].c + todayFailedOrdersQ.rows[0].c,
-      todayGift: todayGiftQ.rows[0].c,
-      todayDonate: todayDonateQ.rows[0].c,
-
-      pendingDispatch: pendingDispatchQ.rows[0].c,
+      packed: packedQ.rows[0].c,
       dispatched: dispatchedQ.rows[0].c,
-      packed: packedQ.rows[0].c
+      pendingDispatch: pendingDispatchQ.rows[0].c,
     },
-    series: {
-      daily: salesDailyQ.rows,
-      weekly: salesWeeklyQ.rows,
-      monthly: salesMonthlyQ.rows
-    },
-    userStats: userSplitQ.rows[0] || {
-  paid_users: 0,
-  pending_users: 0,
-  registered_only_users: 0
-},
+    series: { daily: salesDailyQ.rows, weekly: salesWeeklyQ.rows, monthly: salesMonthlyQ.rows },
     shipStatus: shipStatusQ.rows,
-    contestStats: contestStatsQ.rows,
-    upload: uploadQ.rows[0]
+    contestStats: contestStatsQ.rows.map((r: any) => ({
+      ...r,
+      not_submitted: Math.max(0, Number(r.registrations) - Number(r.submitted))
+    })),
+    upload: uploadSizeQ.rows[0],
+    qs: ""
   });
 });
-
-
 
 router.get("/admin/export/overview.csv", authMiddleware, adminMiddleware, async (_req: any, res) => {
   const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);
@@ -5723,6 +5649,519 @@ router.get("/admin/offline-dashboard", authMiddleware, adminMiddleware, async (_
       not_submitted: Math.max(0, Number(r.registrations) - Number(r.submitted)),
     })),
   });
+});
+
+router.get("/admin/shipments/download-pending", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const client = await pool.connect();
+
+  try {
+    const dateFrom = norm(req.query.date_from || "");
+    const dateTo = norm(req.query.date_to || "");
+
+    if ((dateFrom && !dateTo) || (!dateFrom && dateTo)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Please select both From and To dates.")
+      );
+    }
+
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Date range is invalid. From date cannot be after To date.")
+      );
+    }
+
+    // Reuse your proven filter builder, but force the action-specific filters
+    const forcedReq = {
+      query: {
+        ...req.query,
+        q: "", // ignore search text
+        status: SHIPMENT_STATUS.PENDING,
+        delivery_mode: "home_delivery",
+      },
+    };
+
+    const rows = await fetchShipmentCsvRows(forcedReq);
+    const ids = rows.map((r: any) => r.shipment_id);
+
+    await client.query("BEGIN");
+
+    if (ids.length > 0) {
+      await client.query(
+        `
+        UPDATE shipments
+        SET status = $1, updated_at = NOW()
+        WHERE id = ANY($2::uuid[])
+          AND COALESCE(LOWER(status), 'pending') = $3
+          AND COALESCE(LOWER(delivery_mode), '') = $4
+        `,
+        [
+          SHIPMENT_STATUS.UNDER_PACKING,
+          ids,
+          SHIPMENT_STATUS.PENDING,
+          "home_delivery",
+        ]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    const header = [
+      "SHIPMENT_ID",
+      "PAYMENT_ID",
+      "USER_ID",
+      "USER_NAME",
+      "EMAIL",
+      "PHONE",
+      "CONTEST_TITLES",
+      "REGULAR_BOOKS_WITH_LANGUAGE",
+      "BONUS_BOOKS_WITH_LANGUAGE",
+      "ALL_BOOKS_WITH_LANGUAGE",
+      "ADDRESS",
+      "CITY",
+      "STATE",
+      "PINCODE",
+      "TRACKING_ID",
+      "COURIER_MODE",
+      "DELIVERY_MODE",
+      "STATUS"
+    ];
+
+    const csv = [
+      header.join(","),
+      ...rows.map((r: any) => [
+        csvEscape(r.shipment_id),
+        csvEscape(r.payment_id),
+        csvEscape(r.user_id),
+        csvEscape(r.user_name),
+        csvEscape(r.email),
+        csvEscape(r.phone),
+        csvEscape(r.contest_titles),
+        csvEscape(r.regular_books_with_language),
+        csvEscape(r.bonus_books_with_language),
+        csvEscape(r.books_display),
+        csvEscape(r.address),
+        csvEscape(r.city),
+        csvEscape(r.state),
+        csvEscape(r.pincode),
+        csvEscape(r.tracking_id),
+        csvEscape(r.courier_mode),
+        csvEscape(r.delivery_mode),
+        csvEscape(SHIPMENT_STATUS.UNDER_PACKING),
+      ].join(","))
+    ].join("\n");
+
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const stamp =
+      `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_` +
+      `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="shipments_pending_to_under_packing_${stamp}.csv"`
+    );
+    res.setHeader("X-Downloaded-Count", String(rows.length));
+    return res.send(csv);
+  } catch (e) {
+    try {
+      await client.query("ROLLBACK");
+    } catch {}
+    console.error("download-pending error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to download pending home delivery shipments.")
+    );
+  } finally {
+    client.release();
+  }
+});
+
+function parseCsv(filePath: string) {
+  const workbook = XLSX.readFile(filePath);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sheet);
+}
+
+router.post(
+  "/admin/shipments/upload-packed",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("packed_file"),
+  async (req: any, res) => {
+    try {
+      if (!req.file?.path) {
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("Please choose a CSV/XLSX file.")
+        );
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("Uploaded file is empty.")
+        );
+      }
+
+      const firstRow = rows[0] || {};
+
+      const shipmentKey =
+        "SHIPMENT_ID" in firstRow ? "SHIPMENT_ID" :
+        "shipment_id" in firstRow ? "shipment_id" : "";
+
+      const trackingKey =
+        "TRACKING_ID" in firstRow ? "TRACKING_ID" :
+        "tracking_id" in firstRow ? "tracking_id" : "";
+
+      if (!shipmentKey || !trackingKey) {
+        fs.unlink(req.file.path, () => {});
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent(
+              "Missing required columns. Expected shipment_id/SHIPMENT_ID and tracking_id/TRACKING_ID."
+            )
+        );
+      }
+
+      const parsedRows: {
+        rowNo: number;
+        shipmentId: string;
+        trackingId: string;
+        raw: any;
+      }[] = [];
+
+      const rejectedRows: any[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+
+        const shipmentId = normalizeCell(row[shipmentKey]);
+        const trackingId = normalizeCell(row[trackingKey]);
+
+        if (!shipmentId) {
+          rejectedRows.push({
+            ...row,
+            ERROR_REASON: "Shipment id is empty",
+            ERROR_ROW_NO: rowNo,
+          });
+          continue;
+        }
+
+        if (!trackingId) {
+          rejectedRows.push({
+            ...row,
+            ERROR_REASON: "Tracking id is empty",
+            ERROR_ROW_NO: rowNo,
+          });
+          continue;
+        }
+
+        parsedRows.push({
+          rowNo,
+          shipmentId,
+          trackingId,
+          raw: row,
+        });
+      }
+
+      if (!parsedRows.length) {
+        fs.unlink(req.file.path, () => {});
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("No valid shipment rows found in uploaded file.")
+        );
+      }
+
+      // detect duplicate tracking ids within uploaded file
+      const trackingCount = new Map<string, number>();
+      for (const r of parsedRows) {
+        const k = normalizeCompare(r.trackingId);
+        trackingCount.set(k, (trackingCount.get(k) || 0) + 1);
+      }
+
+      const uploadDuplicateTracking = new Set<string>();
+      for (const [k, c] of trackingCount.entries()) {
+        if (c > 1) uploadDuplicateTracking.add(k);
+      }
+
+      const shipmentIds = Array.from(new Set(parsedRows.map((r) => r.shipmentId)));
+
+      const dbQ = await pool.query(
+        `
+        SELECT id, status, delivery_mode, tracking_id
+        FROM shipments
+        WHERE id = ANY($1::uuid[])
+        `,
+        [shipmentIds]
+      );
+
+      const dbMap = new Map<string, any>();
+      for (const r of dbQ.rows) {
+        dbMap.set(String(r.id), r);
+      }
+
+      // detect tracking ids already used by other shipments
+      const trackingIds = Array.from(
+        new Set(parsedRows.map((r) => r.trackingId).filter(Boolean))
+      );
+
+      const dbTrackingQ = trackingIds.length
+        ? await pool.query(
+            `
+            SELECT id, tracking_id
+            FROM shipments
+            WHERE LOWER(TRIM(COALESCE(tracking_id, ''))) = ANY($1::text[])
+            `,
+            [trackingIds.map((x) => normalizeCompare(x))]
+          )
+        : { rows: [] as any[] };
+
+      const trackingToShipmentIds = new Map<string, string[]>();
+      for (const r of dbTrackingQ.rows) {
+        const key = normalizeCompare(r.tracking_id);
+        const arr = trackingToShipmentIds.get(key) || [];
+        arr.push(String(r.id));
+        trackingToShipmentIds.set(key, arr);
+      }
+
+      const validRows: {
+        shipmentId: string;
+        trackingId: string;
+      }[] = [];
+
+      for (const r of parsedRows) {
+        const dbRow = dbMap.get(r.shipmentId);
+
+        if (!dbRow) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Shipment id not found in database",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.delivery_mode) !== "home_delivery") {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Shipment is not home_delivery",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.status) !== "under_packing") {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Shipment is not in under_packing status",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        if (uploadDuplicateTracking.has(normalizeCompare(r.trackingId))) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Duplicate tracking id in uploaded file",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        const usedBy = trackingToShipmentIds.get(normalizeCompare(r.trackingId)) || [];
+        const usedByAnotherShipment = usedBy.some((id) => id !== r.shipmentId);
+
+        if (usedByAnotherShipment) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Tracking id already used by another shipment",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        validRows.push({
+          shipmentId: r.shipmentId,
+          trackingId: r.trackingId,
+        });
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const r of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              tracking_id = $1,
+              status = 'packed',
+              updated_at = NOW()
+            WHERE id = $2
+              AND LOWER(COALESCE(status, '')) = 'under_packing'
+              AND LOWER(COALESCE(delivery_mode, '')) = 'home_delivery'
+            `,
+            [r.trackingId, r.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      if (rejectedRows.length) {
+        const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+
+        const tmpName = `rejected_packed_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+
+        XLSX.writeFile(rejWb, tmpPath);
+
+        res.setHeader(
+          "X-Import-Summary",
+          `Updated ${validRows.length}; Rejected ${rejectedRows.length}`
+        );
+
+        return res.download(tmpPath, tmpName, (err) => {
+          try { fs.unlink(tmpPath, () => {}); } catch {}
+        });
+      }
+
+      return res.redirect(
+        "/admin/shipments?okMsg=" +
+          encodeURIComponent(
+            `Packed import completed. ${validRows.length} rows updated. 0 rows rejected.`
+          )
+      );
+    } catch (e) {
+      console.error("shipments import-packed error:", e);
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Failed to import packed shipment file.")
+      );
+    }
+  }
+);
+
+router.post("/admin/shipments/upload-dispatched", upload.single("dispatched_file"), authMiddleware, adminMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    if (!req.file?.path) {
+      await client.query("ROLLBACK");
+      return res.status(400).send("Please upload a CSV or Excel file.");
+    }
+    const rows: any[] = parseCsv(req.file.path);
+    const rejected: any[] = [];
+
+    for (const row of rows) {
+      const shipment_id = normalizeCell(row.shipment_id);
+
+     const q = await client.query(
+  `UPDATE shipments
+   SET status=$1, updated_at=NOW()
+   WHERE id=$2
+     AND status=$3
+     AND delivery_mode=$4`,
+  [
+    SHIPMENT_STATUS.DISPATCHED,
+    shipment_id,
+    SHIPMENT_STATUS.PACKED,
+    "home_delivery",
+  ]
+);
+
+      if (q.rowCount === 0) {
+        rejected.push({ shipment_id, reason: "Invalid state" });
+      }
+    }
+
+    await client.query("COMMIT");
+
+    if (rejected.length) {
+      const csv = ["shipment_id,reason", ...rejected.map(r => `${r.shipment_id},${r.reason}`)].join("\n");
+      return res.attachment("rejected_dispatched.csv").send(csv);
+    }
+
+    res.send("Dispatched success");
+  } catch {
+    await client.query("ROLLBACK");
+    res.status(500).send("Error");
+  } finally {
+    client.release();
+  }
+});
+
+router.post("/admin/shipments/upload-delivered", upload.single("delieverd_file"), authMiddleware, adminMiddleware, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    if (!req.file?.path) {
+      await client.query("ROLLBACK");
+      return res.status(400).send("Please upload a CSV or Excel file.");
+    }
+
+    const rows: any[] = parseCsv(req.file.path);
+    const rejected: any[] = [];
+
+    for (const row of rows) {
+      const shipment_id = normalizeCell(row.shipment_id);
+
+      const q = await client.query(
+  `UPDATE shipments
+   SET status=$1, updated_at=NOW()
+   WHERE id=$2
+     AND status=$3
+     AND delivery_mode=$4`,
+  [
+    SHIPMENT_STATUS.DELIVERED,
+    shipment_id,
+    SHIPMENT_STATUS.DISPATCHED,
+    "home_delivery",
+  ]
+);
+
+      if (q.rowCount === 0) {
+        rejected.push({ shipment_id, reason: "Invalid state" });
+      }
+    }
+
+    await client.query("COMMIT");
+
+    if (rejected.length) {
+      const csv = ["shipment_id,reason", ...rejected.map(r => `${r.shipment_id},${r.reason}`)].join("\n");
+      return res.attachment("rejected_delivered.csv").send(csv);
+    }
+
+    res.send("Delivered success");
+  } catch {
+    await client.query("ROLLBACK");
+    res.status(500).send("Error");
+  } finally {
+    client.release();
+  }
 });
 
 export default router;

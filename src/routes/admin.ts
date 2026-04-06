@@ -5445,7 +5445,6 @@ router.post("/admin/agents/:agentId/update", authMiddleware, adminMiddleware, as
   }
 });
 
-
 router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req: any, res) => {
   const q = norm(req.query.q || "");
   const status = norm(req.query.status || "all");
@@ -5459,6 +5458,7 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
   if (q) {
     where.push(`(
       au.name ILIKE $${params.length + 1}
+      OR au.phone ILIKE $${params.length + 1}
       OR cu.name ILIKE $${params.length + 1}
       OR cu.phone ILIKE $${params.length + 1}
       OR ab.payment_id ILIKE $${params.length + 1}
@@ -5488,6 +5488,12 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
 
   const whereSql = `WHERE ${where.join(" AND ")}`;
 
+  const baseFromSql = `
+    FROM agent_bookings ab
+    JOIN users au ON au.id = ab.agent_user_id
+    JOIN users cu ON cu.id = ab.customer_user_id
+  `;
+
   const listQ = await pool.query(
     `
     SELECT
@@ -5513,9 +5519,7 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
 
       COUNT(DISTINCT abl.id)::int AS line_count,
       STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles
-    FROM agent_bookings ab
-    JOIN users au ON au.id = ab.agent_user_id
-    JOIN users cu ON cu.id = ab.customer_user_id
+    ${baseFromSql}
     LEFT JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
     LEFT JOIN contests c ON c.id = abl.contest_id
     ${whereSql}
@@ -5535,12 +5539,12 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
     `
     SELECT
       COUNT(*)::int AS total_bookings,
-      COALESCE(SUM(CASE WHEN LOWER(COALESCE(status,''))='paid' THEN total_amount ELSE 0 END),0)::int AS paid_amount,
-      COUNT(*) FILTER (WHERE LOWER(COALESCE(status,''))='paid')::int AS paid_count,
-      COUNT(*) FILTER (WHERE LOWER(COALESCE(status,''))='checkout_pending')::int AS checkout_pending_count,
-      COUNT(*) FILTER (WHERE LOWER(COALESCE(status,''))='draft')::int AS draft_count,
-      COUNT(*) FILTER (WHERE COALESCE(is_refunded,false)=true)::int AS refunded_count
-    FROM agent_bookings ab
+      COALESCE(SUM(CASE WHEN LOWER(COALESCE(ab.status,''))='paid' THEN ab.total_amount ELSE 0 END),0)::int AS paid_amount,
+      COUNT(*) FILTER (WHERE LOWER(COALESCE(ab.status,''))='paid')::int AS paid_count,
+      COUNT(*) FILTER (WHERE LOWER(COALESCE(ab.status,''))='checkout_pending')::int AS checkout_pending_count,
+      COUNT(*) FILTER (WHERE LOWER(COALESCE(ab.status,''))='draft')::int AS draft_count,
+      COUNT(*) FILTER (WHERE COALESCE(ab.is_refunded,false)=true)::int AS refunded_count
+    ${baseFromSql}
     ${whereSql}
     `,
     params
@@ -5549,15 +5553,144 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
   const byAgentQ = await pool.query(
     `
     SELECT
+      au.id AS agent_user_id,
       au.name AS agent_name,
+      au.phone AS agent_phone,
       COUNT(ab.id)::int AS bookings,
       COALESCE(SUM(CASE WHEN LOWER(COALESCE(ab.status,''))='paid' THEN ab.total_amount ELSE 0 END),0)::int AS paid_amount
-    FROM agent_bookings ab
-    JOIN users au ON au.id = ab.agent_user_id
-    JOIN users cu ON cu.id = ab.customer_user_id
+    ${baseFromSql}
     ${whereSql}
-    GROUP BY au.name
+    GROUP BY au.id, au.name, au.phone
     ORDER BY paid_amount DESC, bookings DESC, au.name ASC
+    `,
+    params
+  );
+
+  const reportSummaryQ = await pool.query(
+    `
+    SELECT
+      COUNT(*) FILTER (WHERE LOWER(COALESCE(ab.status,''))='paid')::int AS paid_bookings,
+      COALESCE(SUM(CASE WHEN LOWER(COALESCE(ab.status,''))='paid' THEN ab.total_amount ELSE 0 END),0)::int AS total_paid_amount,
+      COALESCE(SUM(CASE WHEN LOWER(COALESCE(ab.status,''))='paid' AND LOWER(COALESCE(ab.payment_method,''))='cash' THEN ab.total_amount ELSE 0 END),0)::int AS cash_amount,
+      COALESCE(SUM(CASE WHEN LOWER(COALESCE(ab.status,''))='paid' AND LOWER(COALESCE(ab.payment_method,''))='phonepe' THEN ab.total_amount ELSE 0 END),0)::int AS phonepe_amount
+    ${baseFromSql}
+    ${whereSql}
+    `,
+    params
+  );
+
+  const bookSummaryQ = await pool.query(
+    `
+    SELECT
+      x.book_kind,
+      x.book_title,
+      x.book_language,
+      SUM(x.qty)::int AS qty
+    FROM (
+      SELECT
+        'regular'::text AS book_kind,
+        COALESCE(NULLIF(TRIM(abl.book_title),''), c.default_book_title, 'Book') AS book_title,
+        COALESCE(NULLIF(TRIM(abl.book_language),''), '-') AS book_language,
+        1::int AS qty
+      FROM agent_bookings ab
+      JOIN users au ON au.id = ab.agent_user_id
+      JOIN users cu ON cu.id = ab.customer_user_id
+      JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
+      JOIN contests c ON c.id = abl.contest_id
+      ${whereSql}
+        AND LOWER(COALESCE(ab.status,''))='paid'
+        AND COALESCE(abl.line_status,'') <> 'cancelled'
+
+      UNION ALL
+
+      SELECT
+        'bonus'::text AS book_kind,
+        COALESCE(NULLIF(TRIM(abbi.book_title),''), 'Science of Self Realization') AS book_title,
+        COALESCE(NULLIF(TRIM(abbi.book_language),''), '-') AS book_language,
+        COALESCE(abbi.quantity, 1)::int AS qty
+      FROM agent_bookings ab
+      JOIN users au ON au.id = ab.agent_user_id
+      JOIN users cu ON cu.id = ab.customer_user_id
+      JOIN agent_booking_bonus_items abbi ON abbi.agent_booking_id = ab.id
+      ${whereSql}
+        AND LOWER(COALESCE(ab.status,''))='paid'
+    ) x
+    GROUP BY x.book_kind, x.book_title, x.book_language
+    ORDER BY x.book_kind ASC, x.book_title ASC, x.book_language ASC
+    `,
+    params
+  );
+
+  const printRowsQ = await pool.query(
+    `
+    SELECT
+      ab.id,
+      TO_CHAR(
+        ab.created_at AT TIME ZONE 'Asia/Kolkata',
+        'DD/MM/YYYY HH12:MI AM'
+      ) AS created_at,
+      ab.payment_id,
+      ab.payment_method,
+      ab.total_amount,
+
+      au.name AS agent_name,
+      au.phone AS agent_phone,
+
+      cu.name AS customer_name,
+      cu.phone AS customer_phone,
+
+      STRING_AGG(
+        DISTINCT (
+          COALESCE(NULLIF(TRIM(abl.book_title),''), c.default_book_title, 'Book')
+          || ' - ' ||
+          COALESCE(NULLIF(TRIM(abl.book_language),''), '-')
+        ),
+        ', '
+        ORDER BY (
+          COALESCE(NULLIF(TRIM(abl.book_title),''), c.default_book_title, 'Book')
+          || ' - ' ||
+          COALESCE(NULLIF(TRIM(abl.book_language),''), '-')
+        )
+      ) AS books_with_language,
+
+      STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles
+    ${baseFromSql}
+    LEFT JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
+    LEFT JOIN contests c ON c.id = abl.contest_id
+    ${whereSql}
+      AND LOWER(COALESCE(ab.status,''))='paid'
+    GROUP BY
+      ab.id, ab.created_at, ab.payment_id, ab.payment_method, ab.total_amount,
+      au.name, au.phone,
+      cu.name, cu.phone
+    ORDER BY ab.created_at ASC, ab.id ASC
+    `,
+    params
+  );
+
+  const totalBooksQ = await pool.query(
+    `
+    SELECT COALESCE(SUM(x.qty),0)::int AS total_books
+    FROM (
+      SELECT 1::int AS qty
+      FROM agent_bookings ab
+      JOIN users au ON au.id = ab.agent_user_id
+      JOIN users cu ON cu.id = ab.customer_user_id
+      JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
+      ${whereSql}
+        AND LOWER(COALESCE(ab.status,''))='paid'
+        AND COALESCE(abl.line_status,'') <> 'cancelled'
+
+      UNION ALL
+
+      SELECT COALESCE(abbi.quantity,1)::int AS qty
+      FROM agent_bookings ab
+      JOIN users au ON au.id = ab.agent_user_id
+      JOIN users cu ON cu.id = ab.customer_user_id
+      JOIN agent_booking_bonus_items abbi ON abbi.agent_booking_id = ab.id
+      ${whereSql}
+        AND LOWER(COALESCE(ab.status,''))='paid'
+    ) x
     `,
     params
   );
@@ -5567,10 +5700,20 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
     items: listQ.rows,
     summary: summaryQ.rows[0],
     byAgent: byAgentQ.rows,
+    reportSummary: reportSummaryQ.rows[0] || {
+      paid_bookings: 0,
+      total_paid_amount: 0,
+      cash_amount: 0,
+      phonepe_amount: 0
+    },
+    bookSummary: bookSummaryQ.rows || [],
+    printRows: printRowsQ.rows || [],
+    totalBooks: totalBooksQ.rows[0]?.total_books || 0,
     filters: { q, status, paymentMethod, dateFrom, dateTo },
     qs: qsOf(req),
   });
 });
+
 
 
 router.get("/admin/offline-dashboard", authMiddleware, adminMiddleware, async (_req: any, res) => {

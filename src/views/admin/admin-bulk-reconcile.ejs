@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin • Bulk Reconcile V2</title>
+  <title>Admin ? Bulk Reconcile V2</title>
   <style>
     :root{
       --bg:#0b1020;--card:#121933;--card2:#182245;--text:#eef2ff;--muted:#aab6d3;--line:rgba(255,255,255,.10);
@@ -13,7 +13,7 @@
     body{margin:0;font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--text)}
     .layout{display:flex;min-height:100vh}.sidebar{width:260px;background:#0a1022;border-right:1px solid var(--line);padding:18px}.brand{font-weight:900;margin-bottom:18px}
     .nav a{display:block;padding:10px 12px;border-radius:12px;text-decoration:none;color:rgba(255,255,255,.85);margin-bottom:8px}.nav a.active{background:rgba(26,60,255,.18);border:1px solid rgba(26,60,255,.35);color:#fff}
-    .content{flex:1}.wrap{max-width:1600px;margin:26px auto;padding:0 18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+    .content{flex:1;min-width:0}.wrap{max-width:1600px;margin:26px auto;padding:0 18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
     .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px}.k{font-size:12px;color:var(--muted)}.v{font-size:26px;font-weight:900;margin-top:4px}
     .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}.btn.primary{background:var(--primary);color:#fff}.btn.ok{background:var(--ok);color:#08130b}.btn.warn{background:var(--warn);color:#221600}.btn.ghost{background:rgba(255,255,255,.10);color:#fff}
     input[type="number"],input[type="text"],select{padding:10px;border-radius:10px;border:1px solid var(--line);background:#0e1630;color:#fff;min-width:110px}
@@ -21,27 +21,88 @@
     .muted{color:var(--muted)}.pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}.okpill{background:rgba(34,197,94,.16);color:#d7ffe4}.warnpill{background:rgba(245,158,11,.16);color:#ffefc2}.errpill{background:rgba(239,68,68,.16);color:#ffd8d8}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}.msg{padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--line)}.msg.ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25)}.msg.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25)}.small{font-size:12px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.stickyActions{position:sticky;bottom:0;background:rgba(11,16,32,.94);backdrop-filter:blur(8px);padding:12px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
     .pagination{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
-    @media (max-width: 1100px){ .grid{grid-template-columns:repeat(2,1fr)} .sidebar{display:none} }
-    @media (max-width: 700px){ .grid{grid-template-columns:1fr} }
-  </style>
+  .mobile-topbar{
+    display:none;
+    position:sticky;
+    top:0;
+    z-index:1200;
+    padding:12px 14px;
+    background:#0a1022;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .mobile-title{font-weight:900}
+  .menu-btn{
+    border:none;
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:900;
+    cursor:pointer;
+    background:#1a3cff;
+    color:#fff;
+  }
+
+  .sidebar-backdrop{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:1198;
+  }
+
+  @media (max-width: 1100px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .mobile-topbar{display:flex}
+    .sidebar{
+      position:fixed;
+      left:0;
+      top:0;
+      bottom:0;
+      z-index:1199;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      overflow:auto;
+      flex-shrink:0;
+    }
+    body.menu-open .sidebar{transform:translateX(0)}
+    body.menu-open .sidebar-backdrop{display:block}
+    .wrap{margin:18px auto;padding:0 14px}
+  }
+
+  @media (max-width: 700px){
+    .grid{grid-template-columns:1fr}
+  }
+</style>
 </head>
 <body>
+<div class="mobile-topbar">
+  <button type="button" class="menu-btn" onclick="toggleAdminMenu()">☰ Menu</button>
+  <div class="mobile-title">Admin Panel</div>
+</div>
+
+<div class="sidebar-backdrop" onclick="closeAdminMenu()"></div>
 <div class="layout">
   <aside class="sidebar">
     <div class="brand">Admin Panel</div>
     <div class="nav">
-      <a href="/admin">Overview</a>
-      <a href="/admin/contests">Contests</a>
-      <a href="/admin/user360">View User</a>
-      <a href="/admin/orders">Orders</a>
-      <a href="/admin/submissions">Submissions</a>
-      <a href="/admin/shipments">Shipments</a>
-      <a href="/admin/shipment-stock">Shipment Stock</a>
-      <a href="/admin/users">Users</a>
-      <a href="/admin/feedback">Feedback</a>
-      <a href="/admin/payments/reconcile-bulk" class="active">Bulk Reconcile</a>
-      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
-    </div>
+  <a href="/admin">Overview</a>
+  <a href="/admin/user360">View User</a>
+  <a href="/admin/users">All Users</a>
+  <a href="/admin/feedback">All Feedback</a>
+  <a href="/admin/shipment-stock">Current Book Stock</a>
+  <a href="/admin/shipments">Online Shipments</a>
+  <a href="/admin/orders">Online Orders</a>
+  <a href="/admin/submissions">Online Submissions</a>
+  <a href="/admin/contests">Online Contests</a>
+  <a href="/admin/offline-dashboard">Offline Overview</a>
+  <a href="/admin/offline-orders">Offline Orders</a>
+  <a href="/admin/agents">Offline Agents</a>
+  <a href="/admin/payments/reconcile-bulk" class="active">Razorpay Reconcile</a>
+  <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+</div>
   </aside>
 
   <main class="content">
@@ -85,9 +146,9 @@
       </div>
 
       <div class="grid">
-        <div class="stat"><div class="k">Global DB Paid Revenue</div><div class="v">₹<%= Number(summary.currentDbRevenue || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Recoverable Revenue On This Page</div><div class="v">₹<%= Number(summary.recoverableRevenue || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Projected Revenue If This Page Is Reconciled</div><div class="v">₹<%= Number(summary.projectedRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Global DB Paid Revenue</div><div class="v">?<%= Number(summary.currentDbRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Recoverable Revenue On This Page</div><div class="v">?<%= Number(summary.recoverableRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Projected Revenue If This Page Is Reconciled</div><div class="v">?<%= Number(summary.projectedRevenue || 0).toFixed(2) %></div></div>
         <div class="stat"><div class="k">Safe Sessions</div><div class="v"><%= summary.safeTotal || 0 %></div></div>
       </div>
 
@@ -99,8 +160,8 @@
       </div>
 
       <div class="grid">
-        <div class="stat"><div class="k">Gateway Extra Over Expected</div><div class="v">₹<%= Number(summary.gatewayExtraOverExpected || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Underpaid Gap</div><div class="v">₹<%= Number(summary.underpaidGap || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Gateway Extra Over Expected</div><div class="v">?<%= Number(summary.gatewayExtraOverExpected || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Underpaid Gap</div><div class="v">?<%= Number(summary.underpaidGap || 0).toFixed(2) %></div></div>
         <div class="stat"><div class="k">Safe Orders</div><div class="v"><%= summary.safeOrderCount || 0 %></div></div>
         <div class="stat"><div class="k">Scanned / Filtered</div><div class="v"><%= scannedCount || 0 %> / <%= filteredCount || 0 %></div></div>
       </div>
@@ -166,7 +227,7 @@
                   </td>
                   <td>
                     <div><span class="pill"><%= r.session_status || '-' %></span></div>
-                    <div class="muted small">Expected: ₹<%= Number(r.session_amount || 0).toFixed(2) %></div>
+                    <div class="muted small">Expected: ?<%= Number(r.session_amount || 0).toFixed(2) %></div>
                     <div class="muted small"><%= r.order_statuses || '-' %></div>
                   </td>
                   <td>
@@ -179,11 +240,11 @@
                     <% } else { %>
                       <div><span class="pill"><%= r.selectedPayment.status || '-' %></span></div>
                       <div class="muted small mono" style="margin-top:6px"><%= r.selectedPayment.id || '-' %></div>
-                      <div class="muted small">Captured: ₹<%= Number(r.capturedAmount || 0).toFixed(2) %></div>
+                      <div class="muted small">Captured: ?<%= Number(r.capturedAmount || 0).toFixed(2) %></div>
                       <div class="muted small">Method: <%= r.selectedPayment.method || '-' %></div>
                       <div class="muted small">At least expected: <%= r.amountAtLeastExpected ? 'yes' : 'no' %></div>
-                      <% if (r.isHigherAmount) { %><div class="muted small">Extra above expected: ₹<%= Number(r.overCollectedAmount || 0).toFixed(2) %></div><% } %>
-                      <% if (r.underpaidAmount) { %><div class="muted small">Short by: ₹<%= Number(r.underpaidAmount || 0).toFixed(2) %></div><% } %>
+                      <% if (r.isHigherAmount) { %><div class="muted small">Extra above expected: ?<%= Number(r.overCollectedAmount || 0).toFixed(2) %></div><% } %>
+                      <% if (r.underpaidAmount) { %><div class="muted small">Short by: ?<%= Number(r.underpaidAmount || 0).toFixed(2) %></div><% } %>
                     <% } %>
                   </td>
                   <td>
@@ -250,6 +311,18 @@
     });
   }
 </script>
+<script>
+  function toggleAdminMenu() {
+    document.body.classList.toggle("menu-open");
+  }
+
+  function closeAdminMenu() {
+    document.body.classList.remove("menu-open");
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeAdminMenu();
+  });
+</script>
 </body>
 </html>
-

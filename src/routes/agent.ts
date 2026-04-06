@@ -4,7 +4,7 @@ import { pool } from "../config/db";
 import { authMiddleware } from "../middleware/auth";
 import { agentMiddleware } from "../middleware/agent";
 import { hashPassword } from "../utils/hash";
-import { sendContestRegistrationMessageOnce } from "../services/contestConfirmation";
+import { sendContestRegistrationMessageOnce, sendOfflineRegistrationMessageOnce } from "../services/contestConfirmation";
 
 const router = express.Router();
 
@@ -335,10 +335,12 @@ router.get("/agent", authMiddleware, agentMiddleware, async (req: any, res: Resp
 // CREATE CUSTOMER
 // ==============================
 router.get("/agent/users/new", authMiddleware, agentMiddleware, (_req: any, res: Response) => {
-  res.render("agent/create-user", {
-    err: "",
-    form: { name: "", phone: "", password: "", confirmPassword: "" },
-  });
+ res.render("agent/create-user", {
+  err: "",
+  existingUser: null,
+  form: { name: "", phone: "", password: "", confirmPassword: "" },
+});
+
 });
 
 router.post(
@@ -365,28 +367,36 @@ router.post(
       confirmPassword: autoPassword,
     };
 
-
     if (!autoPassword) {
-  return res.render("agent/create-user", {
-    err: "Please enter a valid name to generate password.",
-    form,
-  });
+      return res.render("agent/create-user", {
+      err: "Please enter a valid name to generate password.",
+      existingUser:null,
+      form,
+    });
 }
     if (!errors.isEmpty()) {
       return res.render("agent/create-user", {
         err: errors.array()[0].msg,
+        existingUser:null,
         form,
       });
     }
 
     try {
-      const existingPhone = await pool.query(`SELECT id FROM users WHERE phone=$1 LIMIT 1`, [phone]);
-      if (existingPhone.rows.length > 0) {
-        return res.render("agent/create-user", {
-          err: "This mobile number is already registered. Please login.",
-          form,
-        });
-      }
+      const existingPhone = await pool.query(
+          `SELECT id, name, phone FROM users WHERE phone=$1 LIMIT 1`,
+          [phone]
+        );
+
+        if (existingPhone.rows.length > 0) {
+          return res.render("agent/create-user", {
+            err: "This mobile number is already registered.",
+            form,
+            existingUser: existingPhone.rows[0],
+          });
+        }
+
+
 
       const passwordHash = await hashPassword(autoPassword);
 
@@ -401,7 +411,8 @@ router.post(
     } catch (e: any) {
       console.error("agent create user error:", e);
       return res.render("agent/create-user", {
-        err: e?.message || "Failed to create user.",
+        err: e?.message || "Website under maintenance, please use paper tickets.",
+        existingUser:null,
         form,
       });
     }
@@ -919,14 +930,17 @@ router.post("/agent/bookings/:bookingId/payment/complete", authMiddleware, agent
         [bookingId]
       );
 
-      await sendContestRegistrationMessageOnce({
-        paymentId: booking.payment_id,
-        paymentSessionId: String(booking.payment_session_id),
-        userId: String(booking.customer_user_id),
-        phone: String(booking.phone || ""),
-        userName: String(booking.full_name || booking.customer_name || "Participant"),
-        contestTitles: contestsQ.rows.map((r: any) => String(r.title || "")).filter(Boolean),
-      });
+
+      await sendOfflineRegistrationMessageOnce({
+  paymentId: String(booking.payment_id || ""),
+  paymentSessionId: booking.payment_session_id ? String(booking.payment_session_id) : null,
+  userId: String(booking.customer_user_id || ""),
+  phone: String(booking.customer_phone || ""),
+  userName: String(booking.customer_name || "Participant"),
+  contestTitles: contestsQ.rows.map((r: any) => String(r.title || "").trim()).filter(Boolean),
+  loginHelpText: `Mobile Number: ${String(booking.customer_phone || "")}. Password reset link https://iskconcontest.org/forgot-password.`,
+});
+
     } catch (e) {
       console.error("agent confirmation send error:", e);
     }
@@ -948,7 +962,25 @@ router.get("/agent/bookings/:bookingId/summary", authMiddleware, agentMiddleware
   const bookingId = String(req.params.bookingId || "").trim();
 
   const booking = await loadBookingForAgent(bookingId, String(req.userId));
-  if (!booking) return res.status(404).send("Booking not found");
+
+  if (!booking)
+    return res.status(404).send("Booking not found");
+
+  const bookingTimeQ = await pool.query(
+  `
+  SELECT to_char(
+    booking_ts AT TIME ZONE 'Asia/Kolkata',
+    'FMDD Mon YYYY "at" FMHH12:MI am'
+  ) AS booking_created_at_ist
+  FROM (
+    SELECT $1::timestamptz AS booking_ts
+  ) t
+  `,
+  [booking.created_at]
+);
+
+const bookingCreatedAtIst =
+  bookingTimeQ.rows[0]?.booking_created_at_ist || "-";
 
   const lines = await loadBookingLines(bookingId);
 
@@ -971,6 +1003,7 @@ router.get("/agent/bookings/:bookingId/summary", authMiddleware, agentMiddleware
     orders: lines,
     bonusItems: bonusQ.rows,
     whatsappNumber: "9493805059",
+    bookingCreatedAtIst,
     portalCredentials: {
       phone: loginPhone,
       password: loginPassword,
@@ -1026,35 +1059,40 @@ router.get("/agent/history", authMiddleware, agentMiddleware, async (req: any, r
     paramsBase
   );
 
+
   const historyQ = await pool.query(
-    `
+  `
+  SELECT
+    ab.id,
+    ab.payment_id,
+    ab.status,
+    ab.payment_method,
+    ab.total_amount,
+    ab.created_at,
+    to_char(
+      timezone('Asia/Kolkata', ab.created_at AT TIME ZONE 'UTC'),
+      'FMDD Mon YYYY "at" FMHH12:MI am'
+    ) AS created_at_ist,
+    u.name,
+    u.phone,
+    COALESCE(line_counts.lines_count, 0)::int AS lines_count
+  FROM agent_bookings ab
+  JOIN users u ON u.id = ab.customer_user_id
+  LEFT JOIN (
     SELECT
-      ab.id,
-      ab.payment_id,
-      ab.status,
-      ab.payment_method,
-      ab.total_amount,
-      ab.created_at,
-      u.name,
-      u.phone,
-      COALESCE(line_counts.lines_count, 0)::int AS lines_count
-    FROM agent_bookings ab
-    JOIN users u ON u.id = ab.customer_user_id
-    LEFT JOIN (
-      SELECT
-        agent_booking_id,
-        COUNT(*)::int AS lines_count
-      FROM agent_booking_lines
-      WHERE COALESCE(line_status,'') <> 'cancelled'
-      GROUP BY agent_booking_id
-    ) line_counts
-      ON line_counts.agent_booking_id = ab.id
-    WHERE ${whereSql}
-    ORDER BY ab.created_at DESC
-    LIMIT $5 OFFSET $6
-    `,
-    [...paramsBase, pageSize, (page - 1) * pageSize]
-  );
+      agent_booking_id,
+      COUNT(*)::int AS lines_count
+    FROM agent_booking_lines
+    WHERE COALESCE(line_status,'') <> 'cancelled'
+    GROUP BY agent_booking_id
+  ) line_counts
+    ON line_counts.agent_booking_id = ab.id
+  WHERE ${whereSql}
+  ORDER BY ab.created_at DESC
+  LIMIT $5 OFFSET $6
+  `,
+  [...paramsBase, pageSize, (page - 1) * pageSize]
+);
 
   res.render("agent/history", {
     q: qText,
@@ -1068,6 +1106,146 @@ router.get("/agent/history", authMiddleware, agentMiddleware, async (req: any, r
 // ==============================
 // USERS LIST
 // ==============================
+router.get("/agent/users", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
+  const qRaw = norm(req.query.q || "");
+  const qDigits = normPhone(qRaw);
+  const page = Math.max(parseInt(String(req.query.page || "1"), 10) || 1, 1);
+  const pageSize = 5;
+
+  let err = "";
+  let users: any[] = [];
+  let filteredCount = 0;
+
+  // -------------------------------------------------
+  // MODE 1: exact 10-digit phone search across users
+  // -------------------------------------------------
+  if (qRaw) {
+    if (!/^\d{10}$/.test(qRaw)) {
+      err = "Please enter exactly 10 digits.";
+    } else {
+      const searchQ = await pool.query(
+        `
+        SELECT
+          u.id,
+          u.name,
+          u.phone,
+          stats.first_seen_at,
+          stats.last_booking_at,
+          COALESCE(stats.bookings_count, 0)::int AS bookings_count,
+          COALESCE(stats.paid_bookings_count, 0)::int AS paid_bookings_count,
+          COALESCE(stats.draft_bookings_count, 0)::int AS draft_bookings_count,
+          COALESCE(stats.pending_bookings_count, 0)::int AS pending_bookings_count,
+          COALESCE(stats.cancelled_bookings_count, 0)::int AS cancelled_bookings_count,
+          COALESCE(stats.latest_status, 'none') AS latest_status
+        FROM users u
+        LEFT JOIN (
+          SELECT
+            ab.customer_user_id,
+            MIN(ab.created_at) AS first_seen_at,
+            MAX(ab.created_at) AS last_booking_at,
+            COUNT(ab.id)::int AS bookings_count,
+            COUNT(*) FILTER (WHERE ab.status='paid')::int AS paid_bookings_count,
+            COUNT(*) FILTER (WHERE ab.status='draft')::int AS draft_bookings_count,
+            COUNT(*) FILTER (WHERE ab.status='checkout_pending')::int AS pending_bookings_count,
+            COUNT(*) FILTER (WHERE ab.status='cancelled')::int AS cancelled_bookings_count,
+            (
+              SELECT ab2.status
+              FROM agent_bookings ab2
+              WHERE ab2.agent_user_id = $1
+                AND ab2.customer_user_id = ab.customer_user_id
+              ORDER BY ab2.created_at DESC
+              LIMIT 1
+            ) AS latest_status
+          FROM agent_bookings ab
+          WHERE ab.agent_user_id = $1
+          GROUP BY ab.customer_user_id
+        ) stats
+          ON stats.customer_user_id = u.id
+        WHERE u.phone = $2
+        LIMIT 1
+        `,
+        [req.userId, qDigits]
+      );
+
+      users = searchQ.rows;
+      filteredCount = users.length;
+    }
+
+    return res.render("agent/users", {
+      q: qRaw,
+      err,
+      users,
+      page: 1,
+      pageSize,
+      filteredCount,
+      totalAll: 0,
+      isSearchMode: true,
+    });
+  }
+
+  // -------------------------------------------------
+  // MODE 2: default page = only this agent's users
+  // -------------------------------------------------
+  const countQ = await pool.query(
+    `
+    SELECT COUNT(*)::int AS total_count
+    FROM (
+      SELECT ab.customer_user_id
+      FROM agent_bookings ab
+      WHERE ab.agent_user_id = $1
+      GROUP BY ab.customer_user_id
+    ) x
+    `,
+    [req.userId]
+  );
+
+  const usersQ = await pool.query(
+    `
+    SELECT
+      u.id,
+      u.name,
+      u.phone,
+      MIN(ab.created_at) AS first_seen_at,
+      MAX(ab.created_at) AS last_booking_at,
+      COUNT(ab.id)::int AS bookings_count,
+      COUNT(*) FILTER (WHERE ab.status='paid')::int AS paid_bookings_count,
+      COUNT(*) FILTER (WHERE ab.status='draft')::int AS draft_bookings_count,
+      COUNT(*) FILTER (WHERE ab.status='checkout_pending')::int AS pending_bookings_count,
+      COUNT(*) FILTER (WHERE ab.status='cancelled')::int AS cancelled_bookings_count,
+      COALESCE((
+        SELECT ab2.status
+        FROM agent_bookings ab2
+        WHERE ab2.agent_user_id = $1
+          AND ab2.customer_user_id = u.id
+        ORDER BY ab2.created_at DESC
+        LIMIT 1
+      ), 'none') AS latest_status
+    FROM agent_bookings ab
+    JOIN users u ON u.id = ab.customer_user_id
+    WHERE ab.agent_user_id = $1
+    GROUP BY u.id, u.name, u.phone
+    ORDER BY MAX(ab.created_at) DESC, u.name ASC
+    LIMIT $2 OFFSET $3
+    `,
+    [req.userId, pageSize, (page - 1) * pageSize]
+  );
+
+  res.render("agent/users", {
+    q: "",
+    err: "",
+    users: usersQ.rows,
+    page,
+    pageSize,
+    filteredCount: Number(countQ.rows[0]?.total_count || 0),
+    totalAll: Number(countQ.rows[0]?.total_count || 0),
+    isSearchMode: false,
+  });
+});
+
+
+
+
+/*
 router.get("/agent/users", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
   const qText = norm(req.query.q || "");
   const qLower = qText.toLowerCase();
@@ -1159,11 +1337,12 @@ router.get("/agent/users", authMiddleware, agentMiddleware, async (req: any, res
     totalAll: Number(totalAllQ.rows[0]?.total_all || 0),
   });
 });
-
+*/
 
 // ==============================
 // USER HISTORY
 // ==============================
+/*
 router.get("/agent/users/:customerId", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
   const customerId = String(req.params.customerId || "").trim();
   const page = Math.max(parseInt(String(req.query.page || "1"), 10) || 1, 1);
@@ -1234,6 +1413,82 @@ router.get("/agent/users/:customerId", authMiddleware, agentMiddleware, async (r
     totalCount: Number(countQ.rows[0]?.total_count || 0),
   });
 });
+*/
+
+// ==============================
+// USER HISTORY
+// ==============================
+router.get("/agent/users/:customerId", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
+  const customerId = String(req.params.customerId || "").trim();
+  const page = Math.max(parseInt(String(req.query.page || "1"), 10) || 1, 1);
+  const pageSize = 5;
+
+  const customerQ = await pool.query(
+    `
+    SELECT u.id, u.name, u.phone
+    FROM users u
+    WHERE u.id = $1
+    LIMIT 1
+    `,
+    [customerId]
+  );
+
+  const customer = customerQ.rows[0];
+  if (!customer) return res.status(404).send("Customer not found");
+
+  const countQ = await pool.query(
+    `
+    SELECT COUNT(*)::int AS total_count
+    FROM agent_bookings ab
+    WHERE ab.agent_user_id = $1
+      AND ab.customer_user_id = $2
+    `,
+    [req.userId, customerId]
+  );
+
+
+    const historyQ = await pool.query(
+    `
+    SELECT
+      ab.id,
+      ab.payment_id,
+      ab.status,
+      ab.payment_method,
+      ab.total_amount,
+      ab.created_at,
+      to_char(
+  timezone('Asia/Kolkata', ab.created_at AT TIME ZONE 'UTC'),
+  'FMDD Mon YYYY "at" FMHH12:MI am'
+) AS created_at_ist,
+      COALESCE(lines.contests_count, 0)::int AS contests_count
+    FROM agent_bookings ab
+    LEFT JOIN (
+      SELECT
+        abl.agent_booking_id,
+        COUNT(*)::int AS contests_count
+      FROM agent_booking_lines abl
+      WHERE abl.line_status <> 'cancelled'
+      GROUP BY abl.agent_booking_id
+    ) lines
+      ON lines.agent_booking_id = ab.id
+    WHERE ab.agent_user_id = $1
+      AND ab.customer_user_id = $2
+    ORDER BY ab.created_at DESC
+    LIMIT $3 OFFSET $4
+    `,
+    [req.userId, customerId, pageSize, (page - 1) * pageSize]
+  );
+
+
+  res.render("agent/user-history", {
+    customer,
+    bookings: historyQ.rows,
+    page,
+    pageSize,
+    totalCount: Number(countQ.rows[0]?.total_count || 0),
+  });
+});
+
 
 // ==============================
 // BOOKING DETAIL

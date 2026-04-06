@@ -10,6 +10,10 @@ type ContestConfirmationInput = {
   contestTitles: string[];
 };
 
+type OfflineContestConfirmationInput = ContestConfirmationInput & {
+  loginHelpText: string;
+};
+
 function normPhone(v: string) {
   return String(v || "").replace(/\D/g, "").slice(-10);
 }
@@ -156,6 +160,115 @@ export async function sendContestRegistrationMessageOnce(input: ContestConfirmat
     );
   } catch (e: any) {
     // If duplicate unique hit, treat as already sent/handled
+    if (String(e?.code || "") === "23505") {
+      return { ok: true, skipped: true, reason: "already_logged_by_parallel_request" as const };
+    }
+    throw e;
+  }
+
+  return {
+    ok: sendStatus === "sent",
+    skipped: false,
+    status: sendStatus,
+    providerMessageId,
+  };
+}
+
+export async function sendOfflineRegistrationMessageOnce(input: OfflineContestConfirmationInput) {
+  const loginHelpText = String(input.loginHelpText || "").trim();
+  const paymentId = String(input.paymentId || "").trim();
+  const paymentSessionId = input.paymentSessionId || null;
+  const userId = String(input.userId || "").trim();
+  const phone = normPhone(input.phone);
+  const userName = String(input.userName || "Participant").trim() || "Participant";
+
+  if (!paymentId || !userId || !phone) {
+    return { ok: false, skipped: true, reason: "missing_required_fields" as const };
+  }
+
+  const existing = await pool.query(
+    `
+    SELECT id
+    FROM whatsapp_message_logs
+    WHERE payment_id = $1
+      AND message_type = 'offline_registration_success'
+    LIMIT 1
+    `,
+    [paymentId]
+  );
+
+  if (existing.rows.length > 0) {
+    return { ok: true, skipped: true, reason: "already_sent" as const };
+  }
+
+  const apiKey = String(process.env.MNV_API_KEY || "").trim();
+  const campaignName = String(
+    process.env.MNV_OFFLINE_CONFIRM_CAMPAIGN_NAME || "offline_success"
+  ).trim();
+  const source = String(
+    process.env.MNV_OFFLINE_CONFIRM_SOURCE || "offline-registration-success"
+  ).trim();
+  const senderName = String(
+    process.env.MNV_OFFLINE_CONFIRM_USERNAME || "IskconContest"
+  ).trim();
+
+  if (!apiKey || !campaignName) {
+    return { ok: false, skipped: true, reason: "provider_not_configured" as const };
+  }
+
+  const destination = `91${phone}`;
+  const contestList = (input.contestTitles || [])
+    .map((x) => String(x || "").trim())
+    .filter(Boolean)
+    .join(", ") || "Contest registration";
+
+  const payload = {
+    apiKey,
+    campaignName,
+    destination,
+    userName: senderName,
+    templateParams: [
+      userName,    // {{1}}
+      phone,    // {{2}}
+      paymentId,  //{{3}}
+      contestList, // {{4}} contest details
+    ],
+    source,
+    media: {},
+    buttons: [],
+    carouselCards: [],
+    location: {},
+    attributes: {},
+  };
+
+  let providerMessageId: string | null = null;
+  let responseText = "";
+  let sendStatus: "sent" | "failed" = "sent";
+
+  try {
+    const response = await mnvPost(payload);
+    responseText = typeof response === "string" ? response : JSON.stringify(response || {});
+    providerMessageId =
+      response?.submitted_message_id ||
+      response?.message_id ||
+      response?.id ||
+      null;
+  } catch (e: any) {
+    sendStatus = "failed";
+    responseText = e?.message || "Unknown send failure";
+  }
+
+  try {
+    await pool.query(
+      `
+      INSERT INTO whatsapp_message_logs
+        (payment_id, payment_session_id, user_id, phone, message_type, provider, provider_message_id, status, response_text)
+      VALUES
+        ($1,$2,$3,$4,'offline_registration_success','mnv_whatsapp',$5,$6,$7)
+      `,
+      [paymentId, paymentSessionId, userId, phone, providerMessageId, sendStatus, responseText]
+    );
+  } catch (e: any) {
     if (String(e?.code || "") === "23505") {
       return { ok: true, skipped: true, reason: "already_logged_by_parallel_request" as const };
     }

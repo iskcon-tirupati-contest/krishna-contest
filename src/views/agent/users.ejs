@@ -229,18 +229,39 @@
       <div class="srow">
         <div class="sfield-wrap">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input class="sfield" type="text" name="q" value="<%= q||'' %>" placeholder="Search by name or phone…">
+          <!--<input class="sfield" type="text" name="q" value="<%= q||'' %>" placeholder="Enter 10 digit mobile number...">-->
+          <input
+  class="sfield"
+  type="tel"
+  name="q"
+  value="<%= q||'' %>"
+  placeholder="Enter 10-digit mobile number"
+  inputmode="numeric"
+  maxlength="10"
+  pattern="[0-9]{10}"
+  oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"
+>
+
         </div>
         <button class="ssub" type="submit"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
         <a class="sreset" href="/agent/users">Reset</a>
       </div>
+      <% if (err) { %>
+      <div class="alert-err"><%= err %></div>
+    <% } %>
       <div class="smeta">
-        <span>Showing</span>
-        <span class="smeta-count"><%= Number((users||[]).length) %></span>
-        <span>of</span>
-        <span class="smeta-count"><%= Number(filteredCount||0) %></span>
-        <span>users</span>
-      </div>
+  <% if (isSearchMode) { %>
+    <span>Matched</span>
+    <span class="smeta-count"><%= Number(filteredCount || 0) %></span>
+    <span>user</span>
+  <% } else { %>
+    <span>Showing</span>
+    <span class="smeta-count"><%= Number(filteredCount || 0) %></span>
+    <span>users</span>
+  <% } %>
+</div>
+
+
     </form>
   </div>
 
@@ -298,16 +319,34 @@
   </div>
 
   <!-- Pagination -->
-  <% const tpU=Math.max(1,Math.ceil((filteredCount||0)/(pageSize||5))); %>
+  <% if (!isSearchMode) { %>
+  <%
+    const tpU = Math.max(1, Math.ceil((filteredCount || 0) / (pageSize || 5)));
+    const cp = Number(page || 1);
+    const startPage = Math.max(1, cp - 1);
+    const endPage = Math.min(tpU, startPage + 2);
+    const fixedStart = Math.max(1, endPage - 2);
+  %>
+
   <div class="pager">
-    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.max(1,(page||1)-1) %>">
-      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> Prev
+    <a class="pg pgw <%= cp <= 1 ? 'disabled' : '' %>"
+       href="<%= cp <= 1 ? '#' : ('/agent/users?page=' + (cp - 1)) %>">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      Prev
     </a>
-    <% for(let p=1;p<=tpU;p++){ %><a class="pg <%= p===(page||1)?'active':'' %>" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= p %>"><%= p %></a><% } %>
-    <a class="pg pgw" href="/agent/users?q=<%= encodeURIComponent(q||'') %>&page=<%= Math.min(tpU,(page||1)+1) %>">
-      Next <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+
+    <% for (let p = fixedStart; p <= endPage; p++) { %>
+      <a class="pg <%= p === cp ? 'active' : '' %>" href="/agent/users?page=<%= p %>"><%= p %></a>
+    <% } %>
+
+    <a class="pg pgw <%= cp >= tpU ? 'disabled' : '' %>"
+       href="<%= cp >= tpU ? '#' : ('/agent/users?page=' + (cp + 1)) %>">
+      Next
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
     </a>
   </div>
+<% } %>
+
 </div>
 
 <nav class="bnav">
@@ -321,3 +360,4 @@
   document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
 </script>
 </body></html>
+

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Shipments</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121933;
+      --card2:#182245;
+      --text:#eef2ff;
+      --muted:#aab3d6;
+      --line:#2a376b;
+      --blue:#4f7cff;
+      --blue2:#2447b6;
+      --green:#22c55e;
+      --red:#ef4444;
+      --amber:#f59e0b;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:#0b1224;
+      color:var(--text);
+    }
+
+    a{color:inherit}
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{
+      width:260px;
+      background:#0a1022;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:18px;
+    }
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      color:rgba(255,255,255,.85);
+      margin-bottom:8px;
+    }
+    .nav a.active{
+      background:rgba(26,60,255,.18);
+      border:1px solid rgba(26,60,255,.35);
+      color:#fff;
+    }
+
+    .content{flex:1;min-width:0}
+    .wrap{max-width:1400px;margin:26px auto;padding:0 18px}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title h1{margin:0;font-size:28px;line-height:1.1}
+    .title p{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    input,select,button{
+      font:inherit;
+    }
+
+    input[type="text"], input[type="file"], select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0d1430;
+      color:var(--text);
+      outline:none;
+    }
+
+    input[type="file"]{
+      padding:8px 10px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid transparent;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+      font-weight:900;
+    }
+
+    .btn.primary{
+      background:linear-gradient(180deg,var(--blue),var(--blue2));
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#111936;
+      border-color:var(--line);
+      color:var(--text);
+    }
+
+    .btn.warn{
+      background:linear-gradient(180deg,#f59e0b,#d97706);
+      color:#fff;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .muted{color:var(--muted)}
+
+    .filters{
+      display:grid;
+      gap:12px;
+    }
+
+    .facetbar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .facet{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#0d1430;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .tablewrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid var(--line);
+      margin-top:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1200px;
+      background:rgba(7,11,24,.35);
+    }
+
+    th,td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:top;
+      text-align:left;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#121a38;
+      z-index:1;
+      font-size:13px;
+      color:#dbe5ff;
+    }
+
+    tr:hover td{
+      background:rgba(255,255,255,.02);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.1);
+      background:#0f1734;
+      color:#dbe5ff;
+      text-transform:capitalize;
+    }
+
+    .pill.pending{border-color:rgba(245,158,11,.35); color:#fde68a}
+    .pill.packed{border-color:rgba(59,130,246,.35); color:#bfdbfe}
+    .pill.dispatched{border-color:rgba(34,197,94,.35); color:#bbf7d0}
+    .pill.delivered{border-color:rgba(16,185,129,.35); color:#a7f3d0}
+    .pill.failed{border-color:rgba(239,68,68,.35); color:#fecaca}
+
+    .msg{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid transparent;
+      font-size:14px;
+    }
+
+    .msg.success{
+      background:rgba(34,197,94,.15);
+      border-color:rgba(34,197,94,.35);
+    }
+
+    .msg.info{
+      background:rgba(59,130,246,.15);
+      border-color:rgba(59,130,246,.35);
+    }
+
+    .msg.error{
+      background:rgba(239,68,68,.15);
+      border-color:rgba(239,68,68,.35);
+    }
+
+    .stack{display:grid;gap:8px}
+    .tiny{font-size:12px}
+
+    .inline-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .update-form{
+      display:grid;
+      gap:8px;
+      min-width:220px;
+    }
+
+    .empty{
+      text-align:center;
+      padding:22px;
+      color:var(--muted);
+    }
+.pill.handed_over{
+  border-color: rgba(168,85,247,.35);
+  color: #e9d5ff;
+}
+    .checkcell{
+      width:42px;
+      text-align:center;
+    }
+
+    .mobile-topbar{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:1200;
+      padding:12px 14px;
+      background:#0a1022;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .mobile-title{font-weight:900}
+    .menu-btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#1a3cff;
+      color:#fff;
+    }
+
+    .sidebar-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:1198;
+    }
+
+    @media (max-width:1200px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+    }
+
+    @media (max-width:1100px){
+      .mobile-topbar{display:flex}
+      .sidebar{
+        position:fixed;
+        left:0;
+        top:0;
+        bottom:0;
+        z-index:1199;
+        transform:translateX(-100%);
+        transition:transform .22s ease;
+        box-shadow:0 10px 30px rgba(0,0,0,.35);
+        overflow:auto;
+        flex-shrink:0;
+      }
+      body.menu-open .sidebar{transform:translateX(0)}
+      body.menu-open .sidebar-backdrop{display:block}
+      .wrap{margin:18px auto;padding:0 14px}
+    }
+
+    @media (max-width:700px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-topbar">
+    <button type="button" class="menu-btn" onclick="toggleAdminMenu()">☰ Menu</button>
+    <div class="mobile-title">Admin Panel</div>
+  </div>
+
+  <div class="sidebar-backdrop" onclick="closeAdminMenu()"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/users">All Users</a>
+        <a href="/admin/feedback">All Feedback</a>
+        <a href="/admin/shipment-stock">Current Book Stock</a>
+        <a href="/admin/shipments" class="active">Online Shipments</a>
+        <a href="/admin/orders">Online Orders</a>
+        <a href="/admin/submissions">Online Submissions</a>
+        <a href="/admin/contests">Online Contests</a>
+        <a href="/admin/offline-dashboard">Offline Overview</a>
+        <a href="/admin/offline-orders">Offline Orders</a>
+        <a href="/admin/agents">Offline Agents</a>
+        <a href="/admin/payments/reconcile-bulk">Razorpay Reconcile</a>
+        <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="topbar">
+          <div class="title">
+            <h1>Admin Shipments</h1>
+            <p>Manage grouped book shipments, India Post batch creation, Excel export, result import, and manual tracking updates.</p>
+
+
+            <% if (imported) { %>
+              <div class="msg info">
+                India Post result imported. Rows processed: <strong><%= imported %></strong>
+              </div>
+            <% } %>
+
+            <% if (okMsg) { %>
+                        <div class="msg success">
+               <%= okMsg %>
+                     </div>
+            <% } %>
+
+            <% if (errorMsg) { %>
+              <div class="msg error">
+                <%= errorMsg %>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="inline-actions">
+            <a class="btn ghost" href="/admin">Overview</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+
+            <form id="filtersForm" method="GET" action="/admin/shipments" class="filters" style="flex:1;min-width:320px">
+  <div class="grid" style="grid-template-columns:repeat(5,1fr)">
+    <div>
+      <label for="q">Name or mobile number</label>
+      <input
+        id="q"
+        name="q"
+        type="text"
+        value="<%= filters.q || '' %>"
+        placeholder="Search by name or phone"
+      />
+    </div>
+
+
+<div>
+  <label for="delivery_mode">Delivery mode</label>
+  <select id="delivery_mode" name="delivery_mode">
+    <option value="all" <%= filters.deliveryMode==='all' ? 'selected' : '' %>>All</option>
+    <option value="home_delivery" <%= filters.deliveryMode==='home_delivery' ? 'selected' : '' %>>Home Delivery</option>
+    <option value="temple_pickup" <%= filters.deliveryMode==='temple_pickup' ? 'selected' : '' %>>Temple Pickup</option>
+  </select>
+</div>
+
+    <div>
+      <label for="status">Shipment status</label>
+      <select id="status" name="status">
+        <option value="all" <%= filters.status==='all' ? 'selected' : '' %>>All</option>
+        <option value="pending" <%= filters.status==='pending' ? 'selected' : '' %>>Pending</option>
+        <option value="packed" <%= filters.status==='packed' ? 'selected' : '' %>>Packed</option>
+        <option value="dispatched" <%= filters.status==='dispatched' ? 'selected' : '' %>>Dispatched</option>
+        <option value="delivered" <%= filters.status==='delivered' ? 'selected' : '' %>>Delivered</option>
+        <option value="handed_over" <%= filters.status==='handed_over' ? 'selected' : '' %>>Handed Over</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="date_from">From date</label>
+      <input
+        id="date_from"
+        name="date_from"
+        type="date"
+        value="<%= filters.dateFrom || '' %>"
+      />
+    </div>
+
+    <div>
+      <label for="date_to">To date</label>
+      <input
+        id="date_to"
+        name="date_to"
+        type="date"
+        value="<%= filters.dateTo || '' %>"
+      />
+    </div>
+  </div>
+</form>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+  <a class="btn ghost" href="/admin/shipments">Reset</a>
+  <button class="btn primary" type="submit" form="filtersForm">Apply</button>
+
+  <a class="btn ghost" href="/admin/shipments/export.csv?<%= qs %>">Export CSV</a>
+</div>
+          </div>
+
+          <div class="facetbar">
+            <% if (statusFacets && statusFacets.length) { %>
+              <% statusFacets.forEach(f => { %>
+                <span class="facet">
+                  <span><%= f.status %></span>
+                  <strong><%= f.c %></strong>
+                </span>
+              <% }) %>
+            <% } else { %>
+              <span class="facet">No status data</span>
+            <% } %>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px">
+            <form id="ipBatchForm" method="POST" action="/admin/india-post/create-batch"></form>
+
+            <form
+  method="POST"
+  action="/admin/shipments/import-tracking-temp"
+  enctype="multipart/form-data"
+  style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"
+>
+  <input
+    type="file"
+    name="result_file"
+    accept=".csv,.xlsx,.xls"
+    style="max-width:260px"
+    required
+  />
+  <button class="btn ghost" type="submit">Import Result File</button>
+</form>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="checkcell">
+                    <input type="checkbox" id="checkAll" />
+                  </th>
+                 <th>Shipment</th>
+                <th>User</th>
+                <th>Books / Contests</th>
+                <th>Address</th>
+                <th>Tracking</th>
+                <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% if (!items || !items.length) { %>
+                  <tr>
+                    <td colspan="7" class="empty">
+                      No shipments found for the selected filters.
+                    </td>
+                  </tr>
+                <% } %>
+
+                <% items.forEach(it => { %>
+                  <tr>
+                    <td class="checkcell">
+                      <input
+                        type="checkbox"
+                        name="shipment_ids"
+                        value="<%= it.shipment_id %>"
+                        form="ipBatchForm"
+                        class="rowCheck"
+                      />
+                    </td>
+
+                    <td class="muted tiny">
+                      <div><strong>Shipment:</strong> <%= it.shipment_id %></div>
+                      <div><strong>Payment:</strong> <%= it.payment_id || '-' %></div>
+                    </td>
+
+                    <td>
+                      <div style="font-weight:900"><%= it.user_name %></div>
+                      <div class="muted tiny"><%= it.email %> • <%= it.phone || '-' %></div>
+                    </td>
+
+                    <td>
+  <div><strong>Books:</strong> <%= it.books_display || '-' %></div>
+  <div class="muted tiny"><%= it.contest_titles || '-' %></div>
+</td>
+
+                    <td class="muted tiny">
+                      <div><%= it.address || '-' %></div>
+                      <div><%= it.city || '' %> <%= it.state || '' %> <%= it.pincode || '' %></div>
+                    </td>
+
+                    <td class="muted tiny">
+                      <div><strong>ID:</strong> <%= it.tracking_id || '-' %></div>
+                      <div><strong>Courier:</strong> <%= it.courier_mode || '-' %></div>
+                      <div style="margin-top:6px">
+                        <span class="pill <%= (it.status || 'pending').toLowerCase() %>"><%= it.status || 'pending' %></span>
+                      </div>
+                    </td>
+
+                    <td style="min-width:290px">
+                      <form method="POST" action="/admin/shipments/update" class="update-form">
+                        <input type="hidden" name="shipmentId" value="<%= it.shipment_id %>">
+
+                        <div class="tiny muted">
+                          <strong>Tracking:</strong> <%= it.tracking_id || '-' %>
+                        </div>
+
+                        <input
+                          type="text"
+                          name="tracking_id"
+                          value="<%= it.tracking_id || '' %>"
+                          placeholder="Tracking ID"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="courier_mode"
+                          value="<%= it.courier_mode || 'india_post' %>"
+                        />
+
+                        <div class="tiny muted">
+                          Courier: <strong><%= it.courier_mode || 'india_post' %></strong>
+                        </div>
+
+                        <select name="status">
+                          <option value="pending" <%= it.status==='pending' ? 'selected' : '' %>>Pending</option>
+                          <option value="packed" <%= it.status==='packed' ? 'selected' : '' %>>Packed</option>
+                          <option value="dispatched" <%= it.status==='dispatched' ? 'selected' : '' %>>Dispatched</option>
+                          <option value="delivered" <%= it.status==='delivered' ? 'selected' : '' %>>Delivered</option>
+                          <option value="handed_over" <%= it.status==='handed_over' ? 'selected' : '' %>>Handed Over</option>
+                        </select>
+
+                        <button class="btn primary" type="submit">Save</button>
+                      </form>
+                    </td>
+
+
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const checkAll = document.getElementById("checkAll");
+      const rowChecks = Array.from(document.querySelectorAll(".rowCheck"));
+      if (!checkAll) return;
+
+      checkAll.addEventListener("change", function () {
+        rowChecks.forEach(cb => cb.checked = checkAll.checked);
+      });
+    })();
+  </script>
+  <script>
+    function toggleAdminMenu() {
+      document.body.classList.toggle("menu-open");
+    }
+
+    function closeAdminMenu() {
+      document.body.classList.remove("menu-open");
+    }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeAdminMenu();
+    });
+  </script>
+</body>
+</html>

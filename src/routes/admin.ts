@@ -41,6 +41,100 @@ function onlinePaymentSessionsWhere(alias = "ps") {
   `;
 }
 
+async function fetchShipmentPageRows(req: any) {
+  const { whereSql, params } = buildShipmentsFilter(req);
+  const page = Math.max(1, Number(req.query.page || 1));
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+
+  const countQ = await pool.query(
+    `
+    SELECT COUNT(DISTINCT sh.id)::int AS total_count
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+    ${whereSql}
+    `,
+    params
+  );
+
+  const listQ = await pool.query(
+    `
+    SELECT
+      sh.id AS shipment_id,
+      sh.payment_id,
+      u.id AS user_id,
+      u.name AS user_name,
+      u.email,
+      u.phone,
+      STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles,
+
+      STRING_AGG(
+        DISTINCT (COALESCE(si.book_title, '') || '-' || COALESCE(si.book_language, '')),
+        ', ' ORDER BY (COALESCE(si.book_title, '') || '-' || COALESCE(si.book_language, ''))
+      ) AS regular_books_with_language,
+
+      bonus.bonus_books_with_language,
+
+      sh.address,
+      sh.city,
+      sh.state,
+      sh.pincode,
+      sh.tracking_id,
+      sh.courier_mode,
+      sh.delivery_mode,
+      sh.status,
+      sh.updated_at
+
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+
+    LEFT JOIN LATERAL (
+      SELECT
+        STRING_AGG(
+          DISTINCT (COALESCE(sbi.book_title, '') || '-' || COALESCE(sbi.book_language, '')),
+          ', ' ORDER BY (COALESCE(sbi.book_title, '') || '-' || COALESCE(sbi.book_language, ''))
+        ) AS bonus_books_with_language
+      FROM shipment_bonus_items sbi
+      WHERE sbi.shipment_id = sh.id
+    ) bonus ON TRUE
+
+    ${whereSql}
+    GROUP BY
+      sh.id, sh.payment_id, u.id, u.name, u.email, u.phone,
+      sh.address, sh.city, sh.state, sh.pincode,
+      sh.tracking_id, sh.courier_mode, sh.status, sh.updated_at,
+      bonus.bonus_books_with_language
+
+    ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
+    LIMIT $${params.length + 1}
+    OFFSET $${params.length + 2}
+    `,
+    [...params, pageSize, offset]
+  );
+
+  const totalCount = Number(countQ.rows[0]?.total_count || 0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const items = listQ.rows.map((r: any) => ({
+    ...r,
+    books_display: buildShipmentBooksLabel(r.regular_books_with_language, r.bonus_books_with_language),
+  }));
+
+  return {
+    items,
+    page,
+    pageSize,
+    totalCount,
+    totalPages,
+  };
+}
+
 //UPLOAD AND DOWNLOAD helpers starts here
 
 function csvEscape(v: any) {
@@ -2302,7 +2396,9 @@ if (deliveryMode !== "all") {
   }
 
   const whereSql = `WHERE ${where.join(" AND ")}`;
-  return { whereSql, params, filters: { q, status, dateFrom, dateTo,deliveryMode } };
+
+  const page = Math.max(1, Number(req.query.page || 1));
+return { whereSql, params, filters: { q, status, dateFrom, dateTo, deliveryMode, page } };
 }
 
 
@@ -2310,6 +2406,7 @@ router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any,
   const { whereSql, params, filters } = buildShipmentsFilter(req);
 
   const items = await fetchShipmentCsvRows(req);
+  const shipmentPage = await fetchShipmentPageRows(effectiveReq);
 
   const fNoStatus = buildShipmentsFilter({ query: { ...req.query, status: "all" } });
   const statusCounts = await pool.query(
@@ -2330,7 +2427,11 @@ router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any,
 
   res.render("admin/admin-shipments", {
     activeTab: "shipments",
-    items,
+    items: shipmentPage.items,
+page: shipmentPage.page,
+pageSize: shipmentPage.pageSize,
+    totalCount: shipmentPage.totalCount,
+  totalPages: shipmentPage.totalPages,
     contests: contestsQ.rows,
     filters,
     statusFacets: statusCounts.rows,

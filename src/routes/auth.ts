@@ -286,9 +286,14 @@ router.post(
       const token = generateToken(user.id);
       setAuthCookie(res, token);
 
+      //const redirectTo = user.role === "admin" ? "/admin" : user.role === "agent" ? "/agent":"/dashboard";
 
-      const redirectTo = user.role === "admin" ? "/admin" : user.role === "agent" ? "/agent"
-            : "/dashboard";
+      const redirectTo =
+  user.role === "admin"
+    ? "/admin"
+    : user.role === "agent"
+    ? "/agent-maintenance"
+    : "/dashboard";
 
       console.log("✅ LOGIN SUCCESS", {
         userId: user.id,

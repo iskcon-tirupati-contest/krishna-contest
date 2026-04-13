@@ -95,15 +95,27 @@
     .contest-names{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
     .cn-tag{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#e2e8ff}
 
-    /* ── Prize strip ── */
-    .prize-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px;max-width:560px;width:100%}
-    .prize-chip{
-      background:rgba(255,255,255,.07);border:1px solid rgba(255,215,0,.22);
-      border-radius:11px;padding:7px 10px;flex:1;min-width:90px;max-width:120px;
-    }
-    .pc-rank{font-size:18px;margin-bottom:2px}
-    .pc-amt{font-family:'Sora',sans-serif;font-size:11px;font-weight:800;color:#ffd700;line-height:1.3;margin-bottom:1px}
-    .pc-label{font-size:10px;color:#94a3b8}
+    /* ── Grand prize section — slide 1 ── */
+    .grand-headline{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.08));border:1.5px solid rgba(245,158,11,.45);border-radius:12px;padding:7px 16px;margin-bottom:10px;flex-shrink:0}
+    .grand-headline span{font-family:'Sora',sans-serif;font-size:clamp(11px,2.5vw,13px);font-weight:800;color:#ffd700;letter-spacing:.3px;text-transform:uppercase}
+    .grand-headline .gh-num{font-size:clamp(18px,4vw,26px);font-weight:900;color:#fbbf24;line-height:1}
+    .prize-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;max-width:520px;width:100%}
+    .prize-card{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,215,0,.25);border-radius:14px;padding:10px 8px;text-align:center;position:relative;overflow:hidden}
+    .prize-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.12),transparent 70%);pointer-events:none}
+    .pc-big-num{font-family:'Sora',sans-serif;font-size:clamp(26px,6vw,38px);font-weight:900;line-height:1;margin-bottom:3px}
+    .pc-big-num.gold{color:#fbbf24}.pc-big-num.teal{color:#5eead4}.pc-big-num.purple{color:#c4b5fd}
+    .pc-icon{font-size:clamp(18px,4vw,24px);margin-bottom:4px;display:block}
+    .pc-title{font-family:'Sora',sans-serif;font-size:clamp(9px,2vw,11px);font-weight:800;color:#ffd700;line-height:1.3;margin-bottom:2px}
+    .pc-sub{font-size:clamp(8px,1.8vw,10px);color:#94a3b8;line-height:1.4}
+    .gold-value{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:6px 14px;margin-bottom:10px;flex-shrink:0}
+    .gold-value svg{width:14px;height:14px;fill:#fbbf24;flex-shrink:0}
+    .gold-value span{font-family:'Sora',sans-serif;font-size:clamp(10px,2.2vw,12px);font-weight:700;color:#fde68a}
+    .gold-value b{color:#fbbf24}
+    .write4{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.08));border:1.5px solid rgba(239,68,68,.35);border-radius:10px;padding:6px 14px;margin-bottom:10px;flex-shrink:0}
+    .write4 span{font-family:'Sora',sans-serif;font-size:clamp(10px,2.5vw,12px);font-weight:800;color:#fca5a5;letter-spacing:.2px}
+    .write4 b{color:#f87171}
+    .combo-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:4px 12px;font-size:clamp(10px,2vw,12px);font-weight:700;color:#86efac;margin-bottom:10px;flex-shrink:0}
+    .combo-pill b{color:#4ade80}
 
     /* ── CTA buttons ── */
     .slide-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;flex-shrink:0;margin-top:2px}
@@ -357,30 +369,59 @@
 
   <div class="slides" id="slidesTrack">
 
-    <!-- ── SLIDE 1: Overview ── -->
+    <!-- ── SLIDE 1: Grand Prize Overview ── -->
     <div class="slide">
 
-      <h1>ISKCON Tirupati<br>Presents 🙏</h1>
+      <h1>Iskcon Tirupati<br>Presents 🙏</h1>
       <p class="slide-sub">India's biggest essay writing contest on sacred texts — write with devotion, win amazing prizes!</p>
 
-      <div class="contest-names">
-        <span class="cn-tag">📖 Bhagavad Gita</span>
-        <span class="cn-tag">📿 Bhagavatam</span>
-        <span class="cn-tag">🏹 Ramayana</span>
-        <span class="cn-tag">🪈 Krishna</span>
-        <span class="cn-tag" style="background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fde68a">🎯 Combo Pack</span>
+      <!-- TOTAL 40 GRAND PRIZES headline -->
+      <div class="grand-headline">
+        <span class="gh-num">40</span>
+        <span>Grand Prizes &nbsp;·&nbsp; Win 8 Gold Medals of 10g Each</span>
       </div>
 
-      <div class="prize-strip">
-        <div class="prize-chip"><div class="pc-rank">🥇</div><div class="pc-amt">10g Pure Gold Medal</div><div class="pc-label">1st Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">2nd Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">3rd Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">4th Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">5th Prize</div></div>
+      <!-- 3 prize categories -->
+      <div class="prize-trio">
+        <div class="prize-card">
+          <span class="pc-icon">🥇</span>
+          <div class="pc-big-num gold">8</div>
+          <div class="pc-title">Pure Gold Medals</div>
+          <div class="pc-sub">10 grams each</div>
+        </div>
+        <div class="prize-card">
+          <span class="pc-icon">🛕</span>
+          <div class="pc-big-num teal">16</div>
+          <div class="pc-title">Sacred Pilgrimage</div>
+          <div class="pc-sub">Tirumala Tirupati VIP Darshan</div>
+        </div>
+        <div class="prize-card">
+          <span class="pc-icon">🪷</span>
+          <div class="pc-big-num purple">16</div>
+          <div class="pc-title">Life Memberships</div>
+          <div class="pc-sub">ISKCON Life Patron Card</div>
+        </div>
       </div>
+
+      <!-- Gold value note -->
+      <div class="gold-value">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        <span>Each 10g gold medal costs approximately <b>₹1.7 Lakh</b></span>
+      </div>
+
+      <!-- Write 4 essays banner -->
+      <div class="write4">
+        <span>✍️ Write <b>4 Essays</b> — <b>4 Prizes</b> Can Be Yours!</span>
+      </div>
+
+      <!-- Combo pill -->
+      <div class="combo-pill">
+        🎯 Combo Pack: All 4 Contests @ <b>₹1,596</b> &nbsp;+&nbsp; Free Book Worth ₹150
+      </div>
+
       <div class="slide-badge"><span class="bdot"></span>Registration Open · 27 Mar – 04 Sep 2026</div>
       <div class="slide-btns">
-        <a class="s-btn s-btn-gold" href="/register"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Register Now — Free!</a>
+        <a class="s-btn s-btn-gold" href="/register"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Join Now @ ₹399</a>
         <a class="s-btn s-btn-outline" href="#contests">Explore ↓</a>
       </div>
     </div>
@@ -685,7 +726,7 @@
       <p>A spiritual essay writing movement inspiring thousands to read, reflect and express Vedic wisdom.</p>
       <address>Hare Krishna Land, Hare Krishna Road,<br>Vinayaka Nagar, Tirupati – 517501<br>Andhra Pradesh, India</address>
       <div class="contact-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><a href="tel:+919493805059">+91-9493805059</a></div>
-      <div class="contact-row" style="margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><a href="mailto:iskcontirupaticontest@gmail.com">iskcontirupaticontest@gmail.com</a></div>
+      <div class="contact-row" style="margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><a href="/cdn-cgi/l/email-protection#fe978d959d91908a978c8b8e9f8a979d91908a9b8d8abe99939f9792d09d9193"><span class="__cf_email__" data-cfemail="e78e948c848889938e95929786938e84888993829493a7808a868e8bc984888a">[email&#160;protected]</span></a></div>
     </div>
     <div class="footer-col">
       <h4>Contests</h4>
@@ -727,7 +768,7 @@
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
   /* ── Slideshow ── */
   const track = document.getElementById('slidesTrack');
@@ -766,9 +807,10 @@
 
   /* ── Scroll reveal ── */
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
-  }, {threshold: .1});
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
 })();
 </script>
 </body>

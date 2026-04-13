@@ -216,7 +216,17 @@ async function recalcBookingTotals(bookingId: string) {
 // ==============================
 // DASHBOARD
 // ==============================
-router.get("/agent", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
+
+router.get("/agent", authMiddleware, agentMiddleware, async (_req: any, res: Response) => {
+  return res.redirect("/agent/dashboard");
+});
+
+router.get("/agent-maintenance", authMiddleware, agentMiddleware, (_req: any, res: Response) => {
+  return res.render("agent/maintainence");
+});
+
+
+router.get("/agent/dashboard", authMiddleware, agentMiddleware, async (req: any, res: Response) => {
   const page = Math.max(parseInt(String(req.query.page || "1"), 10) || 1, 1);
   const pageSize = 10;
 

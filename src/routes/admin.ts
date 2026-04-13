@@ -10,7 +10,11 @@ import * as XLSX from "xlsx";
 import fs from "fs";
 import path from "path";
 import https from "https";
-import { sendContestRegistrationMessageOnce } from "../services/contestConfirmation";
+import {
+  sendContestRegistrationMessageOnce,
+  sendShipmentDispatchMessageOnce,
+} from "../services/contestConfirmation";
+
 import { hashPassword } from "../utils/hash";
 
 const router = express.Router();
@@ -21,6 +25,20 @@ const normLike = (v: any) => `%${norm(v)}%`;
 
 const upload = multer({ dest: path.join(process.cwd(), "tmp") });
 
+const SHIPMENT_STATUS = {
+  PENDING: "pending",
+  UNDER_PACKING: "under_packing",
+  PACKED: "packed",
+  DISPATCHED: "dispatched",
+  DELIVERED: "delivered",
+  RETURNED: "returned",
+};
+
+const DELIVERY_MODE = {
+  HOME: "home_delivery",
+  TEMPLE: "temple_pickup",
+  DONATION: "donation",
+};
 
 function offlineOrdersWhere(alias = "o") {
   return `
@@ -141,6 +159,63 @@ function getUsersRollupSql(whereSql: string, limitPlaceholder?: string) {
   `;
 }
 
+
+async function fetchShipmentStatsByMode(
+  deliveryMode: "home_delivery" | "temple_pickup" | "all"
+) {
+  const params: any[] = [];
+  const where: string[] = [
+    `o.payment_status = 'paid'`,
+    `o.book_option = 'book'`,
+    onlineOrdersWhere("o"),
+  ];
+
+  if (deliveryMode !== "all") {
+    where.push(`LOWER(COALESCE(sh.delivery_mode, '')) = $${params.length + 1}`);
+    params.push(deliveryMode.toLowerCase());
+  }
+
+  const q = await pool.query(
+    `
+    SELECT
+      COALESCE(LOWER(sh.status), 'pending') AS status,
+      COUNT(DISTINCT sh.id)::int AS c
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    WHERE ${where.join(" AND ")}
+    GROUP BY COALESCE(LOWER(sh.status), 'pending')
+    `,
+    params
+  );
+
+  const map: Record<string, number> = {
+    pending: 0,
+    under_packing: 0,
+    packed: 0,
+    dispatched: 0,
+    delivered: 0,
+    handed_over: 0,
+    returned: 0,
+  };
+
+  for (const row of q.rows) {
+    map[String(row.status || "").toLowerCase()] = Number(row.c || 0);
+  }
+
+  return map;
+}
+
+async function fetchAllShipmentTabStats() {
+  const [home, temple, all] = await Promise.all([
+    fetchShipmentStatsByMode("home_delivery"),
+    fetchShipmentStatsByMode("temple_pickup"),
+    fetchShipmentStatsByMode("all"),
+  ]);
+
+  return { home, temple, all };
+}
+
 async function fetchShipmentCsvRows(req: any) {
   const { whereSql, params } = buildShipmentsFilter(req);
 
@@ -208,6 +283,100 @@ async function fetchShipmentCsvRows(req: any) {
 
 //UPLOAD AND DOWNLOAD helpers end here
 
+
+async function fetchShipmentPageRows(req: any) {
+  const { whereSql, params } = buildShipmentsFilter(req);
+  const page = Math.max(1, Number(req.query.page || 1));
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+
+  const countQ = await pool.query(
+    `
+    SELECT COUNT(DISTINCT sh.id)::int AS total_count
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+    ${whereSql}
+    `,
+    params
+  );
+
+  const listQ = await pool.query(
+    `
+    SELECT
+      sh.id AS shipment_id,
+      sh.payment_id,
+      u.id AS user_id,
+      u.name AS user_name,
+      u.email,
+      u.phone,
+      STRING_AGG(DISTINCT c.title, ', ' ORDER BY c.title) AS contest_titles,
+
+      STRING_AGG(
+        DISTINCT (COALESCE(si.book_title, '') || '-' || COALESCE(si.book_language, '')),
+        ', ' ORDER BY (COALESCE(si.book_title, '') || '-' || COALESCE(si.book_language, ''))
+      ) AS regular_books_with_language,
+
+      bonus.bonus_books_with_language,
+
+      sh.address,
+      sh.city,
+      sh.state,
+      sh.pincode,
+      sh.tracking_id,
+      sh.courier_mode,
+      sh.delivery_mode,
+      sh.status,
+      sh.updated_at
+
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+
+    LEFT JOIN LATERAL (
+      SELECT
+        STRING_AGG(
+          DISTINCT (COALESCE(sbi.book_title, '') || '-' || COALESCE(sbi.book_language, '')),
+          ', ' ORDER BY (COALESCE(sbi.book_title, '') || '-' || COALESCE(sbi.book_language, ''))
+        ) AS bonus_books_with_language
+      FROM shipment_bonus_items sbi
+      WHERE sbi.shipment_id = sh.id
+    ) bonus ON TRUE
+
+    ${whereSql}
+    GROUP BY
+      sh.id, sh.payment_id, u.id, u.name, u.email, u.phone,
+      sh.address, sh.city, sh.state, sh.pincode,
+      sh.tracking_id, sh.courier_mode, sh.status, sh.updated_at,
+      bonus.bonus_books_with_language
+
+    ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
+    LIMIT $${params.length + 1}
+    OFFSET $${params.length + 2}
+    `,
+    [...params, pageSize, offset]
+  );
+
+  const totalCount = Number(countQ.rows[0]?.total_count || 0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const items = listQ.rows.map((r: any) => ({
+    ...r,
+    books_display: buildShipmentBooksLabel(r.regular_books_with_language, r.bonus_books_with_language),
+  }));
+
+  return {
+    items,
+    page,
+    pageSize,
+    totalCount,
+    totalPages,
+  };
+}
 
 type RzpOrderPayment = {
   id: string;
@@ -1465,6 +1634,11 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
       AND ${ORDER_IST_DATE} = ${IST_TODAY}
   `);
 
+
+
+
+
+
   const todayPaidOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
@@ -2255,6 +2429,117 @@ router.get("/admin/submissions/download", authMiddleware, adminMiddleware, async
 // --------------------
 // SHIPMENTS (filters + missing tracking + status counts)
 // --------------------
+
+function buildShipmentFileName(prefix: string, ext = "xlsx") {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const stamp =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `${prefix}_${stamp}.${ext}`;
+}
+
+
+function shipmentHeaderRow(extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = "") {
+  const headers = [
+    "SHIPMENT_ID",
+    "PAYMENT_ID",
+    "USER_ID",
+    "USER_NAME",
+    "EMAIL",
+    "PHONE",
+    "CONTEST_TITLES",
+    "REGULAR_BOOKS_WITH_LANGUAGE",
+    "BONUS_BOOKS_WITH_LANGUAGE",
+    "ALL_BOOKS_WITH_LANGUAGE",
+    "ADDRESS",
+    "CITY",
+    "STATE",
+    "PINCODE",
+    "TRACKING_ID",
+    "COURIER_MODE",
+    "DELIVERY_MODE",
+    "STATUS",
+  ];
+
+  if (extraFlag) headers.push(extraFlag);
+  return headers;
+}
+
+function shipmentExportRows(
+  rows: any[],
+  statusOverride?: string,
+  extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = ""
+) {
+  return rows.map((r: any) => {
+    const baseRow = [
+      r.shipment_id || "",
+      r.payment_id || "",
+      r.user_id || "",
+      r.user_name || "",
+      r.email || "",
+      r.phone || "",
+      r.contest_titles || "",
+      r.regular_books_with_language || "",
+      r.bonus_books_with_language || "",
+      r.books_display || "",
+      r.address || "",
+      r.city || "",
+      r.state || "",
+      r.pincode || "",
+      r.tracking_id || "",
+      r.courier_mode || "",
+      r.delivery_mode || "",
+      statusOverride || r.status || "",
+    ];
+
+    if (extraFlag) baseRow.push("");
+    return baseRow;
+  });
+}
+
+function shipmentWorkbookBuffer(
+  rows: any[],
+  statusOverride?: string,
+  extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = "",
+  sheetName = "Shipments"
+) {
+  const header = shipmentHeaderRow(extraFlag);
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    header,
+    ...shipmentExportRows(rows, statusOverride, extraFlag),
+  ]);
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+}
+
+function sendShipmentWorkbook(
+  res: any,
+  filename: string,
+  rows: any[],
+  statusOverride?: string,
+  extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = "",
+  sheetName = "Shipments"
+) {
+  const buffer = shipmentWorkbookBuffer(rows, statusOverride, extraFlag, sheetName);
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  return res.status(200).send(buffer);
+}
+
+
+function jsonOk(res: any, payload: any) {
+  return res.status(200).json({ ok: true, ...payload });
+}
+
+function jsonBad(res: any, message: string, extra: any = {}) {
+  return res.status(400).json({ ok: false, message, ...extra });
+}
+
 function buildShipmentsFilter(req: any) {
   const q = norm(req.query.q || "");
   const status = norm(req.query.status || "all");
@@ -2302,96 +2587,60 @@ if (deliveryMode !== "all") {
   }
 
   const whereSql = `WHERE ${where.join(" AND ")}`;
-  return { whereSql, params, filters: { q, status, dateFrom, dateTo,deliveryMode } };
+
+  const page = Math.max(1, Number(req.query.page || 1));
+  return { whereSql, params, filters: { q, status, dateFrom, dateTo, deliveryMode, page } };
+
 }
 
-
 router.get("/admin/shipments", authMiddleware, adminMiddleware, async (req: any, res) => {
-  const { whereSql, params, filters } = buildShipmentsFilter(req);
 
-  const items = await fetchShipmentCsvRows(req);
+  const effectiveQuery = {
+  ...req.query,
+  delivery_mode: norm(req.query.delivery_mode || "home_delivery"),
+  page: Math.max(1, Number(req.query.page || 1)),
+};
 
-  const fNoStatus = buildShipmentsFilter({ query: { ...req.query, status: "all" } });
-  const statusCounts = await pool.query(
-    `
-    SELECT COALESCE(LOWER(sh.status),'pending') AS status, COUNT(DISTINCT sh.id)::int AS c
-    FROM shipments sh
-    JOIN shipment_items si ON si.shipment_id = sh.id
-    JOIN orders o ON o.id = si.order_id
-    JOIN users u ON u.id = o.user_id
-    JOIN contests c ON c.id = o.contest_id
-    ${fNoStatus.whereSql}
-    GROUP BY COALESCE(LOWER(sh.status),'pending')
-    `,
-    fNoStatus.params
-  );
+  const effectiveReq = { ...req, query: effectiveQuery };
 
+  const { filters } = buildShipmentsFilter(effectiveReq);
+  const shipmentPage = await fetchShipmentPageRows(effectiveReq);
   const contestsQ = await pool.query(`SELECT id, title FROM contests ORDER BY title ASC`);
+  const tabStats = await fetchAllShipmentTabStats();
+
+  const activeTab =
+    filters.deliveryMode === "temple_pickup"
+      ? "temple"
+      : filters.deliveryMode === "all"
+      ? "all"
+      : "home";
 
   res.render("admin/admin-shipments", {
     activeTab: "shipments",
-    items,
+    items: shipmentPage.items,
+page: shipmentPage.page,
+pageSize: shipmentPage.pageSize,
+totalCount: shipmentPage.totalCount,
+totalPages: shipmentPage.totalPages,
     contests: contestsQ.rows,
     filters,
-    statusFacets: statusCounts.rows,
-    qs: qsOf(req),
+    shipmentTabStats: tabStats,
+    selectedTab: activeTab,
+    qs: qsOf(effectiveReq),
     imported: norm(req.query.imported || ""),
     errorMsg: norm(req.query.errorMsg || ""),
     okMsg: norm(req.query.okMsg || ""),
+    rejectedFile: norm(req.query.rejectedFile || ""),
     validationErrors: [],
   });
 });
 
+
 router.get("/admin/shipments/export.csv", authMiddleware, adminMiddleware, async (req: any, res) => {
   const rows = await fetchShipmentCsvRows(req);
-
-  const header = [
-    "SHIPMENT_ID",
-    "PAYMENT_ID",
-    "USER_NAME",
-    "EMAIL",
-    "PHONE",
-    "ADDRESS",
-    "CITY",
-    "STATE",
-    "PINCODE",
-    "REGULAR_BOOKS_WITH_LANGUAGE",
-    "BONUS_BOOKS_WITH_LANGUAGE",
-    "ALL_BOOKS_WITH_LANGUAGE",
-    "TRACKING_ID",
-    "COURIER_MODE",
-    "DELIVERY_MODE",
-    "STATUS"
-  ];
-
-  const lines = [header.map(csvEscape).join(",")];
-
-  for (const r of rows) {
-    lines.push([
-      r.shipment_id,
-      r.payment_id || "",
-      r.user_name || "",
-      r.email || "",
-      r.phone || "",
-      r.address || "",
-      r.city || "",
-      r.state || "",
-      r.pincode || "",
-      r.regular_books_with_language || "",
-      r.bonus_books_with_language || "",
-      r.books_display || "",
-      r.tracking_id || "",
-      r.courier_mode || "",
-      r.delivery_mode || "",
-      r.status || "",
-    ].map(csvEscape).join(","));
-  }
-
-  res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", `attachment; filename="shipments-export.csv"`);
-  return res.send(lines.join("\n"));
+  const filename = buildShipmentFileName("shipments_export");
+  return sendShipmentWorkbook(res, filename, rows, undefined, "", "ShipmentsExport");
 });
-
 
 
 router.post("/admin/shipments/update", authMiddleware, adminMiddleware, async (req: any, res) => {
@@ -2402,7 +2651,16 @@ router.post("/admin/shipments/update", authMiddleware, adminMiddleware, async (r
 
   if (!shipmentId) return res.redirect("/admin/shipments");
 
-  const allowedStatuses = new Set(["pending", "packed", "dispatched", "delivered", "handed_over"]);
+  const allowedStatuses = new Set([
+    "pending",
+    "under_packing",
+    "packed",
+    "dispatched",
+    "delivered",
+    "handed_over",
+    "returned",
+  ]);
+
   if (!allowedStatuses.has(status)) status = "pending";
 
   const shipQ = await pool.query(
@@ -2410,24 +2668,52 @@ router.post("/admin/shipments/update", authMiddleware, adminMiddleware, async (r
     [shipmentId]
   );
 
+  if (!shipQ.rows.length) {
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Shipment not found.")
+    );
+  }
+
   const deliveryMode = String(shipQ.rows[0]?.delivery_mode || "").toLowerCase();
   const existingCourier = norm(shipQ.rows[0]?.courier_mode || "");
+
+  if (deliveryMode === "temple_pickup") {
+    if (!["pending", "handed_over"].includes(status)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Temple pickup supports only Pending or Handed Over.")
+      );
+    }
+  } else {
+    if (status === "handed_over") {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Home delivery cannot be marked Handed Over.")
+      );
+    }
+  }
 
   if (status === "handed_over") {
     courierMode = courierMode || existingCourier || "temple_handover";
   } else if (status === "delivered") {
     courierMode = courierMode || existingCourier || "admin_marked_delivered";
+  } else if (status === "dispatched") {
+    courierMode = courierMode || existingCourier || "india_post";
   }
 
   await pool.query(
-    `UPDATE shipments
-     SET tracking_id=$1, courier_mode=$2, status=$3, updated_at=NOW()
-     WHERE id=$4`,
+    `
+    UPDATE shipments
+    SET tracking_id=$1, courier_mode=$2, status=$3, updated_at=NOW()
+    WHERE id=$4
+    `,
     [trackingId || null, courierMode || null, status, shipmentId]
   );
 
-  res.redirect("/admin/shipments");
+  res.redirect("/admin/shipments?okMsg=" + encodeURIComponent("Shipment updated successfully."));
 });
+
 
 
 
@@ -2480,26 +2766,71 @@ router.get(
       "tracking_id"
     ];
 
-    const csv = [
-      header.join(","),
-      ...rows.map(r => [
-        r.shipment_id,
-        csvEscape(r.user_name),
-        r.phone,
-        csvEscape(r.address),
-        r.city,
-        r.state,
-        r.pincode,
-        csvEscape(r.books_with_language),
-        "" // blank for packing team
-      ].join(","))
-    ].join("\n");
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      header,
+      ...rows.map((r: any) => [
+        r.shipment_id || "",
+        r.user_name || "",
+        r.phone || "",
+        r.address || "",
+        r.city || "",
+        r.state || "",
+        r.pincode || "",
+        r.books_with_language || "",
+        "",
+      ]),
+    ]);
 
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=missing_tracking.csv");
-    res.send(csv);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "MissingTracking");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${buildShipmentFileName("missing_tracking")}"`);
+    res.send(buffer);
   }
 );
+
+
+router.get("/admin/shipments/download-dispatched", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const dateFrom = norm(req.query.date_from || "");
+    const dateTo = norm(req.query.date_to || "");
+
+    if ((dateFrom && !dateTo) || (!dateFrom && dateTo)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Please select both From and To dates, or leave both blank to include all matching rows.")
+      );
+    }
+
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Date range is invalid. From date cannot be after To date.")
+      );
+    }
+
+    const forcedReq = {
+      ...req,
+      query: {
+        ...req.query,
+        status: "dispatched",
+        delivery_mode: "home_delivery",
+      },
+    };
+
+    const rows = await fetchShipmentCsvRows(forcedReq);
+    const filename = buildShipmentFileName("shipments_dispatched_home_delivery");
+    return sendShipmentWorkbook(res, filename, rows, undefined, "", "Dispatched");
+  } catch (e) {
+    console.error("download-dispatched error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to download dispatched home delivery shipments.")
+    );
+  }
+});
 
 router.post(
   "/admin/shipments/import-csv",
@@ -2509,7 +2840,7 @@ router.post(
   async (req: any, res) => {
     try {
       if (!req.file?.path) {
-        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Please choose a CSV file."));
+        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Please choose an Excel file (.xlsx or .xls)."));
       }
 
       const wb = XLSX.readFile(req.file.path, { raw: false });
@@ -2518,7 +2849,7 @@ router.post(
 
       if (!rows.length) {
         fs.unlink(req.file.path, () => {});
-        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("CSV file is empty."));
+        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Excel file is empty."));
       }
 
       const requiredColumns = [
@@ -2546,7 +2877,7 @@ router.post(
 
       if (!shipmentIds.length) {
         fs.unlink(req.file.path, () => {});
-        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("No shipment ids found in CSV."));
+        return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("No shipment ids found in Excel file."));
       }
 
       const dbQ = await pool.query(
@@ -2627,7 +2958,7 @@ for (let i = 0; i < rows.length; i++) {
   const regularBooks = normalizeCell(row["REGULAR_BOOKS_WITH_LANGUAGE"]);
   const bonusBooks = normalizeCell(row["BONUS_BOOKS_WITH_LANGUAGE"]);
   const trackingId = normalizeCell(row["TRACKING_ID"]);
-  const courierMode = normalizeCell(row["COURIER_MODE"]) || "csv_upload";
+  const courierMode = normalizeCell(row["COURIER_MODE"]) || "excel_upload";
 
   if (!shipmentId) {
     errors.push(`Row ${rowNo}: SHIPMENT_ID is empty`);
@@ -2678,7 +3009,7 @@ for (let i = 0; i < rows.length; i++) {
   fs.unlink(req.file.path, () => {});
   return res.redirect(
     "/admin/shipments?errorMsg=" +
-      encodeURIComponent("CSV validation failed: " + errors.slice(0, 12).join(" | "))
+      encodeURIComponent("Excel validation failed: " + errors.slice(0, 12).join(" | "))
   );
 }
 
@@ -2728,7 +3059,7 @@ return res.redirect(
 
     } catch (e) {
       console.error("shipments import-csv error:", e);
-      return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Failed to import shipment CSV."));
+      return res.redirect("/admin/shipments?errorMsg=" + encodeURIComponent("Failed to import shipment Excel file."));
     }
   }
 );
@@ -2744,7 +3075,7 @@ router.post(
       if (!req.file?.path) {
         return res.redirect(
           "/admin/shipments?errorMsg=" +
-            encodeURIComponent("Please choose a CSV/XLSX file.")
+            encodeURIComponent("Please choose an Excel file (.xlsx or .xls).")
         );
       }
 
@@ -5445,6 +5776,1941 @@ router.post("/admin/agents/:agentId/update", authMiddleware, adminMiddleware, as
   }
 });
 
+
+
+
+router.get("/admin/offline-dashboard", authMiddleware, adminMiddleware, async (_req: any, res) => {
+  const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);
+
+  const ordersAllQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${offlineOrdersWhere("o")}
+  `);
+
+  const paidOrdersQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${offlineOrdersWhere("o")} AND LOWER(COALESCE(o.payment_status,''))='paid'
+  `);
+
+  const pendingFailedQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${offlineOrdersWhere("o")}
+      AND LOWER(COALESCE(o.payment_status,'pending')) IN ('pending','failed','failure','cancelled','canceled','error')
+  `);
+
+  const giftQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${offlineOrdersWhere("o")}
+      AND LOWER(COALESCE(o.payment_status,''))='paid'
+      AND LOWER(COALESCE(o.book_option,''))='book'
+  `);
+
+  const donateQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${offlineOrdersWhere("o")}
+      AND LOWER(COALESCE(o.payment_status,''))='paid'
+      AND LOWER(COALESCE(o.book_option,''))='donation'
+  `);
+
+  const revenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ab.total_amount),0)::int AS total
+    FROM agent_bookings ab
+    WHERE LOWER(COALESCE(ab.status,''))='paid'
+  `);
+
+  const todayRevenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ab.total_amount),0)::int AS total
+    FROM agent_bookings ab
+    WHERE LOWER(COALESCE(ab.status,''))='paid'
+      AND DATE(ab.created_at)=CURRENT_DATE
+  `);
+
+  const salesDailyQ = await pool.query(`
+    SELECT DATE(ab.created_at) AS d, COALESCE(SUM(ab.total_amount),0)::int AS revenue
+    FROM agent_bookings ab
+    WHERE LOWER(COALESCE(ab.status,''))='paid'
+      AND ab.created_at >= (CURRENT_DATE - INTERVAL '30 days')
+    GROUP BY DATE(ab.created_at)
+    ORDER BY d ASC
+  `);
+
+  const salesWeeklyQ = await pool.query(`
+    SELECT DATE_TRUNC('week', ab.created_at)::date AS w, COALESCE(SUM(ab.total_amount),0)::int AS revenue
+    FROM agent_bookings ab
+    WHERE LOWER(COALESCE(ab.status,''))='paid'
+      AND ab.created_at >= (CURRENT_DATE - INTERVAL '84 days')
+    GROUP BY DATE_TRUNC('week', ab.created_at)
+    ORDER BY w ASC
+  `);
+
+  const salesMonthlyQ = await pool.query(`
+    SELECT DATE_TRUNC('month', ab.created_at)::date AS m, COALESCE(SUM(ab.total_amount),0)::int AS revenue
+    FROM agent_bookings ab
+    WHERE LOWER(COALESCE(ab.status,''))='paid'
+      AND ab.created_at >= (CURRENT_DATE - INTERVAL '365 days')
+    GROUP BY DATE_TRUNC('month', ab.created_at)
+    ORDER BY m ASC
+  `);
+
+  const paidBookDetailsQ = await pool.query(`
+    SELECT
+      x.book_title,
+      x.book_language,
+      x.book_kind,
+      COUNT(*)::int AS given_count
+    FROM (
+      SELECT
+        COALESCE(NULLIF(TRIM(abl.book_title),''), c.default_book_title, 'Book') AS book_title,
+        COALESCE(NULLIF(TRIM(abl.book_language),''), '-') AS book_language,
+        'regular'::text AS book_kind
+      FROM agent_bookings ab
+      JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
+      JOIN contests c ON c.id = abl.contest_id
+      WHERE LOWER(COALESCE(ab.status,''))='paid'
+        AND LOWER(COALESCE(ab.delivery_mode,''))='handover'
+        AND COALESCE(abl.line_status,'') <> 'cancelled'
+
+      UNION ALL
+
+      SELECT
+        COALESCE(NULLIF(TRIM(abbi.book_title),''), 'Science of Self Realization') AS book_title,
+        COALESCE(NULLIF(TRIM(abbi.book_language),''), '-') AS book_language,
+        'bonus'::text AS book_kind
+      FROM agent_bookings ab
+      JOIN agent_booking_bonus_items abbi ON abbi.agent_booking_id = ab.id
+      WHERE LOWER(COALESCE(ab.status,''))='paid'
+        AND LOWER(COALESCE(ab.delivery_mode,''))='handover'
+    ) x
+    GROUP BY x.book_title, x.book_language, x.book_kind
+    ORDER BY given_count DESC, x.book_kind ASC, x.book_title ASC, x.book_language ASC
+  `);
+
+  const contestStatsQ = await pool.query(`
+    SELECT
+      c.id,
+      c.title,
+      COUNT(o.id)::int AS registrations,
+      COUNT(s.id)::int AS submitted
+    FROM contests c
+    LEFT JOIN orders o
+      ON o.contest_id = c.id
+     AND LOWER(COALESCE(o.payment_status,''))='paid'
+     AND ${offlineOrdersWhere("o")}
+    LEFT JOIN submissions s ON s.order_id = o.id
+    GROUP BY c.id, c.title
+    ORDER BY registrations DESC, c.title ASC
+  `);
+
+  res.render("admin/admin-offline-dashboard", {
+    activeTab: "offline-dashboard",
+    stats: {
+      users: usersQ.rows[0].c,
+      ordersAll: ordersAllQ.rows[0].c,
+      paidOrders: paidOrdersQ.rows[0].c,
+      pendingOrders: pendingFailedQ.rows[0].c,
+      gift: giftQ.rows[0].c,
+      donate: donateQ.rows[0].c,
+      revenue: revenueQ.rows[0].total,
+      todayRevenue: todayRevenueQ.rows[0].total,
+    },
+    series: {
+      daily: salesDailyQ.rows,
+      weekly: salesWeeklyQ.rows,
+      monthly: salesMonthlyQ.rows,
+    },
+    paidBookDetails: paidBookDetailsQ.rows,
+    contestStats: contestStatsQ.rows.map((r: any) => ({
+      ...r,
+      not_submitted: Math.max(0, Number(r.registrations) - Number(r.submitted)),
+    })),
+  });
+});
+
+router.get("/admin/shipments/download-pending", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+
+   console.log("Called downl;oad pending:");
+    const dateFrom = norm(req.query.date_from || "");
+    const dateTo = norm(req.query.date_to || "");
+
+
+    if ((dateFrom && !dateTo) || (!dateFrom && dateTo)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Please select both From and To dates, or leave both blank to include all matching rows.")
+      );
+    }
+
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Date range is invalid. From date cannot be after To date.")
+      );
+    }
+
+    const forcedReq = {
+      query: {
+        ...req.query,
+        status: SHIPMENT_STATUS.PENDING,
+        delivery_mode: "home_delivery",
+      },
+    };
+
+    const rows = await fetchShipmentCsvRows(forcedReq);
+    const filename = buildShipmentFileName("shipments_pending_download");
+    res.setHeader("X-Downloaded-Count", String(rows.length));
+    console.log("downl;oad pending reached final");
+    return sendShipmentWorkbook(res, filename, rows, SHIPMENT_STATUS.PENDING, "", "Pending");
+  } catch (e) {
+    console.log("download pending Error:");
+    console.error("download-pending error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to download pending home delivery shipments.")
+    );
+  }
+});
+
+function parseCsv(filePath: string): Record<string, any>[] {
+  const workbook = XLSX.readFile(filePath, { raw: false });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "" });
+}
+
+router.post(
+  "/admin/shipments/upload-packed",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("packed_file"),
+  async (req: any, res) => {
+    const isAjax =
+        String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+    try {
+      const file = req.file;
+      if (!file?.path) {
+        return jsonBad(res, "No file uploaded");
+      }
+
+      const rows = parseCsv(file.path);
+
+      let accepted = 0;
+      const rejected: Record<string, any>[] = [];
+
+      for (const r of rows) {
+        try {
+          const shipmentId = String(r["shipment_id"] || r["SHIPMENT_ID"] || "").trim();
+          const trackingId = String(r["tracking_id"] || r["TRACKING_ID"] || "").trim();
+          const packedFlag = String(r["packed_or_not"] || r["PACKED_OR_NOT"] || "").toLowerCase().trim();
+
+          if (!shipmentId || !trackingId) {
+            rejected.push({ ...r, reason: "Missing shipment_id or tracking_id" });
+            continue;
+          }
+
+          const existing = await pool.query(
+            `SELECT id, status, tracking_id, delivery_mode FROM shipments WHERE id = $1`,
+            [shipmentId]
+          );
+
+          if (!existing.rows.length) {
+            rejected.push({ ...r, reason: "Shipment not found" });
+            continue;
+          }
+
+          const dbRow = existing.rows[0];
+
+          if (String(dbRow.delivery_mode || "").toLowerCase() !== "home_delivery") {
+            rejected.push({ ...r, reason: "Shipment is not home_delivery" });
+            continue;
+          }
+
+          if (String(dbRow.status || "").toLowerCase() !== "under_packing") {
+            rejected.push({ ...r, reason: "Not in under_packing status" });
+            continue;
+          }
+
+          if (String(dbRow.tracking_id || "").trim() !== trackingId) {
+            rejected.push({ ...r, reason: "Tracking ID mismatch" });
+            continue;
+          }
+
+          if (!["yes", "no"].includes(packedFlag)) {
+            rejected.push({ ...r, reason: "Invalid packed_or_not value" });
+            continue;
+          }
+
+          if (packedFlag === "yes") {
+            await pool.query(
+              `UPDATE shipments SET status = 'packed', updated_at = NOW() WHERE id = $1`,
+              [shipmentId]
+            );
+            accepted++;
+          }
+        } catch {
+          rejected.push({ ...r, reason: "Internal error" });
+        }
+      }
+
+      let rejectedFile = "";
+      if (rejected.length) {
+        const tmpName = `rejected_under_packing_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+        const rejSheet = XLSX.utils.json_to_sheet(rejected);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+        XLSX.writeFile(rejWb, tmpPath);
+        rejectedFile = tmpName;
+      }
+
+      fs.unlink(file.path, () => {});
+
+      const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery" +
+          "&okMsg=" + encodeURIComponent(`Under packing Excel update completed. Accepted: ${accepted}.`) +
+          (rejected.length
+            ? "&errorMsg=" + encodeURIComponent(`Rejected rows: ${rejected.length}.`)
+            : "") +
+          (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+        if (!isAjax) {
+          return res.redirect(redirectUrl);
+        }
+
+        return jsonOk(res, {
+          message: `Under packing Excel update completed.`,
+          acceptedCount: accepted,
+          rejectedCount: rejected.length,
+          rejectedFile,
+          redirectUrl
+        });
+
+    } catch (e) {
+      console.error("upload-packed error:", e);
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+        encodeURIComponent("Failed to process under packing shipment file.");
+
+      if (!isAjax) {
+        return res.redirect(redirectUrl);
+      }
+
+      return jsonBad(res, "Failed to process under packing shipment file.", {
+        redirectUrl
+      });
+
+    }
+  }
+);
+
+
+router.post(
+  "/admin/shipments/upload-dispatched",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("dispatched_file"),
+  async (req: any, res) => {
+    let tmpRejectedPath = "";
+    const isAjax =
+  String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+    try {
+      if (!req.file?.path) {
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("Please choose a dispatch file.")
+        );
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("Uploaded dispatch file is empty.")
+        );
+      }
+
+      const firstRow = rows[0] || {};
+
+      const shipmentKey =
+        "SHIPMENT_ID" in firstRow ? "SHIPMENT_ID" :
+        "shipment_id" in firstRow ? "shipment_id" : "";
+
+      /*const phoneKey =
+        "PHONE" in firstRow ? "PHONE" :
+        "phone" in firstRow ? "phone" : "";
+      */
+
+
+      const trackingKey =
+        "TRACKING_ID" in firstRow ? "TRACKING_ID" :
+        "tracking_id" in firstRow ? "tracking_id" : "";
+
+
+      const dispatchedFlagKey =
+      "DISPATCHED_OR_NOT" in firstRow ? "DISPATCHED_OR_NOT" :
+      "dispatched_or_not" in firstRow ? "dispatched_or_not" : "";
+
+    if (!shipmentKey || !trackingKey || !dispatchedFlagKey) {
+      fs.unlink(req.file.path, () => {});
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Missing required columns. Expected SHIPMENT_ID, TRACKING_ID and DISPATCHED_OR_NOT.")
+      );
+    }
+
+    const parsedRows: {
+        rowNo: number;
+        shipmentId: string;
+        trackingId: string;
+        dispatchedOrNot: string;
+        raw: any;
+      }[] = [];
+
+
+      const rejectedRows: any[] = [];
+      const seenTracking = new Set<string>();
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+
+        const shipmentId = normalizeCell(row[shipmentKey]);
+        const trackingId = normalizeCell(row[trackingKey]);
+        const dispatchedOrNotRaw = normalizeCell(row[dispatchedFlagKey]).toLowerCase();
+        const dispatchedOrNot =
+        dispatchedOrNotRaw === "y" ? "yes" :
+        dispatchedOrNotRaw === "n" ? "no" :
+        dispatchedOrNotRaw;
+
+
+
+
+        if (!shipmentId) {
+          rejectedRows.push({ rowNo, shipmentId: "", trackingId, reason: "SHIPMENT_ID is empty" });
+          continue;
+        }
+
+        if (!trackingId) {
+          rejectedRows.push({ rowNo, shipmentId, trackingId, reason: "TRACKING_ID is empty" });
+          continue;
+        }
+
+        if (!["yes", "no"].includes(dispatchedOrNot)) {
+          rejectedRows.push({rowNo, shipmentId, trackingId, reason: "DISPATCHED_OR_NOT must be yes or no"});
+          continue;
+        }
+
+        const trackingNorm = trackingId.toLowerCase();
+        if (seenTracking.has(trackingNorm)) {
+          rejectedRows.push({ rowNo, shipmentId,  trackingId, reason: "Duplicate TRACKING_ID inside upload file" });
+          continue;
+        }
+        seenTracking.add(trackingNorm);
+
+        parsedRows.push({ rowNo, shipmentId, trackingId, dispatchedOrNot, raw: row });
+      }
+
+      if (!parsedRows.length) {
+        fs.unlink(req.file.path, () => {});
+        return res.redirect(
+          "/admin/shipments?errorMsg=" +
+            encodeURIComponent("No valid rows found in dispatch file.")
+        );
+      }
+
+      const shipmentIds = Array.from(new Set(parsedRows.map(r => r.shipmentId)));
+
+      const dbQ = await pool.query(
+            `
+            SELECT
+              sh.id AS shipment_id,
+              sh.payment_id,
+              sh.tracking_id,
+              sh.status,
+              sh.delivery_mode,
+              sh.courier_mode,
+              u.id AS user_id,
+              u.name AS user_name,
+              u.phone AS phone,
+              
+              (ARRAY_AGG(o.payment_session_id::text ORDER BY o.created_at ASC NULLS LAST))[1] AS payment_session_id
+            FROM shipments sh
+            JOIN shipment_items si ON si.shipment_id = sh.id
+            JOIN orders o ON o.id = si.order_id
+            JOIN users u ON u.id = o.user_id
+            WHERE sh.id = ANY($1::uuid[])
+            GROUP BY
+              sh.id, sh.payment_id, sh.tracking_id, sh.status, sh.delivery_mode, sh.courier_mode,
+              u.id, u.name
+            `,
+            [shipmentIds]
+          );
+
+      const dbMap = new Map<string, any>();
+      for (const row of dbQ.rows) dbMap.set(String(row.shipment_id), row);
+
+      const uploadedTrackingList = parsedRows.map(r => r.trackingId);
+      const overlapQ = await pool.query(
+        `
+        SELECT id, tracking_id
+        FROM shipments
+        WHERE LOWER(COALESCE(tracking_id, '')) = ANY(
+          SELECT LOWER(x) FROM unnest($1::text[]) AS x
+        )
+        `,
+        [uploadedTrackingList]
+      );
+
+      const overlapMap = new Map<string, string>();
+      for (const row of overlapQ.rows) {
+        overlapMap.set(String(row.tracking_id || "").toLowerCase(), String(row.id));
+      }
+
+      const validRows: any[] = [];
+
+      for (const row of parsedRows) {
+        const dbRow = dbMap.get(row.shipmentId);
+
+        if (!dbRow) {
+          rejectedRows.push({ ...row, reason: "Shipment not found" });
+          continue;
+        }
+
+        if (String(dbRow.delivery_mode || "").toLowerCase() !== "home_delivery") {
+          rejectedRows.push({ ...row, reason: "Shipment is not home_delivery" });
+          continue;
+        }
+
+        if (String(dbRow.status || "").toLowerCase() !== "packed") {
+          rejectedRows.push({ ...row, reason: "Shipment status is not packed" });
+          continue;
+        }
+
+       if (normalizeCompare(dbRow.tracking_id) !== normalizeCompare(row.trackingId)) {
+        rejectedRows.push({ ...row, reason: "Tracking ID mismatch" });
+        continue;
+      }
+
+        const overlapShipmentId = overlapMap.get(String(row.trackingId || "").toLowerCase());
+        if (overlapShipmentId && overlapShipmentId !== row.shipmentId) {
+          rejectedRows.push({ ...row, reason: "TRACKING_ID already used by another shipment" });
+          continue;
+        }
+
+        if (row.dispatchedOrNot === "yes") {
+          validRows.push({
+            shipmentId: row.shipmentId,
+            paymentId: dbRow.payment_id,
+            paymentSessionId: dbRow.payment_session_id || null,
+            userId: dbRow.user_id,
+            userName: dbRow.user_name,
+            phone:dbRow.phone,
+            trackingId: row.trackingId,
+            courierMode: normalizeCell(dbRow.courier_mode) || "india_post",
+          });
+        }
+
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const row of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              tracking_id = $1,
+              courier_mode = $2,
+              status = 'dispatched',
+              updated_at = NOW()
+            WHERE id = $3
+              AND LOWER(COALESCE(status, '')) = 'packed'
+              AND LOWER(COALESCE(delivery_mode, '')) = 'home_delivery'
+            `,
+            [row.trackingId, row.courierMode, row.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      /*
+      for (const row of validRows) {
+        try {
+          //console.log("Sending disptached confirmation to:", row.phone);
+          //console.log("Tracking id:", row.trackingId);
+          await sendShipmentDispatchMessageOnce({
+            paymentId: String(row.paymentId || ""),
+            paymentSessionId: row.paymentSessionId,
+            userId: String(row.userId || ""),
+            phone: String(row.phone || ""),
+            userName: String(row.userName || "Participant"),
+            trackingId: String(row.trackingId || ""),
+          });
+        } catch (e) {
+          console.error("shipment dispatch whatsapp send error:", e);
+        }
+      }
+      */
+
+      let rejectedFile = "";
+
+        if (rejectedRows.length) {
+          const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+          const rejWb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+
+          const tmpName = `rejected_packed_to_dispatched_${Date.now()}.xlsx`;
+          const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+          XLSX.writeFile(rejWb, tmpPath);
+          rejectedFile = tmpName;
+        }
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery" +
+        "&okMsg=" + encodeURIComponent(`Dispatch update completed. Accepted: ${validRows.length}.`) +
+        (rejectedRows.length
+          ? "&errorMsg=" + encodeURIComponent(`Rejected rows: ${rejectedRows.length}.`)
+          : "") +
+        (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+      if (!isAjax) {
+        return res.redirect(redirectUrl);
+      }
+
+      return jsonOk(res, {
+        message: `Dispatch update completed.`,
+        acceptedCount: validRows.length,
+        rejectedCount: rejectedRows.length,
+        rejectedFile,
+        redirectUrl
+      });
+    } catch (e) {
+         console.error("upload-dispatched error:", e);
+
+         const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Failed to import dispatched shipment file.");
+
+        if (req.file?.path) fs.unlink(req.file.path, () => {});
+
+        if (!isAjax) {
+          return res.redirect(redirectUrl);
+        }
+
+        return jsonBad(res, "Failed to import dispatched shipment file.", {
+          redirectUrl
+        });
+
+    }
+  }
+);
+
+
+router.post(
+  "/admin/shipments/upload-returned",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("returned_file"),
+  async (req: any, res) => {
+    const isAjax =
+      String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+    try {
+      if (!req.file?.path) {
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Please choose a returned shipment file.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Please choose a returned shipment file.", { redirectUrl });
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Uploaded returned file is empty.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Uploaded returned file is empty.", { redirectUrl });
+      }
+
+      const firstRow = rows[0] || {};
+      const trackingKey =
+        "TRACKING_ID" in firstRow ? "TRACKING_ID" :
+        "tracking_id" in firstRow ? "tracking_id" : "";
+
+      if (!trackingKey) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Missing required column. Expected TRACKING_ID.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Missing required column. Expected TRACKING_ID.", { redirectUrl });
+      }
+
+      const parsedRows: { rowNo: number; trackingId: string; raw: any }[] = [];
+      const rejectedRows: any[] = [];
+      const uploadDuplicateTracking = new Set<string>();
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+        const trackingId = normalizeCell(row[trackingKey]);
+
+        if (!trackingId) {
+          rejectedRows.push({ ...row, ERROR_REASON: "Tracking id is empty", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        const normTracking = normalizeCompare(trackingId);
+        if (uploadDuplicateTracking.has(normTracking)) {
+          fs.unlink(req.file.path, () => {});
+          const redirectUrl =
+            "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+            encodeURIComponent("Duplicate TRACKING_ID found in uploaded file. Entire upload rejected.");
+          if (!isAjax) return res.redirect(redirectUrl);
+          return jsonBad(res, "Duplicate TRACKING_ID found in uploaded file. Entire upload rejected.", { redirectUrl });
+        }
+
+        uploadDuplicateTracking.add(normTracking);
+        parsedRows.push({ rowNo, trackingId, raw: row });
+      }
+
+      const trackingIds = Array.from(new Set(parsedRows.map(r => r.trackingId)));
+
+      const dbQ = await pool.query(
+        `
+        SELECT id, status, delivery_mode, tracking_id
+        FROM shipments
+        WHERE LOWER(COALESCE(tracking_id, '')) = ANY(
+          SELECT LOWER(x) FROM unnest($1::text[]) AS x
+        )
+        `,
+        [trackingIds]
+      );
+
+      const dbMap = new Map<string, any>();
+      for (const r of dbQ.rows) dbMap.set(normalizeCompare(r.tracking_id), r);
+
+      const validRows: { shipmentId: string }[] = [];
+
+      for (const row of parsedRows) {
+        const dbRow = dbMap.get(normalizeCompare(row.trackingId));
+
+        if (!dbRow) {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Tracking id not found", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.delivery_mode || "").toLowerCase() !== "home_delivery") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment is not home_delivery", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.status || "").toLowerCase() !== "dispatched") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment status is not dispatched", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        validRows.push({ shipmentId: String(dbRow.id) });
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const row of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              status = 'returned',
+              updated_at = NOW()
+            WHERE id = $1
+              AND LOWER(COALESCE(status, '')) = 'dispatched'
+            `,
+            [row.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      let rejectedFile = "";
+      if (rejectedRows.length) {
+        const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+        const tmpName = `rejected_returned_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+        XLSX.writeFile(rejWb, tmpPath);
+        rejectedFile = tmpName;
+      }
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery" +
+        "&okMsg=" + encodeURIComponent(`Returned update completed. Accepted: ${validRows.length}.`) +
+        (rejectedRows.length
+          ? "&errorMsg=" + encodeURIComponent(`Rejected rows: ${rejectedRows.length}.`)
+          : "") +
+        (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+
+      return jsonOk(res, {
+        message: "Returned update completed.",
+        acceptedCount: validRows.length,
+        rejectedCount: rejectedRows.length,
+        rejectedFile,
+        redirectUrl
+      });
+    } catch (e) {
+      console.error("upload-returned error:", e);
+      if (req.file?.path) fs.unlink(req.file.path, () => {});
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+        encodeURIComponent("Failed to import returned shipment file.");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+      return jsonBad(res, "Failed to import returned shipment file.", { redirectUrl });
+    }
+  }
+);
+
+router.post(
+  "/admin/shipments/upload-returned-restart",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("returned_restart_file"),
+  async (req: any, res) => {
+    const isAjax =
+      String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+    try {
+      if (!req.file?.path) {
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Please choose a returned restart file.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Please choose a returned restart file.", { redirectUrl });
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Uploaded returned restart file is empty.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Uploaded returned restart file is empty.", { redirectUrl });
+      }
+
+      const firstRow = rows[0] || {};
+
+      const shipmentKey =
+        "SHIPMENT_ID" in firstRow ? "SHIPMENT_ID" :
+        "shipment_id" in firstRow ? "shipment_id" : "";
+
+      const trackingKey =
+        "TRACKING_ID" in firstRow ? "TRACKING_ID" :
+        "tracking_id" in firstRow ? "tracking_id" : "";
+
+      const startAgainKey =
+        "START_AGAIN" in firstRow ? "START_AGAIN" :
+        "start_again" in firstRow ? "start_again" : "";
+
+      if (!shipmentKey || !trackingKey || !startAgainKey) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Missing required columns. Expected SHIPMENT_ID, TRACKING_ID and START_AGAIN.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Missing required columns. Expected SHIPMENT_ID, TRACKING_ID and START_AGAIN.", { redirectUrl });
+      }
+
+      const parsedRows: {
+        rowNo: number;
+        shipmentId: string;
+        trackingId: string;
+        startAgain: string;
+        raw: any;
+      }[] = [];
+
+      const rejectedRows: any[] = [];
+      const seenShipmentIds = new Set<string>();
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+
+        const shipmentId = normalizeCell(row[shipmentKey]);
+        const trackingId = normalizeCell(row[trackingKey]);
+        const startAgainRaw = normalizeCell(row[startAgainKey]).toLowerCase();
+        const startAgain =
+          startAgainRaw === "y" ? "yes" :
+          startAgainRaw === "n" ? "no" :
+          startAgainRaw;
+
+        if (!shipmentId) {
+          rejectedRows.push({ ...row, ERROR_REASON: "SHIPMENT_ID is empty", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (!trackingId) {
+          rejectedRows.push({ ...row, ERROR_REASON: "TRACKING_ID is empty", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (!["yes", "no"].includes(startAgain)) {
+          rejectedRows.push({ ...row, ERROR_REASON: "START_AGAIN must be yes or no", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (seenShipmentIds.has(normalizeCompare(shipmentId))) {
+          rejectedRows.push({ ...row, ERROR_REASON: "Duplicate SHIPMENT_ID inside upload file", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+        seenShipmentIds.add(normalizeCompare(shipmentId));
+
+        parsedRows.push({ rowNo, shipmentId, trackingId, startAgain, raw: row });
+      }
+
+      const shipmentIds = Array.from(new Set(parsedRows.map(r => r.shipmentId)));
+      const dbQ = await pool.query(
+        `
+        SELECT id, status, delivery_mode, tracking_id
+        FROM shipments
+        WHERE id = ANY($1::uuid[])
+        `,
+        [shipmentIds]
+      );
+
+      const dbMap = new Map<string, any>();
+      for (const row of dbQ.rows) dbMap.set(String(row.id), row);
+
+      const validRows: { shipmentId: string }[] = [];
+
+      for (const row of parsedRows) {
+        const dbRow = dbMap.get(row.shipmentId);
+
+        if (!dbRow) {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment not found", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.delivery_mode || "").toLowerCase() !== "home_delivery") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment is not home_delivery", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.status || "").toLowerCase() !== "returned") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment status is not returned", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.tracking_id) !== normalizeCompare(row.trackingId)) {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Tracking ID mismatch", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (row.startAgain === "yes") {
+          validRows.push({ shipmentId: row.shipmentId });
+        }
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const row of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              status = 'pending',
+              updated_at = NOW()
+            WHERE id = $1
+              AND LOWER(COALESCE(status, '')) = 'returned'
+            `,
+            [row.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      let rejectedFile = "";
+      if (rejectedRows.length) {
+        const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+        const tmpName = `rejected_returned_restart_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+        XLSX.writeFile(rejWb, tmpPath);
+        rejectedFile = tmpName;
+      }
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery" +
+        "&okMsg=" + encodeURIComponent(`Returned restart update completed. Accepted: ${validRows.length}.`) +
+        (rejectedRows.length
+          ? "&errorMsg=" + encodeURIComponent(`Rejected rows: ${rejectedRows.length}.`)
+          : "") +
+        (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+
+      return jsonOk(res, {
+        message: "Returned restart update completed.",
+        acceptedCount: validRows.length,
+        rejectedCount: rejectedRows.length,
+        rejectedFile,
+        redirectUrl
+      });
+    } catch (e) {
+      console.error("upload-returned-restart error:", e);
+      if (req.file?.path) fs.unlink(req.file.path, () => {});
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+        encodeURIComponent("Failed to import returned restart shipment file.");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+      return jsonBad(res, "Failed to import returned restart shipment file.", { redirectUrl });
+    }
+  }
+);
+
+router.post(
+  "/admin/shipments/upload-delivered",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("delivered_file"),
+  async (req: any, res) => {
+    const isAjax =
+      String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+    try {
+      if (!req.file?.path) {
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Please choose a delivered file.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Please choose a delivered file.", { redirectUrl });
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Uploaded delivered file is empty.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Uploaded delivered file is empty.", { redirectUrl });
+      }
+
+      const firstRow = rows[0] || {};
+
+      const shipmentKey =
+        "SHIPMENT_ID" in firstRow ? "SHIPMENT_ID" :
+        "shipment_id" in firstRow ? "shipment_id" : "";
+
+      const trackingKey =
+        "TRACKING_ID" in firstRow ? "TRACKING_ID" :
+        "tracking_id" in firstRow ? "tracking_id" : "";
+
+      const deliveredFlagKey =
+        "DELIVERED_OR_NOT" in firstRow ? "DELIVERED_OR_NOT" :
+        "delivered_or_not" in firstRow ? "delivered_or_not" : "";
+
+      if (!shipmentKey || !trackingKey || !deliveredFlagKey) {
+        fs.unlink(req.file.path, () => {});
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+          encodeURIComponent("Missing required columns. Expected SHIPMENT_ID, TRACKING_ID and DELIVERED_OR_NOT.");
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "Missing required columns. Expected SHIPMENT_ID, TRACKING_ID and DELIVERED_OR_NOT.", { redirectUrl });
+      }
+
+      const parsedRows: {
+        rowNo: number;
+        shipmentId: string;
+        trackingId: string;
+        deliveredOrNot: string;
+        raw: any;
+      }[] = [];
+
+      const rejectedRows: any[] = [];
+      const seenShipmentIds = new Set<string>();
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+
+        const shipmentId = normalizeCell(row[shipmentKey]);
+        const trackingId = normalizeCell(row[trackingKey]);
+        const deliveredOrNotRaw = normalizeCell(row[deliveredFlagKey]).toLowerCase();
+        const deliveredOrNot =
+          deliveredOrNotRaw === "y" ? "yes" :
+          deliveredOrNotRaw === "n" ? "no" :
+          deliveredOrNotRaw;
+
+        if (!shipmentId) {
+          rejectedRows.push({ ...row, ERROR_REASON: "SHIPMENT_ID is empty", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (!trackingId) {
+          rejectedRows.push({ ...row, ERROR_REASON: "TRACKING_ID is empty", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (!["yes", "no"].includes(deliveredOrNot)) {
+          rejectedRows.push({ ...row, ERROR_REASON: "DELIVERED_OR_NOT must be yes or no", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+
+        if (seenShipmentIds.has(normalizeCompare(shipmentId))) {
+          rejectedRows.push({ ...row, ERROR_REASON: "Duplicate SHIPMENT_ID inside upload file", ERROR_ROW_NO: rowNo });
+          continue;
+        }
+        seenShipmentIds.add(normalizeCompare(shipmentId));
+
+        parsedRows.push({ rowNo, shipmentId, trackingId, deliveredOrNot, raw: row });
+      }
+
+      if (!parsedRows.length) {
+        fs.unlink(req.file.path, () => {});
+        let rejectedFile = "";
+        if (rejectedRows.length) {
+          const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+          const rejWb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+          const tmpName = `rejected_delivered_${Date.now()}.xlsx`;
+          const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+          XLSX.writeFile(rejWb, tmpPath);
+          rejectedFile = tmpName;
+        }
+
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery" +
+          "&errorMsg=" + encodeURIComponent("No valid rows found in delivered file.") +
+          (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+        if (!isAjax) return res.redirect(redirectUrl);
+        return jsonBad(res, "No valid rows found in delivered file.", {
+          rejectedCount: rejectedRows.length,
+          rejectedFile,
+          redirectUrl
+        });
+      }
+
+      const shipmentIds = Array.from(new Set(parsedRows.map(r => r.shipmentId)));
+
+      const dbQ = await pool.query(
+        `
+        SELECT id, status, delivery_mode, tracking_id, courier_mode
+        FROM shipments
+        WHERE id = ANY($1::uuid[])
+        `,
+        [shipmentIds]
+      );
+
+      const dbMap = new Map<string, any>();
+      for (const row of dbQ.rows) dbMap.set(String(row.id), row);
+
+      const validRows: { shipmentId: string; trackingId: string; courierMode: string }[] = [];
+
+      for (const row of parsedRows) {
+        const dbRow = dbMap.get(row.shipmentId);
+
+        if (!dbRow) {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment not found", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.delivery_mode || "").toLowerCase() !== "home_delivery") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment is not home_delivery", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (String(dbRow.status || "").toLowerCase() !== "dispatched") {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Shipment status is not dispatched", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.tracking_id) !== normalizeCompare(row.trackingId)) {
+          rejectedRows.push({ ...row.raw, ERROR_REASON: "Tracking ID mismatch", ERROR_ROW_NO: row.rowNo });
+          continue;
+        }
+
+        if (row.deliveredOrNot === "yes") {
+          validRows.push({
+            shipmentId: row.shipmentId,
+            trackingId: row.trackingId,
+            courierMode: normalizeCell(dbRow.courier_mode) || "india_post",
+          });
+        }
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const row of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              tracking_id = $1,
+              courier_mode = $2,
+              status = 'delivered',
+              updated_at = NOW()
+            WHERE id = $3
+              AND LOWER(COALESCE(status, '')) = 'dispatched'
+              AND LOWER(COALESCE(delivery_mode, '')) = 'home_delivery'
+            `,
+            [row.trackingId, row.courierMode, row.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      let rejectedFile = "";
+      if (rejectedRows.length) {
+        const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+        const tmpName = `rejected_delivered_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+        XLSX.writeFile(rejWb, tmpPath);
+        rejectedFile = tmpName;
+      }
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery" +
+        "&okMsg=" + encodeURIComponent(`Delivered update completed. Accepted: ${validRows.length}.`) +
+        (rejectedRows.length
+          ? "&errorMsg=" + encodeURIComponent(`Rejected rows: ${rejectedRows.length}.`)
+          : "") +
+        (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+
+      return jsonOk(res, {
+        message: "Delivered update completed.",
+        acceptedCount: validRows.length,
+        rejectedCount: rejectedRows.length,
+        rejectedFile,
+        redirectUrl
+      });
+    } catch (e) {
+      console.error("upload-delivered error:", e);
+      if (req.file?.path) fs.unlink(req.file.path, () => {});
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+        encodeURIComponent("Failed to import delivered shipment file.");
+
+      if (!isAjax) return res.redirect(redirectUrl);
+      return jsonBad(res, "Failed to import delivered shipment file.", { redirectUrl });
+    }
+  }
+);
+
+router.get("/admin/shipments/download-packed", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const dateFrom = norm(req.query.date_from || "");
+    const dateTo = norm(req.query.date_to || "");
+
+    if ((dateFrom && !dateTo) || (!dateFrom && dateTo)) {
+  return res.redirect(
+    "/admin/shipments?errorMsg=" +
+      encodeURIComponent("Please select both From and To dates, or leave both blank to include all matching rows.")
+  );
+}
+
+if (dateFrom && dateTo && dateFrom > dateTo) {
+  return res.redirect(
+    "/admin/shipments?errorMsg=" +
+      encodeURIComponent("Date range is invalid. From date cannot be after To date.")
+  );
+}
+
+    const forcedReq = {
+      query: {
+        ...req.query,
+        status: "packed",
+        delivery_mode: "home_delivery",
+      },
+    };
+
+    const rows = await fetchShipmentCsvRows(forcedReq);
+    const filename = buildShipmentFileName("shipments_packed_home_delivery");
+    return sendShipmentWorkbook(res, filename, rows, undefined, "DISPATCHED_OR_NOT", "Packed");
+  } catch (e) {
+    console.error("download-packed error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to download packed home delivery shipments.")
+    );
+  }
+});
+
+
+router.get("/admin/shipments/download-status", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const status = norm(req.query.status || "").toLowerCase();
+    const allowed = new Set(["under_packing", "dispatched", "returned"]);
+
+    if (!allowed.has(status)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Unsupported status download request.")
+      );
+    }
+
+    const forcedReq = {
+      query: {
+        ...req.query,
+        q: norm(req.query.q || ""),
+        status,
+        delivery_mode: "home_delivery",
+      },
+    };
+
+    const rows = await fetchShipmentCsvRows(forcedReq);
+
+    const extraFlag =
+      status === "under_packing" ? "PACKED_OR_NOT" :
+      status === "dispatched" ? "DELIVERED_OR_NOT" :
+      status === "returned" ? "START_AGAIN" :
+      "";
+
+    const filename = buildShipmentFileName(`shipments_${status}_home_delivery`);
+    return sendShipmentWorkbook(res, filename, rows, undefined, extraFlag as any, String(status || "shipments"));
+  } catch (e) {
+    console.error("download-status error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to download shipment file.")
+    );
+  }
+});
+
+router.post("/admin/shipments/bulk-advance-status", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const fromStatus = norm(req.body.from_status).toLowerCase();
+    const toStatus = norm(req.body.to_status).toLowerCase();
+    const deliveryMode = norm(req.body.delivery_mode || "home_delivery").toLowerCase();
+
+    const allowedPairs = new Set([
+      "pending=>under_packing",
+      "under_packing=>packed",
+      "packed=>dispatched",
+      "dispatched=>delivered",
+      "returned=>pending",
+    ]);
+
+    const pair = `${fromStatus}=>${toStatus}`;
+    if (!allowedPairs.has(pair)) {
+      return res.redirect(
+        "/admin/shipments?errorMsg=" +
+          encodeURIComponent("Unsupported bulk update transition.")
+      );
+    }
+
+    const fakeReq = {
+      query: {
+        q: norm(req.body.q || ""),
+        status: fromStatus,
+        date_from: norm(req.body.date_from || ""),
+        date_to: norm(req.body.date_to || ""),
+        delivery_mode: deliveryMode,
+      }
+    };
+
+    const { whereSql, params } = buildShipmentsFilter(fakeReq);
+
+    const updateCourierMode =
+      toStatus === "dispatched" ? "india_post" :
+      toStatus === "delivered" ? "admin_bulk_delivered" :
+      null;
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const countQ = await client.query(
+        `
+        SELECT COUNT(DISTINCT sh.id)::int AS c
+        FROM shipments sh
+        JOIN shipment_items si ON si.shipment_id = sh.id
+        JOIN orders o ON o.id = si.order_id
+        JOIN users u ON u.id = o.user_id
+        JOIN contests c ON c.id = o.contest_id
+        ${whereSql}
+        `,
+        params
+      );
+
+      const affected = Number(countQ.rows[0]?.c || 0);
+      const updateWhereSql = whereSql
+          .replace(/sh\./g, "sh2.")
+          .replace(/\$(\d+)/g, (_, n) => `$${Number(n) + 2}`);
+
+        await client.query(
+          `
+          UPDATE shipments sh
+          SET
+            status = $1,
+            courier_mode = CASE
+              WHEN $2::text IS NULL OR $2::text = '' THEN sh.courier_mode
+              ELSE COALESCE(NULLIF(sh.courier_mode,''), $2)
+            END,
+            updated_at = NOW()
+          WHERE sh.id IN (
+            SELECT DISTINCT sh2.id
+            FROM shipments sh2
+            JOIN shipment_items si ON si.shipment_id = sh2.id
+            JOIN orders o ON o.id = si.order_id
+            JOIN users u ON u.id = o.user_id
+            JOIN contests c ON c.id = o.contest_id
+            ${updateWhereSql}
+          )
+          `,
+          [toStatus, updateCourierMode, ...params]
+        );
+
+
+      await client.query("COMMIT");
+
+      return res.redirect(
+        "/admin/shipments?okMsg=" +
+          encodeURIComponent(`Bulk update completed. ${affected} shipment(s) moved from ${fromStatus} to ${toStatus}.`)
+      );
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.error("bulk-advance-status error:", e);
+    return res.redirect(
+      "/admin/shipments?errorMsg=" +
+        encodeURIComponent("Failed to run bulk shipment update.")
+    );
+  }
+});
+
+
+router.post("/admin/shipments/upload-under-packing", upload.single("file"), async (req, res) => {
+  const file = req.file;
+  if (!file) return res.json({ ok: false, error: "No file uploaded" });
+
+  const rows = parseCsv(file.buffer.toString());
+
+  let accepted = 0;
+  let rejected = [];
+
+  for (const r of rows) {
+    try {
+      const shipmentId = String(r.shipment_id || "").trim();
+      const trackingId = String(r.tracking_id || "").trim();
+      const packedFlag = String(r.packed_or_not || "").toLowerCase().trim();
+
+      if (!shipmentId || !trackingId) {
+        rejected.push({ ...r, reason: "Missing shipment_id or tracking_id" });
+        continue;
+      }
+
+      const existing = await pool.query(
+        `SELECT id, status, tracking_id FROM shipments WHERE id = $1`,
+        [shipmentId]
+      );
+
+      if (existing.rowCount === 0) {
+        rejected.push({ ...r, reason: "Shipment not found" });
+        continue;
+      }
+
+      const dbRow = existing.rows[0];
+
+      if (dbRow.status !== "under_packing") {
+        rejected.push({ ...r, reason: "Not in under_packing status" });
+        continue;
+      }
+
+      if (dbRow.tracking_id !== trackingId) {
+        rejected.push({ ...r, reason: "Tracking ID mismatch" });
+        continue;
+      }
+
+      if (!["yes", "no"].includes(packedFlag)) {
+        rejected.push({ ...r, reason: "Invalid packed_or_not value" });
+        continue;
+      }
+
+      if (packedFlag === "yes") {
+        await pool.query(
+          `UPDATE shipments SET status = 'packed' WHERE id = $1`,
+          [shipmentId]
+        );
+        accepted++;
+      }
+
+      // if "no" → do nothing
+
+    } catch (e) {
+      rejected.push({ ...r, reason: "Internal error" });
+    }
+  }
+
+  return res.json({
+    ok: true,
+    accepted,
+    rejectedCount: rejected.length,
+    rejected
+  });
+});
+
+router.post(
+  "/admin/shipments/bulk-upload-status",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("status_file"),
+  async (req: any, res) => {
+    try {
+      const isAjax =
+        String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+      if (!req.file?.path) {
+        if (!isAjax) {
+          return res.redirect(
+            "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+              encodeURIComponent("Please choose an Excel file (.xlsx or .xls).")
+          );
+        }
+        return jsonBad(res, "Please choose an Excel file (.xlsx or .xls).");
+      }
+
+      const fromStatus = norm(req.body.from_status).toLowerCase();
+      const toStatus = norm(req.body.to_status).toLowerCase();
+      const deliveryMode = norm(req.body.delivery_mode || "home_delivery").toLowerCase();
+
+      if (!(fromStatus === "pending" && toStatus === "under_packing")) {
+        fs.unlink(req.file.path, () => {});
+        if (!isAjax) {
+          return res.redirect(
+            "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+              encodeURIComponent("Unsupported Excel transition.")
+          );
+        }
+        return jsonBad(res, "Unsupported Excel transition.");
+      }
+
+      const wb = XLSX.readFile(req.file.path, { raw: false });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) as any[];
+
+      if (!rows.length) {
+        fs.unlink(req.file.path, () => {});
+        if (!isAjax) {
+          return res.redirect(
+            "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+              encodeURIComponent("Uploaded file is empty.")
+          );
+        }
+        return jsonBad(res, "Uploaded file is empty.");
+      }
+
+      const firstRow = rows[0] || {};
+
+      const shipmentKey =
+        "SHIPMENT_ID" in firstRow
+          ? "SHIPMENT_ID"
+          : "shipment_id" in firstRow
+          ? "shipment_id"
+          : "";
+
+      const trackingKey =
+        "TRACKING_ID" in firstRow
+          ? "TRACKING_ID"
+          : "tracking_id" in firstRow
+          ? "tracking_id"
+          : "";
+
+      if (!shipmentKey || !trackingKey) {
+        fs.unlink(req.file.path, () => {});
+        const msg = "Missing required columns. Expected SHIPMENT_ID and TRACKING_ID.";
+        if (!isAjax) {
+          return res.redirect(
+            "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+              encodeURIComponent(msg)
+          );
+        }
+        return jsonBad(res, msg);
+      }
+
+      const parsedRows: {
+        rowNo: number;
+        shipmentId: string;
+        trackingId: string;
+        raw: any;
+      }[] = [];
+
+      const rejectedRows: any[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowNo = i + 2;
+        const row = rows[i];
+
+        const shipmentId = normalizeCell(row[shipmentKey]);
+        const trackingId = normalizeCell(row[trackingKey]);
+
+        if (!shipmentId) {
+          rejectedRows.push({
+            ...row,
+            ERROR_REASON: "SHIPMENT_ID is empty",
+            ERROR_ROW_NO: rowNo,
+          });
+          continue;
+        }
+
+        if (!trackingId) {
+          rejectedRows.push({
+            ...row,
+            ERROR_REASON: "TRACKING_ID is empty",
+            ERROR_ROW_NO: rowNo,
+          });
+          continue;
+        }
+
+        parsedRows.push({
+          rowNo,
+          shipmentId,
+          trackingId,
+          raw: row,
+        });
+      }
+
+      if (!parsedRows.length) {
+        fs.unlink(req.file.path, () => {});
+
+        let rejectedFile = "";
+        if (rejectedRows.length) {
+          const tmpName = `rejected_pending_${Date.now()}.xlsx`;
+          const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+          const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+          const rejWb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+          XLSX.writeFile(rejWb, tmpPath);
+          rejectedFile = tmpName;
+        }
+
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery" +
+          "&errorMsg=" + encodeURIComponent("No valid rows found in uploaded file.") +
+          (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+        if (!isAjax) {
+          return res.redirect(redirectUrl);
+        }
+
+        return jsonBad(res, "No valid rows found in uploaded file.", {
+          rejectedCount: rejectedRows.length,
+          rejectedFile,
+          redirectUrl,
+        });
+      }
+
+      // Strict duplicate tracking check INSIDE uploaded file
+      const trackingCount = new Map<string, number>();
+      for (const r of parsedRows) {
+        const key = normalizeCompare(r.trackingId);
+        trackingCount.set(key, (trackingCount.get(key) || 0) + 1);
+      }
+
+      const duplicateTrackingSet = new Set<string>();
+      for (const [key, count] of trackingCount.entries()) {
+        if (count > 1) duplicateTrackingSet.add(key);
+      }
+
+      // If any duplicate exists in uploaded file, reject ENTIRE upload
+      if (duplicateTrackingSet.size > 0) {
+        const duplicateRows = parsedRows.map((r) => ({
+          ...r.raw,
+          ERROR_REASON: duplicateTrackingSet.has(normalizeCompare(r.trackingId))
+            ? "Duplicate TRACKING_ID found in uploaded file"
+            : "Upload cancelled because duplicate TRACKING_ID exists elsewhere in this file",
+          ERROR_ROW_NO: r.rowNo,
+        }));
+
+        const allRejected = [...rejectedRows, ...duplicateRows];
+
+        let rejectedFile = "";
+        if (allRejected.length) {
+          const tmpName = `rejected_pending_${Date.now()}.xlsx`;
+          const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+          const rejSheet = XLSX.utils.json_to_sheet(allRejected);
+          const rejWb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+          XLSX.writeFile(rejWb, tmpPath);
+          rejectedFile = tmpName;
+        }
+
+        fs.unlink(req.file.path, () => {});
+
+        const redirectUrl =
+          "/admin/shipments?delivery_mode=home_delivery" +
+          "&okMsg=" + encodeURIComponent("0 shipment(s) moved from pending to under_packing.") +
+          "&errorMsg=" +
+          encodeURIComponent("Upload cancelled because duplicate TRACKING_ID was found in the file.") +
+          (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+        if (!isAjax) {
+          return res.redirect(redirectUrl);
+        }
+
+        return jsonOk(res, {
+          message:
+            "Pending Excel update cancelled. Duplicate TRACKING_ID found in uploaded file, so no rows were updated.",
+          acceptedCount: 0,
+          rejectedCount: allRejected.length,
+          rejectedFile,
+          redirectUrl,
+        });
+      }
+
+      const shipmentIds = Array.from(new Set(parsedRows.map((r) => r.shipmentId)));
+
+      const dbQ = await pool.query(
+        `
+        SELECT
+          id,
+          status,
+          delivery_mode,
+          tracking_id
+        FROM shipments
+        WHERE id = ANY($1::uuid[])
+        `,
+        [shipmentIds]
+      );
+
+      const dbMap = new Map<string, any>();
+      for (const row of dbQ.rows) {
+        dbMap.set(String(row.id), row);
+      }
+
+      // Check overlap with existing tracking ids already used in DB
+      const uploadedTrackingIds = Array.from(
+        new Set(parsedRows.map((r) => normalizeCompare(r.trackingId)))
+      );
+
+      const overlapQ = await pool.query(
+        `
+        SELECT id, tracking_id
+        FROM shipments
+        WHERE LOWER(COALESCE(tracking_id, '')) = ANY($1::text[])
+        `,
+        [uploadedTrackingIds]
+      );
+
+      const trackingToShipmentIds = new Map<string, string[]>();
+      for (const row of overlapQ.rows) {
+        const key = normalizeCompare(row.tracking_id);
+        const arr = trackingToShipmentIds.get(key) || [];
+        arr.push(String(row.id));
+        trackingToShipmentIds.set(key, arr);
+      }
+
+      const validRows: { shipmentId: string; trackingId: string }[] = [];
+
+      for (const r of parsedRows) {
+        const dbRow = dbMap.get(r.shipmentId);
+
+        if (!dbRow) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "Shipment id not found",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.delivery_mode) !== deliveryMode) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: `Shipment is not ${deliveryMode}`,
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        if (normalizeCompare(dbRow.status) !== fromStatus) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: `Shipment is not in ${fromStatus} status`,
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        const usedBy = trackingToShipmentIds.get(normalizeCompare(r.trackingId)) || [];
+        const usedByAnotherShipment = usedBy.some((id) => id !== r.shipmentId);
+
+        if (usedByAnotherShipment) {
+          rejectedRows.push({
+            ...r.raw,
+            ERROR_REASON: "TRACKING_ID already used by another shipment",
+            ERROR_ROW_NO: r.rowNo,
+          });
+          continue;
+        }
+
+        validRows.push({
+          shipmentId: r.shipmentId,
+          trackingId: r.trackingId,
+        });
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        for (const r of validRows) {
+          await client.query(
+            `
+            UPDATE shipments
+            SET
+              tracking_id = $1,
+              courier_mode = 'india_post',
+              status = 'under_packing',
+              updated_at = NOW()
+            WHERE id = $2
+              AND LOWER(COALESCE(status, '')) = 'pending'
+              AND LOWER(COALESCE(delivery_mode, '')) = 'home_delivery'
+            `,
+            [r.trackingId, r.shipmentId]
+          );
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      fs.unlink(req.file.path, () => {});
+
+      let rejectedFile = "";
+      if (rejectedRows.length) {
+        const tmpName = `rejected_pending_${Date.now()}.xlsx`;
+        const tmpPath = path.join(process.cwd(), "tmp", tmpName);
+        const rejSheet = XLSX.utils.json_to_sheet(rejectedRows);
+        const rejWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(rejWb, rejSheet, "Rejected");
+        XLSX.writeFile(rejWb, tmpPath);
+        rejectedFile = tmpName;
+      }
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery" +
+        "&okMsg=" +
+        encodeURIComponent(`${validRows.length} shipment(s) moved from pending to under_packing.`) +
+        (rejectedRows.length
+          ? "&errorMsg=" + encodeURIComponent(`${rejectedRows.length} row(s) were rejected.`)
+          : "") +
+        (rejectedFile ? "&rejectedFile=" + encodeURIComponent(rejectedFile) : "");
+
+      if (!isAjax) {
+        return res.redirect(redirectUrl);
+      }
+
+      return jsonOk(res, {
+        message: "Pending Excel update completed.",
+        acceptedCount: validRows.length,
+        rejectedCount: rejectedRows.length,
+        rejectedFile,
+        redirectUrl,
+      });
+    } catch (e) {
+      console.error("bulk-upload-status error:", e);
+      if (req.file?.path) fs.unlink(req.file.path, () => {});
+
+      const redirectUrl =
+        "/admin/shipments?delivery_mode=home_delivery&errorMsg=" +
+        encodeURIComponent("Failed to process uploaded shipment file.");
+
+      const isAjax =
+        String(req.get("X-Requested-With") || "").toLowerCase() === "xmlhttprequest";
+
+      if (!isAjax) {
+        return res.redirect(redirectUrl);
+      }
+
+      return jsonBad(res, "Failed to process uploaded shipment file.", {
+        redirectUrl,
+      });
+    }
+  }
+);
+
+
 router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req: any, res) => {
   const q = norm(req.query.q || "");
   const status = norm(req.query.status || "all");
@@ -5696,176 +7962,126 @@ router.get("/admin/offline-orders", authMiddleware, adminMiddleware, async (req:
   );
 
   res.render("admin/admin-offline-orders", {
-    activeTab: "offline-orders",
-    items: listQ.rows,
-    summary: summaryQ.rows[0],
-    byAgent: byAgentQ.rows,
-    reportSummary: reportSummaryQ.rows[0] || {
-      paid_bookings: 0,
-      total_paid_amount: 0,
-      cash_amount: 0,
-      phonepe_amount: 0
-    },
-    bookSummary: bookSummaryQ.rows || [],
-    printRows: printRowsQ.rows || [],
-    totalBooks: totalBooksQ.rows[0]?.total_books || 0,
-    filters: { q, status, paymentMethod, dateFrom, dateTo },
-    qs: qsOf(req),
-  });
+  activeTab: "offline-orders",
+  items: listQ.rows,
+  summary: summaryQ.rows[0],
+  byAgent: byAgentQ.rows,
+  reportSummary: reportSummaryQ.rows[0] || {
+    paid_bookings: 0,
+    total_paid_amount: 0,
+    cash_amount: 0,
+    phonepe_amount: 0
+  },
+  bookSummary: bookSummaryQ.rows || [],
+  printRows: printRowsQ.rows || [],
+  totalBooks: totalBooksQ.rows[0]?.total_books || 0,
+  filters: { q, status, paymentMethod, dateFrom, dateTo },
+  qs: qsOf(req),
+
+  // 🔥 THIS WAS MISSING
+  okMsg: norm(req.query.okMsg || ""),
+  errMsg: norm(req.query.errMsg || ""),
+});
+
 });
 
 
+router.post("/admin/offline-orders/assign-agent", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const returnQs = norm(req.body.return_qs || "");
+  const backTo = `/admin/offline-orders${returnQs ? `?${returnQs}` : ""}`;
+  const joiner = backTo.includes("?") ? "&" : "?";
 
-router.get("/admin/offline-dashboard", authMiddleware, adminMiddleware, async (_req: any, res) => {
-  const usersQ = await pool.query(`SELECT COUNT(*)::int AS c FROM users`);
+  const bookingIdsRaw = Array.isArray(req.body.booking_ids)
+    ? req.body.booking_ids
+    : [req.body.booking_ids];
 
-  const ordersAllQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${offlineOrdersWhere("o")}
-  `);
+  const bookingIds = Array.from(
+    new Set(
+      bookingIdsRaw
+        .map((v: any) => String(v || "").trim())
+        .filter(Boolean)
+    )
+  );
 
-  const paidOrdersQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${offlineOrdersWhere("o")} AND LOWER(COALESCE(o.payment_status,''))='paid'
-  `);
+  const targetAgentPhone = String(req.body.target_agent_phone || "")
+    .replace(/\D/g, "")
+    .slice(-10);
 
-  const pendingFailedQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${offlineOrdersWhere("o")}
-      AND LOWER(COALESCE(o.payment_status,'pending')) IN ('pending','failed','failure','cancelled','canceled','error')
-  `);
+  if (!bookingIds.length) {
+    return res.redirect(
+      `${backTo}${joiner}errMsg=${encodeURIComponent("Please select at least one booking.")}`
+    );
+  }
 
-  const giftQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${offlineOrdersWhere("o")}
-      AND LOWER(COALESCE(o.payment_status,''))='paid'
-      AND LOWER(COALESCE(o.book_option,''))='book'
-  `);
+  if (!/^[6-9]\d{9}$/.test(targetAgentPhone)) {
+    return res.redirect(
+      `${backTo}${joiner}errMsg=${encodeURIComponent("Please enter a valid 10-digit agent mobile number.")}`
+    );
+  }
 
-  const donateQ = await pool.query(`
-    SELECT COUNT(*)::int AS c
-    FROM orders o
-    WHERE ${offlineOrdersWhere("o")}
-      AND LOWER(COALESCE(o.payment_status,''))='paid'
-      AND LOWER(COALESCE(o.book_option,''))='donation'
-  `);
+  const client = await pool.connect();
 
-  const revenueQ = await pool.query(`
-    SELECT COALESCE(SUM(ab.total_amount),0)::int AS total
-    FROM agent_bookings ab
-    WHERE LOWER(COALESCE(ab.status,''))='paid'
-  `);
+  try {
+    await client.query("BEGIN");
 
-  const todayRevenueQ = await pool.query(`
-    SELECT COALESCE(SUM(ab.total_amount),0)::int AS total
-    FROM agent_bookings ab
-    WHERE LOWER(COALESCE(ab.status,''))='paid'
-      AND DATE(ab.created_at)=CURRENT_DATE
-  `);
+    const targetAgentQ = await client.query(
+      `
+      SELECT id, name, phone
+      FROM users
+      WHERE phone = $1
+        AND LOWER(COALESCE(role,'')) = 'agent'
+      LIMIT 1
+      `,
+      [targetAgentPhone]
+    );
 
-  const salesDailyQ = await pool.query(`
-    SELECT DATE(ab.created_at) AS d, COALESCE(SUM(ab.total_amount),0)::int AS revenue
-    FROM agent_bookings ab
-    WHERE LOWER(COALESCE(ab.status,''))='paid'
-      AND ab.created_at >= (CURRENT_DATE - INTERVAL '30 days')
-    GROUP BY DATE(ab.created_at)
-    ORDER BY d ASC
-  `);
+    if (!targetAgentQ.rows.length) {
+      throw new Error("No agent account found for the entered mobile number.");
+    }
 
-  const salesWeeklyQ = await pool.query(`
-    SELECT DATE_TRUNC('week', ab.created_at)::date AS w, COALESCE(SUM(ab.total_amount),0)::int AS revenue
-    FROM agent_bookings ab
-    WHERE LOWER(COALESCE(ab.status,''))='paid'
-      AND ab.created_at >= (CURRENT_DATE - INTERVAL '84 days')
-    GROUP BY DATE_TRUNC('week', ab.created_at)
-    ORDER BY w ASC
-  `);
+    const targetAgent = targetAgentQ.rows[0];
 
-  const salesMonthlyQ = await pool.query(`
-    SELECT DATE_TRUNC('month', ab.created_at)::date AS m, COALESCE(SUM(ab.total_amount),0)::int AS revenue
-    FROM agent_bookings ab
-    WHERE LOWER(COALESCE(ab.status,''))='paid'
-      AND ab.created_at >= (CURRENT_DATE - INTERVAL '365 days')
-    GROUP BY DATE_TRUNC('month', ab.created_at)
-    ORDER BY m ASC
-  `);
+    const selectedQ = await client.query(
+      `
+      SELECT id, agent_user_id
+      FROM agent_bookings
+      WHERE id = ANY($1::uuid[])
+      `,
+      [bookingIds]
+    );
 
-  const paidBookDetailsQ = await pool.query(`
-    SELECT
-      x.book_title,
-      x.book_language,
-      x.book_kind,
-      COUNT(*)::int AS given_count
-    FROM (
-      SELECT
-        COALESCE(NULLIF(TRIM(abl.book_title),''), c.default_book_title, 'Book') AS book_title,
-        COALESCE(NULLIF(TRIM(abl.book_language),''), '-') AS book_language,
-        'regular'::text AS book_kind
-      FROM agent_bookings ab
-      JOIN agent_booking_lines abl ON abl.agent_booking_id = ab.id
-      JOIN contests c ON c.id = abl.contest_id
-      WHERE LOWER(COALESCE(ab.status,''))='paid'
-        AND LOWER(COALESCE(ab.delivery_mode,''))='handover'
-        AND COALESCE(abl.line_status,'') <> 'cancelled'
+    if (selectedQ.rows.length !== bookingIds.length) {
+      throw new Error("Some selected bookings were not found. Please refresh and try again.");
+    }
 
-      UNION ALL
+    const updateQ = await client.query(
+      `
+      UPDATE agent_bookings
+      SET agent_user_id = $1,
+          updated_at = NOW()
+      WHERE id = ANY($2::uuid[])
+      RETURNING id
+      `,
+      [targetAgent.id, bookingIds]
+    );
 
-      SELECT
-        COALESCE(NULLIF(TRIM(abbi.book_title),''), 'Science of Self Realization') AS book_title,
-        COALESCE(NULLIF(TRIM(abbi.book_language),''), '-') AS book_language,
-        'bonus'::text AS book_kind
-      FROM agent_bookings ab
-      JOIN agent_booking_bonus_items abbi ON abbi.agent_booking_id = ab.id
-      WHERE LOWER(COALESCE(ab.status,''))='paid'
-        AND LOWER(COALESCE(ab.delivery_mode,''))='handover'
-    ) x
-    GROUP BY x.book_title, x.book_language, x.book_kind
-    ORDER BY given_count DESC, x.book_kind ASC, x.book_title ASC, x.book_language ASC
-  `);
+    await client.query("COMMIT");
 
-  const contestStatsQ = await pool.query(`
-    SELECT
-      c.id,
-      c.title,
-      COUNT(o.id)::int AS registrations,
-      COUNT(s.id)::int AS submitted
-    FROM contests c
-    LEFT JOIN orders o
-      ON o.contest_id = c.id
-     AND LOWER(COALESCE(o.payment_status,''))='paid'
-     AND ${offlineOrdersWhere("o")}
-    LEFT JOIN submissions s ON s.order_id = o.id
-    GROUP BY c.id, c.title
-    ORDER BY registrations DESC, c.title ASC
-  `);
-
-  res.render("admin/admin-offline-dashboard", {
-    activeTab: "offline-dashboard",
-    stats: {
-      users: usersQ.rows[0].c,
-      ordersAll: ordersAllQ.rows[0].c,
-      paidOrders: paidOrdersQ.rows[0].c,
-      pendingOrders: pendingFailedQ.rows[0].c,
-      gift: giftQ.rows[0].c,
-      donate: donateQ.rows[0].c,
-      revenue: revenueQ.rows[0].total,
-      todayRevenue: todayRevenueQ.rows[0].total,
-    },
-    series: {
-      daily: salesDailyQ.rows,
-      weekly: salesWeeklyQ.rows,
-      monthly: salesMonthlyQ.rows,
-    },
-    paidBookDetails: paidBookDetailsQ.rows,
-    contestStats: contestStatsQ.rows.map((r: any) => ({
-      ...r,
-      not_submitted: Math.max(0, Number(r.registrations) - Number(r.submitted)),
-    })),
-  });
+    return res.redirect(
+      `${backTo}${joiner}okMsg=${encodeURIComponent(
+        `Assigned ${updateQ.rowCount || 0} booking(s) to ${targetAgent.name} (${targetAgent.phone}).`
+      )}`
+    );
+  } catch (e: any) {
+    await client.query("ROLLBACK");
+    return res.redirect(
+      `${backTo}${joiner}errMsg=${encodeURIComponent(
+        e?.message || "Failed to assign selected bookings."
+      )}`
+    );
+  } finally {
+    client.release();
+  }
 });
 
 export default router;

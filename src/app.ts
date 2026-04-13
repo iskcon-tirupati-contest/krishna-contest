@@ -21,6 +21,8 @@ import cors from "cors";
 
 import agentRoutes from "./routes/agent";
 
+//CAMPAIGN IMPORT
+import campaignPaymentRouter from "./routes/campaignPayment";
 
 dotenv.config();
 
@@ -36,7 +38,7 @@ app.use(
     contentSecurityPolicy: false,
   })
 );
-
+app.use("/tmp", express.static(path.join(process.cwd(), "tmp")));
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === "production" ? 600 : 2000,
@@ -71,6 +73,8 @@ app.use("/forgot-password/reset", sensitiveLimiter);
 /* Middleware */
 // Razorpay webhooks need the raw body for signature verification
 app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }));
+app.use("/payment/campaign/ramayana/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -146,9 +150,13 @@ app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
 app.use("/", agentRoutes);
+
+//CAMPAIGN ROUTES
+//app.use("/payment/campaign/ramayana/webhook", express.raw({ type: "application/json" }));
+app.use(campaignPaymentRouter);
 /* Pages */
 
-//app.get("/", (_req, res) => res.render("index"));
+
 
 app.get("/", async (_req, res) => {
   const contestsRes = await pool.query(`

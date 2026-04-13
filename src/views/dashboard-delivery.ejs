@@ -10,6 +10,7 @@
       --navy:#1a237e;--navy-mid:#283593;--navy-lt:#3949ab;--navy-ghost:#eef2ff;
       --green:#10b981;--green-lt:#d1fae5;--green-dark:#065f46;
       --amber:#f59e0b;--amber-lt:#fef3c7;--amber-dark:#92400e;
+      --rose:#ef4444;--rose-lt:#fee2e2;--rose-dark:#991b1b;
       --bg:#eef1fb;--surface:#fff;--border:#c5cae9;--border-lt:#e8eaf6;
       --text-h:#0f172a;--text-b:#1e293b;--text-mid:#334155;--text-muted:#64748b;--text-faint:#94a3b8;
       --sh-sm:0 4px 12px rgba(26,35,126,.08);--sh-md:0 8px 24px rgba(26,35,126,.11);
@@ -32,7 +33,14 @@
     .iconBtn{position:relative;width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.13);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .16s,transform .12s}
     .iconBtn:hover{background:rgba(255,255,255,.22)}.iconBtn:active{transform:scale(.93)}
     .iconBtn svg{width:20px;height:20px;fill:currentColor}.iconBtn.danger svg{fill:#fca5a5}
-    @media(max-width:420px){.topbarInner{min-height:62px;padding:8px 12px 11px;gap:8px}.topbar-logo-wrap{width:38px;height:38px}.topbar-title-line1{font-size:clamp(13px,3.8vw,16px)}.topbar-title-line2{font-size:clamp(9px,2.6vw,11px)}.iconBtn{width:38px;height:38px}.iconBtn svg{width:18px;height:18px}}
+    @media(max-width:420px){
+      .topbarInner{min-height:62px;padding:8px 12px 11px;gap:8px}
+      .topbar-logo-wrap{width:38px;height:38px}
+      .topbar-title-line1{font-size:clamp(13px,3.8vw,16px)}
+      .topbar-title-line2{font-size:clamp(9px,2.6vw,11px)}
+      .iconBtn{width:38px;height:38px}
+      .iconBtn svg{width:18px;height:18px}
+    }
 
     .page{padding:14px 12px 24px}
     .hero{background:linear-gradient(135deg,#eef4ff 0%,#fff 60%,#fff8e6 100%);border:1.5px solid #d8e0f8;border-radius:24px;padding:16px;box-shadow:var(--sh-sm);margin-bottom:14px}
@@ -41,7 +49,6 @@
 
     .grid{display:grid;gap:12px}
 
-    /* delivery card */
     .deliveryCard{
       background:#fff;border:1.5px solid var(--border-lt);border-radius:20px;
       box-shadow:var(--sh-sm);overflow:hidden;
@@ -59,24 +66,52 @@
 
     .statusBadge{
       display:inline-flex;align-items:center;gap:5px;
-      padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;
+      padding:6px 11px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;
     }
     .status-processing{background:var(--navy-ghost);color:var(--navy);border:1px solid var(--border)}
     .status-dispatched{background:var(--amber-lt);color:var(--amber-dark);border:1px solid #fde68a}
     .status-delivered{background:var(--green-lt);color:var(--green-dark);border:1px solid #a7f3d0}
+    .status-returned{background:var(--rose-lt);color:var(--rose-dark);border:1px solid #fecaca}
 
     .cardBody{padding:13px 16px;display:grid;gap:10px}
 
-    /* tracking timeline */
     .trackRow{display:flex;gap:12px;align-items:flex-start}
-    .trackDot{width:32px;height:32px;border-radius:10px;background:var(--navy-ghost);display:grid;place-items:center;font-size:14px;flex-shrink:0;margin-top:1px}
-    .trackInfo{}
+    .trackDot{
+      width:32px;height:32px;border-radius:10px;background:var(--navy-ghost);
+      display:grid;place-items:center;font-size:14px;flex-shrink:0;margin-top:1px
+    }
+    .trackInfo{flex:1;min-width:0}
     .trackLabel{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
-    .trackVal{font-size:14px;font-weight:600;color:var(--text-b)}
-    .trackVal.mono{font-family:'Sora',sans-serif;font-size:13px}
+    .trackVal{font-size:14px;font-weight:600;color:var(--text-b);line-height:1.45}
+    .trackVal.mono{font-family:'Sora',sans-serif;font-size:13px;word-break:break-word}
     .trackVal.faint{color:var(--text-faint);font-weight:400;font-size:13px}
 
     .divider{height:1px;background:var(--border-lt)}
+
+    .trackActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .copyBtn,.trackLinkBtn{
+      appearance:none;border:none;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;
+      padding:8px 12px;border-radius:999px;
+      font-size:12px;font-weight:700;line-height:1;
+      transition:transform .12s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .copyBtn{
+      color:#1a237e;
+      background:linear-gradient(135deg,#eef2ff,#e0e7ff);
+      border:1px solid #c7d2fe;
+      box-shadow:0 4px 12px rgba(26,35,126,.08);
+    }
+    .copyBtn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(26,35,126,.12)}
+    .copyBtn:active{transform:scale(.97)}
+    .trackLinkBtn{
+      color:#92400e;
+      background:linear-gradient(135deg,#fff7ed,#fffbeb);
+      border:1px solid #fed7aa;
+      box-shadow:0 4px 12px rgba(245,158,11,.08);
+    }
+    .trackLinkBtn:hover{transform:translateY(-1px)}
+    .noteText{font-size:12px;line-height:1.55;color:var(--text-muted);margin-top:4px}
 
     .emptyCard{background:#fff;border:1.5px dashed var(--border);border-radius:20px;padding:28px 16px;text-align:center;color:var(--text-muted)}
     .emptyCard .emptyIcon{font-size:40px;margin-bottom:10px}
@@ -130,27 +165,66 @@
       <p>Track your home delivery shipment or see the status of books to be collected directly from the temple.</p>
     </section>
 
-    <% if(!shipments||shipments.length===0){ %>
+    <% if(!shipments || shipments.length === 0){ %>
       <div class="emptyCard">
         <div class="emptyIcon">📭</div>
         <div class="emptyTitle">No Delivery Records Found</div>
         <div class="emptyText">No shipment or temple-pickup record is available yet for your paid gift-book orders. Donation orders will not appear here.</div>
       </div>
-    <% }else{ %>
+    <% } else { %>
       <div class="grid">
-        <% shipments.forEach(s=>{ %>
+        <% shipments.forEach(s => { %>
           <%
-            const st = String(s.status || 'Processing').toLowerCase();
-            const mode = String(s.delivery_mode || 'home_delivery').toLowerCase();
+            const st = String(s.status || 'pending').trim().toLowerCase();
+            const mode = String(s.delivery_mode || 'home_delivery').trim().toLowerCase();
+            const normalizedTrackingId = String(s.tracking_id || '').trim();
 
             let statusClass = 'status-processing';
-            if (st.includes('dispatch') || st.includes('ship')) statusClass = 'status-dispatched';
-            else if (st.includes('deliver')) statusClass = 'status-delivered';
+            if (st === 'dispatched') statusClass = 'status-dispatched';
+            else if (st === 'delivered' || st === 'handed_over') statusClass = 'status-delivered';
+            else if (st === 'returned') statusClass = 'status-returned';
 
-            const modeLabel = mode === 'temple_pickup'
-              ? 'Temple Pickup'
-              : 'Home Delivery';
+            const modeLabel = mode === 'temple_pickup' ? 'Temple Pickup' : 'Home Delivery';
+
+            const deliveryTimeMap = {
+              home_delivery: {
+                pending: 'Expected delivery within 10 to 15 days.',
+                under_packing: 'Expected delivery within 10 to 12 days.',
+                packed: 'Expected delivery within 7 to 10 days.',
+                dispatched: 'Expected delivery within 5 to 7 days.',
+                delivered: 'Delivery completed successfully.',
+                returned: 'Returned shipment is being reprocessed. It may take around 10 to 15 days.',
+                handed_over: 'Successfully handed over.'
+              },
+              temple_pickup: {
+                pending: 'Please collect your books directly from the temple.',
+                handed_over: 'Pickup completed successfully.'
+              }
+            };
+
+            const deliveryTimeText =
+              (deliveryTimeMap[mode] && deliveryTimeMap[mode][st]) ||
+              'Status updated. Please check again shortly.';
+
+            const courierLabel =
+              mode === 'temple_pickup'
+                ? (st === 'handed_over' ? 'Collected from temple' : 'Awaiting temple pickup')
+                : (String(s.courier_mode || '').trim() || 'India Post');
+
+            const showTrackingId = mode === 'home_delivery' && st === 'dispatched' && !!normalizedTrackingId;
+            const showTrackingLink = mode === 'home_delivery';
+            const trackingLink = 'https://www.indiapost.gov.in/';
+
+            const displayStatus = String(s.status || 'pending')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, ch => ch.toUpperCase());
+
+            let statusIcon = '⏳';
+            if (st === 'dispatched') statusIcon = '🚚';
+            else if (st === 'delivered' || st === 'handed_over') statusIcon = '✅';
+            else if (st === 'returned') statusIcon = '↩️';
           %>
+
           <div class="deliveryCard">
             <div class="cardHeader">
               <div>
@@ -158,10 +232,10 @@
                 <div style="margin-top:6px;font-size:12px;color:var(--text-muted);font-weight:700;"><%= modeLabel %></div>
               </div>
               <span class="statusBadge <%= statusClass %>">
-                <% if(statusClass==='status-delivered'){%>✓<%}else if(statusClass==='status-dispatched'){%>🚚<%}else{%>⏳<%}%>
-                <%= s.status||'Processing' %>
+                <%= statusIcon %> <%= displayStatus %>
               </span>
             </div>
+
             <div class="cardBody">
               <div class="trackRow">
                 <div class="trackDot"><%= mode === 'temple_pickup' ? '🏛️' : '🚛' %></div>
@@ -177,21 +251,61 @@
                 <div class="trackDot"><%= mode === 'temple_pickup' ? '📍' : '🚚' %></div>
                 <div class="trackInfo">
                   <div class="trackLabel"><%= mode === 'temple_pickup' ? 'Pickup Status' : 'Courier' %></div>
-                  <div class="trackVal <%= !s.courier_mode ? 'faint' : '' %>">
-                    <%= s.courier_mode || (mode === 'temple_pickup' ? 'Awaiting temple handover' : 'To be assigned') %>
-                  </div>
+                  <div class="trackVal"><%= courierLabel %></div>
+                  <% if (mode === 'temple_pickup' && st === 'pending') { %>
+                    <div class="noteText">Your books are ready for temple collection once handover is completed by our team.</div>
+                  <% } %>
                 </div>
               </div>
+
+              <% if (showTrackingId) { %>
+                <div class="divider"></div>
+
+                <div class="trackRow">
+                  <div class="trackDot">🔍</div>
+                  <div class="trackInfo">
+                    <div class="trackLabel">Tracking ID</div>
+                    <div class="trackVal mono"><%= normalizedTrackingId %></div>
+                    <div class="trackActions">
+                      <button
+                        type="button"
+                        class="copyBtn js-copy-track"
+                        data-track-id="<%- normalizedTrackingId %>">
+                        📋 Copy ID
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+
+              <% if (showTrackingLink) { %>
+                <div class="divider"></div>
+
+                <div class="trackRow">
+                  <div class="trackDot">🌐</div>
+                  <div class="trackInfo">
+                    <div class="trackLabel">India Post Tracking</div>
+                    <div class="trackVal">Use the official India Post website to track your shipment status.</div>
+                    <div class="trackActions">
+                      <a
+                        class="trackLinkBtn"
+                        href="<%= trackingLink %>"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        Open India Post
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
 
               <div class="divider"></div>
 
               <div class="trackRow">
-                <div class="trackDot">🔍</div>
+                <div class="trackDot">⏱️</div>
                 <div class="trackInfo">
-                  <div class="trackLabel"><%= mode === 'temple_pickup' ? 'Reference' : 'Tracking ID' %></div>
-                  <div class="trackVal mono <%= !s.tracking_id ? 'faint' : '' %>">
-                    <%= s.tracking_id || (mode === 'temple_pickup' ? 'No tracking needed' : 'Not generated yet') %>
-                  </div>
+                  <div class="trackLabel"><%= mode === 'temple_pickup' ? 'Pickup Note' : 'Delivery Time' %></div>
+                  <div class="trackVal"><%= deliveryTimeText %></div>
                 </div>
               </div>
 
@@ -201,7 +315,9 @@
                 <div class="trackDot">🕐</div>
                 <div class="trackInfo">
                   <div class="trackLabel">Last Updated</div>
-                  <div class="trackVal <%= !s.updated_at ? 'faint' : '' %>"><%= s.updated_at ? new Date(s.updated_at).toDateString() : '-' %></div>
+                  <div class="trackVal <%= !s.updated_at ? 'faint' : '' %>">
+                    <%= s.updated_at ? new Date(s.updated_at).toDateString() : '-' %>
+                  </div>
                 </div>
               </div>
             </div>
@@ -221,5 +337,30 @@
     </div>
   </nav>
 </div>
+
+<script>
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.js-copy-track');
+    if (!btn) return;
+
+    const value = (btn.getAttribute('data-track-id') || '').trim();
+    if (!value) return;
+
+    const originalText = btn.textContent;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      btn.textContent = '✅ Copied';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 1600);
+    } catch (_err) {
+      btn.textContent = '❌ Copy failed';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 1600);
+    }
+  });
+</script>
 </body>
 </html>

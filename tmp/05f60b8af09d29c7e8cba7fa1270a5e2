@@ -1,0 +1,7 @@
+SHIPMENT_ID,PAYMENT_ID,USER_ID,USER_NAME,EMAIL,PHONE,CONTEST_TITLES,REGULAR_BOOKS_WITH_LANGUAGE,BONUS_BOOKS_WITH_LANGUAGE,ALL_BOOKS_WITH_LANGUAGE,ADDRESS,CITY,STATE,PINCODE,TRACKING_ID,COURIER_MODE,DELIVERY_MODE,STATUS
+"ffa2b0dc-86b2-44b6-96ee-79cecf57f76d","KNCBWPICEOK","22fced85-b471-46a2-902f-60b831113e4a","Kattika Udayalakshmi","","9704538232","Ramayana Essay Writing Contest","Ramayana-Telugu","","Ramayana-Telugu","C/O Bank of Baroda Gandhi chowk branch bandlamudi vari Street tenali","TENALI","ANDHRA PRADESH","522201","RN483743431","","home_delivery","packed"
+"ff7fa71e-9fc7-47da-9dca-105adfcae98d","KNCOJ2G8ZWE","477e3b9f-a0c8-4680-96db-a52236cb05ad","Keesara nagamani","","8096261296","Ramayana Essay Writing Contest","Ramayana-Telugu","","Ramayana-Telugu","6_95
+Reddy's bajar
+Anupalem
+Sattenapalli","Pidugurala","Andrapradesh","522413","RN483743432","india_post","home_delivery","packed"
+"fcfd19f7-a22b-4c33-a65a-48856967fa6d","KNC2S10SDS3","acd51d22-da06-4a14-9023-3686ff59cda3","Uppu Rakesh","","9000259438","Bhagavad Gita Essay Writing Contest","Bhagavad Gita-Telugu","","Bhagavad Gita-Telugu","0-00,golla street, Arasada(V),Vangara(M),vizianagaram(D), Andrapradesh,532122","Arasada","Andrapradesh","532122","RN483743435","","home_delivery","packed"

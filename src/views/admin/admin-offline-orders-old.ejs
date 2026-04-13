@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Offline Orders</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --card:#121c39;
+      --card2:#18254c;
+      --text:#eef2ff;
+      --muted:#9fb0d9;
+      --gold:#ffd166;
+      --gold2:#f59e0b;
+      --cyan:#22d3ee;
+      --border:rgba(255,255,255,.10);
+      --soft:rgba(255,255,255,.05);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:linear-gradient(180deg,#0a1022,#0b1224 40%,#0b1328);
+      color:var(--text);
+    }
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{
+      width:260px;
+      background:#0a1022;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:18px;
+      flex-shrink:0;
+    }
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      color:rgba(255,255,255,.85);
+      margin-bottom:8px;
+    }
+    .nav a.active{
+      background:rgba(26,60,255,.18);
+      border:1px solid rgba(26,60,255,.35);
+      color:#fff;
+    }
+
+    .content{flex:1;min-width:0}
+    .wrap{max-width:1450px;margin:26px auto;padding:0 18px}
+
+    .card{
+      background:linear-gradient(145deg,var(--card),var(--card2));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:0 10px 25px rgba(0,0,0,.28);
+    }
+
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+    .stat{
+      background:linear-gradient(145deg,#0d1530,#162247);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 6px 20px rgba(0,0,0,.18);
+    }
+
+    .muted{color:var(--muted)}
+    h1,h2,h3{margin:0 0 8px 0}
+    h2,h3{color:var(--gold);letter-spacing:.3px}
+
+    input,select{
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.18);
+      background:#0d1530;
+      color:#fff;
+      outline:none;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-block;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#111;
+      box-shadow:0 8px 20px rgba(245,158,11,.22);
+    }
+    .btn.ghost{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:none;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:14px;
+    }
+    thead{background:rgba(255,255,255,.04)}
+    th{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      text-align:left;
+      vertical-align:top;
+      color:var(--gold);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+    td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    tbody tr:hover{background:rgba(255,255,255,.03)}
+
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(255,209,102,.12);
+      color:var(--gold);
+      font-size:12px;
+      border:1px solid rgba(255,209,102,.18);
+    }
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .two-col{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    .report-note{
+      background:rgba(34,211,238,.08);
+      border:1px solid rgba(34,211,238,.18);
+      color:#d8fbff;
+      border-radius:12px;
+      padding:10px 12px;
+      margin-top:12px;
+      font-size:13px;
+    }
+
+    .mobile-topbar{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:1200;
+      padding:12px 14px;
+      background:#0a1022;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .mobile-title{font-weight:900}
+    .menu-btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#1a3cff;
+      color:#fff;
+    }
+
+    .sidebar-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:1198;
+    }
+
+    .screen-only{display:block}
+    .print-only{display:none}
+
+    @media (max-width:1100px){
+      .grid,.stats,.two-col{grid-template-columns:repeat(2,1fr)}
+      .mobile-topbar{display:flex !important}
+      .sidebar{
+        position:fixed;
+        left:0;
+        top:0;
+        bottom:0;
+        z-index:1199;
+        transform:translateX(-100%);
+        transition:transform .22s ease;
+        box-shadow:0 10px 30px rgba(0,0,0,.35);
+        overflow:auto;
+      }
+      body.menu-open .sidebar{transform:translateX(0)}
+      body.menu-open .sidebar-backdrop{display:block}
+      .wrap{margin:18px auto;padding:0 14px}
+    }
+
+    @media (max-width:700px){
+      .grid,.stats,.two-col{grid-template-columns:1fr}
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+
+      body{
+        background:#fff !important;
+        color:#000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .mobile-topbar,
+      .sidebar,
+      .sidebar-backdrop,
+      .screen-only,
+      .btn,
+      form,
+      .nav,
+      .card:not(.print-sheet){
+        display:none !important;
+      }
+
+      .layout,
+      .content,
+      .wrap{
+        display:block !important;
+        margin:0 !important;
+        padding:0 !important;
+        max-width:none !important;
+        min-width:0 !important;
+      }
+
+      .print-only{display:block !important}
+
+      .print-sheet{
+        display:block !important;
+        background:#fff !important;
+        color:#000 !important;
+        border:none !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      .page-break{
+        break-before: page;
+        page-break-before: always;
+      }
+
+      .stock-sheet{
+        border:2px solid #8a5a2b;
+        padding:10px 12px 12px;
+      }
+
+      .stock-title{
+        text-align:center;
+        color:#8b1e1e;
+        font-weight:800;
+        font-size:24px;
+        text-transform:uppercase;
+        margin-bottom:2px;
+      }
+
+      .stock-subtitle{
+        text-align:center;
+        color:#8b1e1e;
+        font-weight:800;
+        font-size:18px;
+        text-transform:uppercase;
+        text-decoration:underline;
+        margin-bottom:12px;
+      }
+
+      .stock-meta{
+        display:flex;
+        justify-content:space-between;
+        gap:14px;
+        font-size:14px;
+        margin-bottom:8px;
+      }
+
+      .stock-table,
+      .mini-summary,
+      .agent-table{
+        width:100%;
+        border-collapse:collapse;
+      }
+
+      .stock-table th,
+      .stock-table td,
+      .mini-summary th,
+      .mini-summary td,
+      .agent-table th,
+      .agent-table td{
+        border:1px solid #8a5a2b;
+        color:#000 !important;
+        padding:6px 8px;
+        font-size:12px;
+        vertical-align:top;
+      }
+
+      .stock-table th,
+      .mini-summary th,
+      .agent-table th{
+        font-weight:700;
+        text-transform:uppercase;
+      }
+
+      .stock-table td:nth-child(1),
+      .stock-table td:nth-child(4),
+      .stock-table td:nth-child(5),
+      .stock-table td:nth-child(6){
+        text-align:center;
+        white-space:nowrap;
+      }
+
+      .stock-bottom{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-end;
+        gap:14px;
+        margin-top:10px;
+      }
+
+      .mini-summary{
+        width:auto;
+        min-width:55%;
+      }
+
+      .mini-summary td,
+      .mini-summary th{
+        text-align:center;
+      }
+
+      .money-summary{
+        min-width:28%;
+        font-size:15px;
+        line-height:1.8;
+      }
+
+      .money-summary .grand{
+        font-size:18px;
+        font-weight:800;
+      }
+
+      .agent-sheet{
+        padding-top:4px;
+      }
+
+      .agent-title{
+        text-align:center;
+        color:#111;
+        font-weight:800;
+        font-size:22px;
+        text-transform:uppercase;
+        margin-bottom:2px;
+      }
+
+      .agent-subtitle{
+        text-align:center;
+        font-size:15px;
+        margin-bottom:10px;
+      }
+
+      .agent-meta{
+        display:flex;
+        justify-content:space-between;
+        gap:14px;
+        margin-bottom:10px;
+        font-size:13px;
+      }
+
+      .agent-table th,
+      .agent-table td{
+        border-color:#444;
+      }
+
+      .agent-table td:nth-child(1),
+      .agent-table td:nth-child(5){
+        white-space:nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+<%
+  const selectedAgent = (byAgent && byAgent.length === 1) ? byAgent[0] : null;
+  const fileAgentName = selectedAgent && selectedAgent.agent_name ? String(selectedAgent.agent_name).trim() : "offline-report";
+  const fileDate = filters.dateFrom || filters.dateTo || "report";
+  const regularBookSummary = (bookSummary || []).filter(function(r){ return r.book_kind === 'regular'; });
+  const bonusBookSummary = (bookSummary || []).filter(function(r){ return r.book_kind === 'bonus'; });
+  const stockRows = (bookSummary || []).map(function(r){
+    return {
+      display_book_title: r.book_kind === 'bonus' ? ((r.book_title || 'Book') + ' (Bonus)') : (r.book_title || 'Book'),
+      book_language: r.book_language || '-',
+      qty: r.qty || 0
+    };
+  });
+%>
+
+<div class="mobile-topbar">
+  <button type="button" class="menu-btn" onclick="toggleAdminMenu()">☰ Menu</button>
+  <div class="mobile-title">Admin Panel</div>
+</div>
+
+<div class="sidebar-backdrop" onclick="closeAdminMenu()"></div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Admin Panel</div>
+    <div class="nav">
+      <a href="/admin">Overview</a>
+      <a href="/admin/user360">View User</a>
+      <a href="/admin/users">All Users</a>
+      <a href="/admin/feedback">All Feedback</a>
+      <a href="/admin/shipment-stock">Current Book Stock</a>
+      <a href="/admin/shipments">Online Shipments</a>
+      <a href="/admin/orders">Online Orders</a>
+      <a href="/admin/submissions">Online Submissions</a>
+      <a href="/admin/contests">Online Contests</a>
+      <a href="/admin/offline-dashboard">Offline Overview</a>
+      <a href="/admin/offline-orders" class="active">Offline Orders</a>
+      <a href="/admin/agents">Offline Agents</a>
+      <a href="/admin/payments/reconcile-bulk">Razorpay Reconcile</a>
+      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="wrap">
+
+      <div class="card screen-only">
+        <h1 style="margin:0 0 6px 0">Offline Orders</h1>
+        <div class="muted">Bookings created through agents only</div>
+
+        <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+
+        <form method="GET" action="/admin/offline-orders">
+          <div class="grid">
+            <div>
+              <div class="muted" style="margin-bottom:6px">Search</div>
+              <input type="text" name="q" value="<%= filters.q %>" placeholder="Agent / customer / phone / AGT id">
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">Status</div>
+              <select name="status">
+                <option value="all" <%= filters.status==='all' ? 'selected' : '' %>>All</option>
+                <option value="draft" <%= filters.status==='draft' ? 'selected' : '' %>>Draft</option>
+                <option value="checkout_pending" <%= filters.status==='checkout_pending' ? 'selected' : '' %>>Checkout Pending</option>
+                <option value="paid" <%= filters.status==='paid' ? 'selected' : '' %>>Paid</option>
+              </select>
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">Payment Method</div>
+              <select name="payment_method">
+                <option value="all" <%= filters.paymentMethod==='all' ? 'selected' : '' %>>All</option>
+                <option value="cash" <%= filters.paymentMethod==='cash' ? 'selected' : '' %>>Cash</option>
+                <option value="phonepe" <%= filters.paymentMethod==='phonepe' ? 'selected' : '' %>>PhonePe</option>
+              </select>
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">From</div>
+              <input type="date" name="date_from" value="<%= filters.dateFrom %>">
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">To</div>
+              <input type="date" name="date_to" value="<%= filters.dateTo %>">
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <button class="btn" type="submit">Apply</button>
+            <a class="btn ghost" href="/admin/offline-orders">Reset</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="stats screen-only">
+        <div class="stat"><div class="muted">Total Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.total_bookings %></div></div>
+        <div class="stat"><div class="muted">Paid Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.paid_count %></div></div>
+        <div class="stat"><div class="muted">Paid Amount</div><div style="font-size:28px;font-weight:900">₹<%= summary.paid_amount %></div></div>
+        <div class="stat"><div class="muted">Checkout Pending</div><div style="font-size:28px;font-weight:900"><%= summary.checkout_pending_count %></div></div>
+        <div class="stat"><div class="muted">Refunded</div><div style="font-size:28px;font-weight:900"><%= summary.refunded_count %></div></div>
+      </div>
+
+      <div class="card screen-only">
+        <h2 style="margin-top:0">Agent Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Bookings</th>
+              <th>Paid Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% byAgent.forEach(function(r){ %>
+              <tr>
+                <td>
+                  <div><strong><%= r.agent_name %></strong></div>
+                  <div class="muted"><%= r.agent_phone || '-' %></div>
+                </td>
+                <td><%= r.bookings %></td>
+                <td>₹<%= r.paid_amount %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card screen-only">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2 style="margin:0 0 6px 0">Daily Sales Report</h2>
+            <div class="muted">Use Agent + Paid + Date for best results</div>
+          </div>
+          <button type="button" class="btn ghost" onclick="window.print()">Print Report</button>
+        </div>
+
+        <div class="report-note">
+          Print Report will generate both copies together: first the stock department copy, then a fresh next page for the agent copy.
+        </div>
+
+        <div class="stats" style="margin-top:14px">
+          <div class="stat">
+            <div class="muted">Paid Bookings</div>
+            <div style="font-size:28px;font-weight:900;color:var(--cyan)"><%= reportSummary.paid_bookings || 0 %></div>
+          </div>
+          <div class="stat">
+            <div class="muted">Total Books</div>
+            <div style="font-size:28px;font-weight:900;color:var(--cyan)"><%= totalBooks || 0 %></div>
+          </div>
+          <div class="stat">
+            <div class="muted">Total Amount</div>
+            <div style="font-size:28px;font-weight:900;color:var(--cyan)">₹<%= reportSummary.total_paid_amount || 0 %></div>
+          </div>
+          <div class="stat">
+            <div class="muted">Cash</div>
+            <div style="font-size:28px;font-weight:900;color:var(--cyan)">₹<%= reportSummary.cash_amount || 0 %></div>
+          </div>
+          <div class="stat">
+            <div class="muted">PhonePe</div>
+            <div style="font-size:28px;font-weight:900;color:var(--cyan)">₹<%= reportSummary.phonepe_amount || 0 %></div>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:18px">
+          <div>
+            <h3 style="margin:0 0 10px 0">Books Summary</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Book</th>
+                  <th>Language</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if ((bookSummary || []).length === 0) { %>
+                  <tr><td colspan="4" class="muted">No paid rows for selected filters</td></tr>
+                <% } %>
+                <% (bookSummary || []).forEach(function(r){ %>
+                  <tr>
+                    <td><span class="pill"><%= r.book_kind %></span></td>
+                    <td><%= r.book_title %></td>
+                    <td><%= r.book_language %></td>
+                    <td><strong><%= r.qty %></strong></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3 style="margin:0 0 10px 0">Quick Split</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Rows</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Regular Books</td>
+                  <td><%= regularBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Bonus Books</td>
+                  <td><%= bonusBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Paid Rows</td>
+                  <td><%= (printRows || []).length %></td>
+                </tr>
+                <tr>
+                  <td>Total Books</td>
+                  <td><%= totalBooks || 0 %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <h3 style="margin:0 0 10px 0">Booking-wise Report</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Customer</th>
+                <th>Payment</th>
+                <th>Books</th>
+                <th>Contests</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if ((printRows || []).length === 0) { %>
+                <tr><td colspan="6" class="muted">No rows found</td></tr>
+              <% } %>
+              <% (printRows || []).forEach(function(r){ %>
+                <tr>
+                  <td><%= r.created_at || '-' %></td>
+                  <td>
+                    <div><strong><%= r.customer_name %></strong></div>
+                    <div class="muted"><%= r.customer_phone || '-' %></div>
+                  </td>
+                  <td>
+                    <div><span class="pill"><%= r.payment_method || '-' %></span></div>
+                    <div class="muted" style="margin-top:6px"><%= r.payment_id || '-' %></div>
+                  </td>
+                  <td><%= r.books_with_language || '-' %></td>
+                  <td><%= r.contest_titles || '-' %></td>
+                  <td>₹<%= r.total_amount %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card screen-only">
+        <h2 style="margin-top:0">Offline Booking Rows</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Agent</th>
+              <th>Customer</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Delivery</th>
+              <th>Amount</th>
+              <th>Contests</th>
+              <th>Refund</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach(function(r){ %>
+              <tr>
+                <td><%= r.created_at %></td>
+                <td>
+                  <div><strong><%= r.agent_name %></strong></div>
+                  <div class="muted"><%= r.agent_phone || '-' %></div>
+                </td>
+                <td>
+                  <div><strong><%= r.customer_name %></strong></div>
+                  <div class="muted"><%= r.customer_phone || '-' %></div>
+                </td>
+                <td>
+                  <div><span class="pill"><%= r.payment_method || '-' %></span></div>
+                  <div style="margin-top:6px"><%= r.payment_id || '-' %></div>
+                </td>
+                <td><span class="pill"><%= r.status %></span></td>
+                <td><%= r.delivery_mode || '-' %></td>
+                <td>₹<%= r.total_amount %></td>
+                <td><%= r.contest_titles || '-' %></td>
+                <td>
+                  <% if (r.is_refunded) { %>
+                    <div><span class="pill">Refunded</span></div>
+                    <div class="muted" style="margin-top:6px"><%= r.refund_note || '' %></div>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+
+             <div class="two-col" style="margin-top:18px">
+          <div>
+            <h3 style="margin:0 0 10px 0">Books Summary</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Book</th>
+                  <th>Language</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if ((bookSummary || []).length === 0) { %>
+                  <tr><td colspan="4" class="muted">No paid rows for selected filters</td></tr>
+                <% } %>
+                <% (bookSummary || []).forEach(function(r){ %>
+                  <tr>
+                    <td><span class="pill"><%= r.book_kind %></span></td>
+                    <td><%= r.book_title %></td>
+                    <td><%= r.book_language %></td>
+                    <td><strong><%= r.qty %></strong></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3 style="margin:0 0 10px 0">Quick Split</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Rows</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Regular Books</td>
+                  <td><%= regularBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Bonus Books</td>
+                  <td><%= bonusBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Paid Rows</td>
+                  <td><%= (printRows || []).length %></td>
+                </tr>
+                <tr>
+                  <td>Total Books</td>
+                  <td><%= totalBooks || 0 %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <h3 style="margin:0 0 10px 0">Booking-wise Report</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Customer</th>
+                <th>Payment</th>
+                <th>Books</th>
+                <th>Contests</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if ((printRows || []).length === 0) { %>
+                <tr><td colspan="6" class="muted">No rows found</td></tr>
+              <% } %>
+              <% (printRows || []).forEach(function(r){ %>
+                <tr>
+                  <td><%= r.created_at || '-' %></td>
+                  <td>
+                    <div><strong><%= r.customer_name %></strong></div>
+                    <div class="muted"><%= r.customer_phone || '-' %></div>
+                  </td>
+                  <td>
+                    <div><span class="pill"><%= r.payment_method || '-' %></span></div>
+                    <div class="muted" style="margin-top:6px"><%= r.payment_id || '-' %></div>
+                  </td>
+                  <td><%= r.books_with_language || '-' %></td>
+                  <td><%= r.contest_titles || '-' %></td>
+                  <td>₹<%= r.total_amount %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- PRINT: STOCK COPY -->
+      <div class="print-sheet print-only stock-sheet">
+        <div class="stock-title">HARE KRISHNA</div>
+        <div class="stock-subtitle">DAILY SALE DETAILS FOR BOOKS</div>
+
+        <div class="stock-meta">
+          <div><strong>Stall Name :</strong> ____________________</div>
+          <div><strong>Date :</strong> <%= filters.dateFrom || filters.dateTo || '-' %></div>
+        </div>
+
+        <div class="stock-meta">
+          <div><strong>Name :</strong> ____________________</div>
+          <div><strong>HSN CODE :</strong> __________</div>
+        </div>
+
+        <table class="stock-table" style="margin-top:10px">
+          <thead>
+            <tr>
+              <th>Sl.No</th>
+              <th>Book Name</th>
+              <th>Language</th>
+              <th>Qty</th>
+              <th>QR Code</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let i = 0; i < Math.max(stockRows.length, 20); i++) {
+                 const r = stockRows[i];
+            %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td><%= r ? r.display_book_title : '' %></td>
+                <td><%= r ? r.book_language : '' %></td>
+                <td><%= r ? r.qty : '' %></td>
+                <td></td>
+                <td></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <div class="stock-bottom">
+          <table class="mini-summary">
+            <tr>
+              <th>M.B</th>
+              <th>BIG</th>
+              <th>MEDIUM</th>
+              <th>SMALL</th>
+              <th>TOTAL BOOKS</th>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td><%= totalBooks || 0 %></td>
+            </tr>
+          </table>
+
+          <div class="money-summary">
+            <div><strong>Cash :</strong> ₹<%= reportSummary.cash_amount || 0 %></div>
+            <div><strong>Phone Pay :</strong> ₹<%= reportSummary.phonepe_amount || 0 %></div>
+            <div class="grand"><strong>Total :</strong> ₹<%= reportSummary.total_paid_amount || 0 %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRINT: AGENT COPY -->
+      <div class="print-sheet print-only agent-sheet page-break">
+        <div class="agent-title">HARE KRISHNA</div>
+        <div class="agent-subtitle">Agent Daily Sales Copy</div>
+
+        <div class="agent-meta">
+          <div><strong>Agent:</strong> <%= selectedAgent ? selectedAgent.agent_name : (filters.q || '-') %></div>
+          <div><strong>Phone:</strong> <%= selectedAgent ? (selectedAgent.agent_phone || '-') : '-' %></div>
+          <div><strong>Date:</strong> <%= filters.dateFrom || filters.dateTo || '-' %></div>
+          <div><strong>Total:</strong> ₹<%= reportSummary.total_paid_amount || 0 %></div>
+        </div>
+
+        <table class="agent-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Time</th>
+              <th>Customer</th>
+              <th>Contests</th>
+              <th>Books</th>
+              <th>Payment</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (printRows || []).forEach(function(r, i){ %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td><%= r.created_at || '-' %></td>
+                <td>
+                  <div><strong><%= r.customer_name || '-' %></strong></div>
+                  <div><%= r.customer_phone || '-' %></div>
+                </td>
+                <td><%= r.contest_titles || '-' %></td>
+                <td><%= r.books_with_language || '-' %></td>
+                <td>
+                  <div><%= r.payment_method || '-' %></div>
+                  <div><%= r.payment_id || '-' %></div>
+                </td>
+                <td>₹<%= r.total_amount || 0 %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+
+        <div style="margin-top:12px;font-size:13px;">
+          <strong>Summary:</strong>
+          Paid Bookings: <%= reportSummary.paid_bookings || 0 %> |
+          Total Books: <%= totalBooks || 0 %> |
+          Cash: ₹<%= reportSummary.cash_amount || 0 %> |
+          PhonePe: ₹<%= reportSummary.phonepe_amount || 0 %> |
+          Total: ₹<%= reportSummary.total_paid_amount || 0 %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  function toggleAdminMenu() {
+    document.body.classList.toggle("menu-open");
+  }
+
+  function closeAdminMenu() {
+    document.body.classList.remove("menu-open");
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeAdminMenu();
+  });
+
+  (function () {
+    var agentName = "<%= String(fileAgentName || 'offline-report') %>";
+    var reportDate = "<%= String(fileDate || 'report') %>";
+    var safeAgent = agentName.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
+    var safeDate = reportDate.replace(/[^0-9\-]+/g, "-");
+    document.title = (safeAgent || "offline-report") + "-" + (safeDate || "report");
+  })();
+</script>
+</body>
+</html>

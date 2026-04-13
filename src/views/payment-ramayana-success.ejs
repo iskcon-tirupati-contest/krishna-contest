@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Successful</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --navy:#1a237e;--navy-mid:#283593;--navy-light:#3949ab;--accent:#5c6bc0;
+      --gold:#f59e0b;--gold-light:#fef3c7;--gold-dark:#92400e;
+      --green:#10b981;--green-light:#d1fae5;--green-dark:#065f46;
+      --sky:#e8eaf6;--slate:#f1f5f9;--border:#c5cae9;
+      --text-dark:#0f172a;--text-mid:#334155;--text-muted:#64748b;--white:#ffffff;
+      --shadow:0 20px 60px rgba(26,35,126,.13);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:linear-gradient(160deg,#e8eaf6 0%,#f1f5f9 60%,#dde3f8 100%);min-height:100vh;padding:28px 18px 90px;color:var(--text-dark)}
+    .wrap{max-width:780px;margin:0 auto;background:var(--white);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(197,202,233,.5)}
+    .top{padding:32px 28px 26px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 55%,var(--navy-light) 100%);color:var(--white);position:relative;overflow:hidden}
+    .success-icon-wrap{width:64px;height:64px;margin-bottom:16px;position:relative}
+    .success-circle{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 12px rgba(16,185,129,.2)}
+    .success-circle svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+    .top h1{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;margin-bottom:5px}
+    .top-sub{font-size:14px;color:rgba(255,255,255,.82);margin-bottom:18px;line-height:1.5}
+    .id-row{display:flex;flex-wrap:wrap;gap:8px}
+    .id-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 14px;font-size:12px;font-family:'Sora',sans-serif;font-weight:600}
+    .id-chip span{opacity:.7;font-weight:400;margin-right:6px}
+    .content{padding:20px;display:flex;flex-direction:column;gap:14px}
+    .guide-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:20px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
+    .guide-icon{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;color:#fff}
+    .guide-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#065f46;margin-bottom:8px}
+    .guide-steps{display:flex;flex-direction:column;gap:6px}
+    .guide-step{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#047857;font-weight:500}
+    .guide-step-num{width:20px;height:20px;border-radius:6px;background:#10b981;color:#fff;font-family:'Sora',sans-serif;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .box{border-radius:20px;padding:18px 20px;border:1.5px solid var(--border);background:var(--white)}
+    .box-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:12px}
+    .item{border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.8);border:1px solid #c5cae9;margin-bottom:10px}
+    .item:last-child{margin-bottom:0}
+    .item-num{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;background:var(--navy);color:#fff}
+    .item-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--navy)}
+    .item-sub{font-size:12px;margin-top:3px;color:var(--accent)}
+    .muted{font-size:14px;color:var(--text-mid);line-height:1.8}
+    .muted b{color:var(--text-dark);font-weight:600}
+    .detail-grid{display:grid;gap:10px;margin-top:4px}
+    .detail-row{display:flex;gap:10px;align-items:baseline}
+    .detail-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;min-width:110px;flex-shrink:0}
+    .detail-val{font-size:14px;font-weight:600;color:var(--text-dark)}
+    .btnRow{display:flex;gap:12px;flex-wrap:wrap;padding:4px 20px 24px}
+    .btn{display:inline-flex;align-items:center;gap:7px;border-radius:14px;padding:13px 22px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;text-decoration:none}
+    .primary{background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff}
+    .ghost{background:var(--white);border:1.5px solid var(--border);color:var(--text-dark)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="success-icon-wrap">
+      <div class="success-circle">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+    </div>
+    <h1>Payment Successful! 🎉</h1>
+    <div class="top-sub">Your Ramayana Essay Writing Contest registration is confirmed.</div>
+    <div class="id-row">
+      <div class="id-chip"><span>Order ID</span><%= paymentId %></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="guide-banner">
+      <div class="guide-icon">📋</div>
+      <div>
+        <div class="guide-title">What to do next?</div>
+        <div class="guide-steps">
+          <div class="guide-step"><span class="guide-step-num">1</span>Login using OTP with your registered mobile number</div>
+          <div class="guide-step"><span class="guide-step-num">2</span>Go to Profile and reset your password</div>
+          <div class="guide-step"><span class="guide-step-num">3</span>Open My Contests and upload your essay before deadline</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Registered Contest</div>
+      <% (orders||[]).forEach((o, idx) => { %>
+        <div class="item">
+          <div class="item-num"><%= idx + 1 %></div>
+          <div>
+            <div class="item-title"><%= o.contest_title %></div>
+            <div class="item-sub">Amount: ₹<%= Number(o.amount || 0) %> · Age Category: <%= o.age_category === 'above-25' ? 'Above 25 years' : '0–25 years' %></div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Book & Delivery Details</div>
+      <div class="detail-grid">
+        <div class="detail-row">
+          <div class="detail-label">Participant</div>
+          <div class="detail-val"><%= user?.name || 'Participant' %></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Mobile</div>
+          <div class="detail-val"><%= user?.phone || '-' %></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Delivery Mode</div>
+          <div class="detail-val"><%= shipment?.delivery_mode === 'temple_pickup' ? 'Temple Pickup' : 'Home Delivery' %></div>
+        </div>
+
+        <% (shipmentItems||[]).forEach((it, idx) => { %>
+          <div class="detail-row">
+            <div class="detail-label"><%= idx === 0 ? 'Book' : 'Book ' + (idx+1) %></div>
+            <div class="detail-val"><%= it.book_title %> - <%= it.book_language %></div>
+          </div>
+        <% }) %>
+
+        <% if (shipment?.delivery_mode === 'home_delivery') { %>
+          <div class="detail-row">
+            <div class="detail-label">Address</div>
+            <div class="detail-val">
+              <%= shipment?.address || '' %>,
+              <%= shipment?.city || '' %>,
+              <%= shipment?.state || '' %> - <%= shipment?.pincode || '' %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="btnRow">
+    <a class="btn primary" href="/login">Login with OTP</a>
+    <a class="btn ghost" href="/">Back to Home</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Shipments</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#0b1224;
+      --card:#121933;
+      --card2:#182245;
+      --card3:#0d1430;
+      --text:#eef2ff;
+      --muted:#aab3d6;
+      --line:#2a376b;
+      --line2:rgba(120,145,255,.18);
+      --blue:#4f7cff;
+      --blue2:#2447b6;
+      --green:#22c55e;
+      --green2:#059669;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --amber2:#d97706;
+      --violet:#8b5cf6;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Segoe UI,Tahoma,Verdana,sans-serif;
+      background:linear-gradient(180deg,#081020 0%, #0b1224 100%);
+      color:var(--text);
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{
+      width:260px;
+      background:#0a1022;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:18px;
+    }
+    .brand{font-weight:900;margin-bottom:18px}
+    .nav a{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      color:rgba(255,255,255,.85);
+      margin-bottom:8px;
+    }
+    .nav a.active{
+      background:rgba(26,60,255,.18);
+      border:1px solid rgba(26,60,255,.35);
+      color:#fff;
+    }
+
+    .content{flex:1;min-width:0}
+    .wrap{max-width:1450px;margin:26px auto;padding:0 18px}
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title h1{margin:0;font-size:32px;line-height:1.05}
+    .title p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:760px;line-height:1.6}
+
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top right, rgba(79,124,255,.14), transparent 24%),
+        radial-gradient(circle at left bottom, rgba(34,197,94,.08), transparent 20%);
+      pointer-events:none;
+    }
+
+    .inline-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+
+    input,select,button{
+      font:inherit;
+    }
+
+    input[type="text"], input[type="date"], input[type="file"], select{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#0d1430;
+      color:var(--text);
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    input[type="text"]:focus, input[type="date"]:focus, input[type="file"]:focus, select:focus{
+      border-color:rgba(103,138,255,.8);
+      box-shadow:0 0 0 4px rgba(79,124,255,.12);
+    }
+
+    input[type="file"]{
+      padding:10px 12px;
+    }
+
+
+.workflow-grid-5{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+
+.status-card.pending-card{
+  border-color:rgba(245,158,11,.28);
+}
+.status-card.packing-card{
+  border-color:rgba(96,165,250,.28);
+}
+.status-card.packed-card{
+  border-color:rgba(59,130,246,.28);
+}
+.status-card.dispatched-card{
+  border-color:rgba(34,197,94,.28);
+}
+.status-card.returned-card{
+  border-color:rgba(239,68,68,.28);
+}
+.status-card.delivered-card{
+  border-color:rgba(16,185,129,.28);
+}
+
+.status-card h3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+@media (max-width:1600px){
+  .workflow-grid-5{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media (max-width:1200px){
+  .workflow-grid-5{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media (max-width:760px){
+  .workflow-grid-5{
+    grid-template-columns:1fr;
+  }
+}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:11px 16px;
+      border-radius:14px;
+      border:1px solid transparent;
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+      font-weight:900;
+      transition:transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:linear-gradient(180deg,var(--blue),var(--blue2));
+      color:#fff;
+      box-shadow:0 10px 24px rgba(79,124,255,.28);
+    }
+    .btn.ghost{
+      background:#111936;
+      border-color:var(--line);
+      color:var(--text);
+    }
+    .btn.warn{
+      background:linear-gradient(180deg,#f7b733,var(--amber));
+      color:#fff;
+      box-shadow:0 10px 24px rgba(245,158,11,.28);
+    }
+    .btn.green{
+      background:linear-gradient(180deg,#34d399,var(--green2));
+      color:#fff;
+      box-shadow:0 10px 24px rgba(16,185,129,.26);
+    }
+    .btn.refresh{
+      background:linear-gradient(180deg,#7c8cff,#4f5dde);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(92,104,240,.22);
+    }
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .alerts-stack{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .msg{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid transparent;
+      font-size:14px;
+      line-height:1.55;
+    }
+    .msg.success{
+      background:rgba(34,197,94,.15);
+      border-color:rgba(34,197,94,.35);
+    }
+    .msg.info{
+      background:rgba(59,130,246,.15);
+      border-color:rgba(59,130,246,.35);
+    }
+    .msg.error{
+      background:rgba(239,68,68,.15);
+      border-color:rgba(239,68,68,.35);
+    }
+    .msg-body{
+      flex:1;
+      min-width:0;
+    }
+    .msg-close{
+      border:none;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border-radius:10px;
+      width:32px;
+      height:32px;
+      cursor:pointer;
+      font-size:18px;
+      line-height:1;
+      flex-shrink:0;
+    }
+    .msg-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .stack{display:grid;gap:8px}
+
+    .tabbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .tabbtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:11px 16px;
+      border-radius:999px;
+      border:1px solid rgba(120,145,255,.18);
+      background:#0c1430;
+      color:#dbe5ff;
+      font-weight:900;
+      cursor:pointer;
+      transition:all .16s ease;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .tabbtn:hover{
+      border-color:rgba(120,145,255,.35);
+      transform:translateY(-1px);
+    }
+    .tabbtn.active{
+      color:#fff;
+      background:linear-gradient(180deg,#2957ff,#183da8);
+      border-color:rgba(120,145,255,.55);
+      box-shadow:0 12px 28px rgba(41,87,255,.28);
+    }
+
+    .tabpanel{display:none}
+    .tabpanel.active{display:block}
+
+    .filter-card{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(18,25,51,.98), rgba(13,20,48,.98));
+      border:1px solid rgba(120,145,255,.18);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .filter-card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top right, rgba(79,124,255,.12), transparent 28%);
+      pointer-events:none;
+    }
+
+    .filter-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+      position:relative;
+      z-index:1;
+    }
+    .filter-head h2{
+      margin:0;
+      font-size:20px;
+    }
+    .filter-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      max-width:720px;
+      line-height:1.6;
+    }
+
+    .filter-grid{
+      display:grid;
+      grid-template-columns:2fr 1.15fr 1.15fr 1fr auto auto;
+      gap:12px;
+      align-items:end;
+      position:relative;
+      z-index:1;
+    }
+
+    .filter-grid.temple{
+      grid-template-columns:2fr 1.1fr 1fr 1fr auto auto;
+    }
+
+    .filter-grid.alltab{
+      grid-template-columns:2fr 1.2fr 1.2fr 1fr 1fr auto auto;
+    }
+
+    .button-stack{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:end;
+    }
+
+    .counts-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+      margin:16px 0 18px;
+    }
+
+    .count-card{
+      background:linear-gradient(180deg, rgba(14,22,52,.95), rgba(10,18,40,.98));
+      border:1px solid var(--line2);
+      border-radius:20px;
+      padding:16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .count-card:before{
+      content:"";
+      position:absolute;
+      top:-30px;
+      right:-25px;
+      width:90px;
+      height:90px;
+      border-radius:50%;
+      background:rgba(79,124,255,.12);
+    }
+    .count-label{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      font-weight:800;
+    }
+    .count-value{
+      font-size:30px;
+      font-weight:900;
+      line-height:1;
+      margin-top:10px;
+    }
+    .count-sub{
+      font-size:12px;
+      color:#dbe5ff;
+      opacity:.82;
+      margin-top:8px;
+    }
+
+    .workflow-grid{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:12px;
+      margin-top:8px;
+      align-items:stretch;
+    }
+    .workflow-card{
+      background:linear-gradient(180deg, rgba(17,25,54,.96), rgba(10,16,37,.98));
+      border:1px solid rgba(110,140,255,.20);
+      border-radius:22px;
+      padding:14px;
+      box-shadow:0 14px 32px rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+      min-width:0;
+    }
+    .workflow-card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top right, rgba(79,124,255,.14), transparent 42%);
+      pointer-events:none;
+    }
+    .workflow-card h3{
+      margin:0 0 12px;
+      font-size:17px;
+      font-weight:900;
+      position:relative;
+      z-index:1;
+    }
+    .workflow-card p,
+    .workflow-note{
+      display:none !important;
+    }
+    .workflow-row{
+      display:grid;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .action-box{
+      display:grid;
+      gap:8px;
+      padding:10px;
+      border-radius:18px;
+      border:1px solid rgba(120,145,255,.16);
+      background:rgba(7,12,30,.42);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .action-box.download-box{
+      background:linear-gradient(180deg, rgba(255,214,103,.14), rgba(245,158,11,.08));
+      border-color:rgba(245,158,11,.22);
+    }
+    .action-box.csv-box{
+      background:linear-gradient(180deg, rgba(92,134,255,.15), rgba(44,85,215,.09));
+      border-color:rgba(92,134,255,.24);
+    }
+    .action-box.bulk-box{
+      background:linear-gradient(180deg, rgba(155,140,255,.16), rgba(109,76,255,.09));
+      border-color:rgba(139,92,246,.24);
+    }
+    .action-box.return-box{
+      background:linear-gradient(180deg, rgba(255,139,139,.16), rgba(239,68,68,.10));
+      border-color:rgba(239,68,68,.24);
+    }
+    .workflow-file{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(115,137,222,.26);
+      background:#0b1430;
+      color:var(--text);
+      font-size:13px;
+    }
+    .workflow-file::file-selector-button{
+      border:none;
+      margin-right:10px;
+      padding:8px 11px;
+      border-radius:10px;
+      background:linear-gradient(180deg,#24408d,#1a2f6a);
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .action-btn{
+      width:100%;
+      min-height:48px;
+      padding:10px 12px;
+      border-radius:14px;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.2;
+      text-align:center;
+      white-space:normal;
+      box-shadow:0 10px 20px rgba(0,0,0,.16);
+    }
+    .action-btn .icon{
+      font-size:15px;
+      line-height:1;
+    }
+    .download-btn{
+      background:linear-gradient(180deg,#ffd667,#f59e0b);
+      color:#1f2937;
+      box-shadow:0 10px 22px rgba(245,158,11,.22);
+    }
+    .csv-btn{
+      background:linear-gradient(180deg,#6c92ff,#355fe0);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(79,124,255,.22);
+    }
+    .bulk-btn{
+      background:linear-gradient(180deg,#9f8fff,#7553ff);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(117,83,255,.22);
+    }
+    .return-btn{
+      background:linear-gradient(180deg,#ff8d8d,#ef4444);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(239,68,68,.22);
+    }
+
+
+    .tablewrap{
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid var(--line);
+      margin-top:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1250px;
+      background:rgba(7,11,24,.35);
+    }
+    th,td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:top;
+      text-align:left;
+    }
+    th{
+      position:sticky;
+      top:0;
+      background:#121a38;
+      z-index:1;
+      font-size:13px;
+      color:#dbe5ff;
+    }
+    tr:hover td{
+      background:rgba(255,255,255,.02);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 11px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.1);
+      background:#0f1734;
+      color:#dbe5ff;
+      text-transform:capitalize;
+      font-weight:800;
+    }
+    .pill.pending{border-color:rgba(245,158,11,.35); color:#fde68a}
+    .pill.under_packing{border-color:rgba(96,165,250,.35); color:#bfdbfe}
+    .pill.packed{border-color:rgba(59,130,246,.35); color:#bfdbfe}
+    .pill.dispatched{border-color:rgba(34,197,94,.35); color:#bbf7d0}
+    .pill.delivered{border-color:rgba(16,185,129,.35); color:#a7f3d0}
+    .pill.handed_over{border-color:rgba(168,85,247,.35); color:#e9d5ff}
+    .pill.returned{border-color:rgba(239,68,68,.35); color:#fecaca}
+    .pill.failed{border-color:rgba(239,68,68,.35); color:#fecaca}
+
+    .checkcell{
+      width:42px;
+      text-align:center;
+    }
+
+    .update-form{
+      display:grid;
+      gap:8px;
+      min-width:250px;
+    }
+
+    .empty{
+      text-align:center;
+      padding:28px;
+      color:var(--muted);
+    }
+
+    .pagination-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(9,14,34,.55);
+      border:1px solid rgba(120,145,255,.14);
+    }
+    .pagination-meta{
+      color:var(--muted);
+      font-size:13px;
+    }
+    .pagination-links{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .page-link{
+      min-width:40px;
+      height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 12px;
+      border-radius:12px;
+      background:#111936;
+      border:1px solid var(--line);
+      color:#e8eeff;
+      font-weight:800;
+    }
+    .page-link.active{
+      background:linear-gradient(180deg,var(--blue),var(--blue2));
+      border-color:transparent;
+    }
+
+    .mobile-topbar{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:1200;
+      padding:12px 14px;
+      background:#0a1022;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .mobile-title{font-weight:900}
+    .menu-btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#1a3cff;
+      color:#fff;
+    }
+    .sidebar-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:1198;
+    }
+
+    .modal-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(4,10,26,.72);
+      backdrop-filter:blur(4px);
+      z-index:2500;
+      padding:18px;
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-backdrop.show{
+      display:flex;
+    }
+    .modal{
+      width:min(560px, 100%);
+      background:linear-gradient(180deg,#111a39,#0d1430);
+      border:1px solid rgba(120,145,255,.24);
+      border-radius:24px;
+      box-shadow:0 24px 80px rgba(0,0,0,.42);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding:18px 20px 0 20px;
+    }
+    .modal-head h3{
+      margin:0;
+      font-size:24px;
+    }
+    .modal-body{
+      padding:14px 20px 0 20px;
+      color:#dce7ff;
+      line-height:1.7;
+      font-size:14px;
+    }
+    .modal-note{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce7ff;
+      font-size:13px;
+    }
+    .modal-actions{
+      padding:18px 20px 20px 20px;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width:1280px){
+      .filter-grid,.filter-grid.temple,.filter-grid.alltab{
+        grid-template-columns:repeat(2, minmax(220px,1fr));
+      }
+      .button-stack{
+        grid-column:1 / -1;
+      }
+    }
+
+    @media (max-width:1100px){
+      .mobile-topbar{display:flex !important}
+      .sidebar{
+        position:fixed;
+        left:0;
+        top:0;
+        bottom:0;
+        z-index:1199;
+        transform:translateX(-100%);
+        transition:transform .22s ease;
+        box-shadow:0 10px 30px rgba(0,0,0,.35);
+        overflow:auto;
+        flex-shrink:0;
+      }
+      body.menu-open .sidebar{transform:translateX(0)}
+      body.menu-open .sidebar-backdrop{display:block}
+      .wrap{margin:18px auto;padding:0 14px}
+      .workflow-grid{
+        grid-template-columns:1fr;
+      }
+      .counts-grid{
+        grid-template-columns:repeat(2,minmax(160px,1fr));
+      }
+    }
+
+    @media (max-width:700px){
+      .filter-grid,.filter-grid.temple,.filter-grid.alltab{
+        grid-template-columns:1fr;
+      }
+      .counts-grid{
+        grid-template-columns:1fr;
+      }
+      .title h1{font-size:28px}
+      .tabbar{gap:8px}
+      .tabbtn{width:100%;justify-content:center}
+      .pagination-bar{
+        align-items:flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<%
+  const currentPage = Number(page || 1);
+  const pagesTotal = Number(totalPages || 1);
+  const totalCountValue = Number(totalCount || 0);
+  const pageSizeValue = Number(pageSize || 10);
+
+  const activeTab =
+    selectedTab ||
+    ((filters && filters.deliveryMode === 'temple_pickup') ? 'temple' :
+    (filters && filters.deliveryMode === 'all') ? 'all' :
+    'home');
+
+  const shipmentTabStatsSafe = shipmentTabStats || {
+    home: {},
+    temple: {},
+    all: {}
+  };
+
+  const homeStats = shipmentTabStatsSafe.home || {};
+  const templeStats = shipmentTabStatsSafe.temple || {};
+  const allStats = shipmentTabStatsSafe.all || {};
+
+  function pageHref(pageNo, forcedMode) {
+    const params = new URLSearchParams();
+    params.set('q', (filters && filters.q) || '');
+    params.set('delivery_mode', forcedMode || (filters && filters.deliveryMode) || 'home_delivery');
+    params.set('status', (filters && filters.status) || 'all');
+    params.set('date_from', (filters && filters.dateFrom) || '');
+    params.set('date_to', (filters && filters.dateTo) || '');
+    params.set('page', String(pageNo));
+    return '/admin/shipments?' + params.toString();
+  }
+%>
+
+<div class="mobile-topbar">
+  <button type="button" class="menu-btn" onclick="toggleAdminMenu()">☰ Menu</button>
+  <div class="mobile-title">Admin Panel</div>
+</div>
+
+<div class="sidebar-backdrop" onclick="closeAdminMenu()"></div>
+
+<div class="modal-backdrop" id="actionModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="actionModalTitle">Confirm action</h3>
+    </div>
+    <div class="modal-body">
+      <div id="actionModalText"></div>
+      <div id="actionModalNote" class="modal-note" style="display:none;"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn ghost" onclick="hideActionModal()">Cancel</button>
+      <button type="button" class="btn primary" id="actionModalConfirmBtn">Proceed</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="resultModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="resultModalTitle">Shipment update completed</h3>
+    </div>
+    <div class="modal-body">
+      <div id="resultModalText"></div>
+      <div id="resultModalStats" class="modal-note" style="display:none;"></div>
+      <div id="resultModalActions" class="msg-actions" style="margin-top:14px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn primary" onclick="hideResultModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Admin Panel</div>
+    <div class="nav">
+      <a href="/admin">Overview</a>
+      <a href="/admin/user360">View User</a>
+      <a href="/admin/users">All Users</a>
+      <a href="/admin/feedback">All Feedback</a>
+      <a href="/admin/shipment-stock">Current Book Stock</a>
+      <a href="/admin/shipments" class="active">Online Shipments</a>
+      <a href="/admin/orders">Online Orders</a>
+      <a href="/admin/submissions">Online Submissions</a>
+      <a href="/admin/contests">Online Contests</a>
+      <a href="/admin/offline-dashboard">Offline Overview</a>
+      <a href="/admin/offline-orders">Offline Orders</a>
+      <a href="/admin/agents">Offline Agents</a>
+      <a href="/admin/payments/reconcile-bulk">Razorpay Reconcile</a>
+      <a href="/logout" style="margin-top:14px;opacity:.9">Logout</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="title">
+          <h1>Admin Shipments</h1>
+
+
+          <div class="alerts-stack" id="alertsStack">
+            <% if (imported) { %>
+              <div class="msg info" data-alert>
+                <div class="msg-body">
+                  India Post result imported. Rows processed: <strong><%= imported %></strong>
+                </div>
+                <button type="button" class="msg-close" onclick="closeAlert(this)">×</button>
+              </div>
+            <% } %>
+
+            <% if (okMsg) { %>
+              <div class="msg success" data-alert>
+                <div class="msg-body"><%= okMsg %></div>
+                <button type="button" class="msg-close" onclick="closeAlert(this)">×</button>
+              </div>
+            <% } %>
+
+            <% if (errorMsg) { %>
+              <div class="msg error" data-alert>
+                <div class="msg-body"><%= errorMsg %></div>
+                <button type="button" class="msg-close" onclick="closeAlert(this)">×</button>
+              </div>
+            <% } %>
+
+            <% if (rejectedFile) { %>
+              <div class="msg info" data-alert>
+                <div class="msg-body">
+                  Rejected file is ready for review.
+                  <div class="msg-actions">
+                    <a class="btn ghost" href="/tmp/<%= rejectedFile %>" target="_blank" rel="noopener noreferrer">
+                      Download rejected file
+                    </a>
+                  </div>
+                </div>
+                <button type="button" class="msg-close" onclick="closeAlert(this)">×</button>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="inline-actions">
+          <a class="btn ghost" href="/admin">Overview</a>
+          <button type="button" class="btn refresh" onclick="window.location.reload()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="card hero-card">
+        <div class="tabbar" id="shipmentsTabs">
+          <button type="button" class="tabbtn <%= activeTab === 'home' ? 'active' : '' %>" data-tab="home">
+            🚚 Home Delivery
+          </button>
+          <button type="button" class="tabbtn <%= activeTab === 'temple' ? 'active' : '' %>" data-tab="temple">
+            🛕 Temple Pickup
+          </button>
+          <button type="button" class="tabbtn <%= activeTab === 'all' ? 'active' : '' %>" data-tab="all">
+            📦 All Shipments
+          </button>
+        </div>
+
+        <!-- HOME DELIVERY TAB -->
+        <section class="tabpanel <%= activeTab === 'home' ? 'active' : '' %>" data-panel="home">
+          <div class="filter-card">
+            <div class="filter-head">
+              <div>
+                <h2>Home Delivery Shipments</h2>
+              </div>
+            </div>
+
+            <form id="homeFiltersForm" method="GET" action="/admin/shipments">
+              <input type="hidden" name="delivery_mode" value="home_delivery" />
+              <div class="filter-grid">
+                <div>
+                  <label for="home_q">Search by name or mobile</label>
+                  <input id="home_q" name="q" type="text" value="<%= activeTab === 'home' ? (filters.q || '') : '' %>" placeholder="Search by name or phone" />
+                </div>
+
+                <div>
+                  <label for="home_status">Shipment status</label>
+                  <select id="home_status" name="status">
+                    <option value="all" <%= activeTab === 'home' && filters.status==='all' ? 'selected' : '' %>>All</option>
+                    <option value="pending" <%= activeTab === 'home' && filters.status==='pending' ? 'selected' : '' %>>Pending</option>
+                    <option value="under_packing" <%= activeTab === 'home' && filters.status==='under_packing' ? 'selected' : '' %>>Under Packing</option>
+                    <option value="packed" <%= activeTab === 'home' && filters.status==='packed' ? 'selected' : '' %>>Packed</option>
+                    <option value="dispatched" <%= activeTab === 'home' && filters.status==='dispatched' ? 'selected' : '' %>>Dispatched</option>
+                    <option value="delivered" <%= activeTab === 'home' && filters.status==='delivered' ? 'selected' : '' %>>Delivered</option>
+                    <option value="returned" <%= activeTab === 'home' && filters.status==='returned' ? 'selected' : '' %>>Returned</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="home_date_from">From date</label>
+                  <input id="home_date_from" name="date_from" type="date" value="<%= activeTab === 'home' ? (filters.dateFrom || '') : '' %>" />
+                </div>
+
+                <div>
+                  <label for="home_date_to">To date</label>
+                  <input id="home_date_to" name="date_to" type="date" value="<%= activeTab === 'home' ? (filters.dateTo || '') : '' %>" />
+                </div>
+
+                <div class="button-stack">
+                  <a class="btn ghost" href="/admin/shipments?delivery_mode=home_delivery&status=all&page=1">Reset</a>
+                  <button class="btn primary" type="submit">Apply</button>
+                </div>
+
+                <div class="button-stack">
+                  <button type="button" class="btn refresh" onclick="refreshCurrentTab('home')">Refresh</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="counts-grid">
+            <div class="count-card">
+              <div class="count-label">Pending</div>
+              <div class="count-value"><%= homeStats.pending || 0 %></div>
+              <div class="count-sub">Waiting for packing action</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Under Packing</div>
+              <div class="count-value"><%= homeStats.under_packing || 0 %></div>
+              <div class="count-sub">Tracking assigned and being packed</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Packed</div>
+              <div class="count-value"><%= homeStats.packed || 0 %></div>
+              <div class="count-sub">Ready for India Post handoff</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Dispatched</div>
+              <div class="count-value"><%= homeStats.dispatched || 0 %></div>
+              <div class="count-sub">Shipped from your side</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Delivered</div>
+              <div class="count-value"><%= homeStats.delivered || 0 %></div>
+              <div class="count-sub">Reached the participant</div>
+            </div>
+
+        <div class="count-card">
+  <div class="count-label">Returned</div>
+  <div class="count-value"><%= homeStats.returned || 0 %></div>
+  <div class="count-sub">Courier returned shipments</div>
+                </div>
+          </div>
+
+          <div class="workflow-grid workflow-grid-5">
+            <!-- PENDING -->
+            <div class="workflow-card status-card pending-card">
+              <h3>Pending</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-pending',
+                      actionLabel:'Download Pending',
+                      changeLabel:'This will download all currently filtered pending home-delivery shipments. No status will be changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/bulk-upload-status"
+                  enctype="multipart/form-data"
+                  class="action-box csv-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Pending → Under Packing',
+                    processingText:'Validating pending rows, checking blank tracking ids, checking duplicate tracking ids, and moving only valid rows to under packing...',
+                    successTitle:'Pending Excel Update Completed'
+                  })"
+                >
+                  <input type="hidden" name="from_status" value="pending" />
+                  <input type="hidden" name="to_status" value="under_packing" />
+                  <input type="hidden" name="delivery_mode" value="home_delivery" />
+                  <button class="btn action-btn csv-btn" type="submit">
+
+                    <span>Move to Under Packing</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="status_file" accept=".xlsx,.xls" required />
+                </form>
+              </div>
+            </div>
+
+            <!-- UNDER PACKING -->
+            <div class="workflow-card status-card packing-card">
+              <h3>Under Packing</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-status?status=under_packing',
+                      actionLabel:'Download Under Packing',
+                      changeLabel:'This downloads the currently filtered under packing rows only. No status is changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/upload-packed"
+                  enctype="multipart/form-data"
+                  class="action-box csv-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Under Packing → Packed',
+                    processingText:'Checking current status, tracking id match, and Packed or Not column before moving valid rows to packed...',
+                    successTitle:'Packed Excel Update Completed'
+                  })"
+                >
+                  <button class="btn action-btn csv-btn" type="submit">
+
+                    <span>Move to Packed (Excel)</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="packed_file" accept=".xlsx,.xls" required />
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/bulk-advance-status"
+                  class="action-box bulk-box"
+                  onsubmit="return confirmBulkAdvance(this, {
+                    title:'Bulk Update Under Packing → Packed',
+                    html:'All currently filtered <strong>under packing</strong> home-delivery shipments will be moved to <strong>Packed</strong>.<br><br>Use this only when your team has completed packing for the current batch.',
+                    confirmText:'Move All'
+                  })"
+                >
+                  <input type="hidden" name="from_status" value="under_packing" />
+                  <input type="hidden" name="to_status" value="packed" />
+                  <input type="hidden" name="delivery_mode" value="home_delivery" />
+                  <input type="hidden" name="q" value="<%= activeTab === 'home' ? (filters.q || '') : '' %>" />
+                  <input type="hidden" name="date_from" value="<%= activeTab === 'home' ? (filters.dateFrom || '') : '' %>" />
+                  <input type="hidden" name="date_to" value="<%= activeTab === 'home' ? (filters.dateTo || '') : '' %>" />
+                  <button class="btn action-btn bulk-btn" type="submit">
+                    <span class="icon">⚡</span>
+                    <span>Move All to Packed</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- PACKED -->
+            <div class="workflow-card status-card packed-card">
+              <h3>Packed</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-packed',
+                      actionLabel:'Download Packed',
+                      changeLabel:'This downloads the currently filtered packed rows only. No status is changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/upload-dispatched"
+                  enctype="multipart/form-data"
+                  class="action-box csv-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Packed → Dispatched',
+                    processingText:'Validating packed rows, tracking ids, duplicates and overlaps before dispatch update...',
+                    successTitle:'Dispatch Excel Update Completed'
+                  })"
+                >
+                  <button class="btn action-btn csv-btn" type="submit">
+
+                    <span>Move to Dispatched (Excel)</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="dispatched_file" accept=".xlsx,.xls" required />
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/bulk-advance-status"
+                  class="action-box bulk-box"
+                  onsubmit="return confirmBulkAdvance(this, {
+                    title:'Bulk Update Packed → Dispatched',
+                    html:'All currently filtered <strong>packed</strong> home-delivery shipments will be moved to <strong>Dispatched</strong>.<br><br>Please use this only after courier handoff is confirmed.',
+                    confirmText:'Move All'
+                  })"
+                >
+                  <input type="hidden" name="from_status" value="packed" />
+                  <input type="hidden" name="to_status" value="dispatched" />
+                  <input type="hidden" name="delivery_mode" value="home_delivery" />
+                  <input type="hidden" name="q" value="<%= activeTab === 'home' ? (filters.q || '') : '' %>" />
+                  <input type="hidden" name="date_from" value="<%= activeTab === 'home' ? (filters.dateFrom || '') : '' %>" />
+                  <input type="hidden" name="date_to" value="<%= activeTab === 'home' ? (filters.dateTo || '') : '' %>" />
+                  <button class="btn action-btn bulk-btn" type="submit">
+                    <span class="icon">⚡</span>
+                    <span>Move All to Dispatched</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- DISPATCHED -->
+            <div class="workflow-card status-card dispatched-card">
+              <h3>Dispatched</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-status?status=dispatched',
+                      actionLabel:'Download Dispatched',
+                      changeLabel:'This downloads the currently filtered dispatched rows only. No status is changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/upload-delivered"
+                  enctype="multipart/form-data"
+                  class="action-box csv-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Dispatched → Delivered',
+                    processingText:'Checking current status, tracking id match, and Delivered or Not column before moving valid rows to delivered...',
+                    successTitle:'Delivered Excel Update Completed'
+                  })"
+                >
+                  <button class="btn action-btn csv-btn" type="submit">
+
+                    <span>Move to Delivered (Excel)</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="delivered_file" accept=".xlsx,.xls" required />
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/bulk-advance-status"
+                  class="action-box bulk-box"
+                  onsubmit="return confirmBulkAdvance(this, {
+                    title:'Bulk Update Dispatched → Delivered',
+                    html:'All currently filtered <strong>dispatched</strong> home-delivery shipments will be moved to <strong>Delivered</strong>.<br><br>Use this only when delivery has been externally confirmed.',
+                    confirmText:'Mark Delivered'
+                  })"
+                >
+                  <input type="hidden" name="from_status" value="dispatched" />
+                  <input type="hidden" name="to_status" value="delivered" />
+                  <input type="hidden" name="delivery_mode" value="home_delivery" />
+                  <input type="hidden" name="q" value="<%= activeTab === 'home' ? (filters.q || '') : '' %>" />
+                  <input type="hidden" name="date_from" value="<%= activeTab === 'home' ? (filters.dateFrom || '') : '' %>" />
+                  <input type="hidden" name="date_to" value="<%= activeTab === 'home' ? (filters.dateTo || '') : '' %>" />
+                  <button class="btn action-btn bulk-btn" type="submit">
+                    <span class="icon">⚡</span>
+                    <span>Move All to Delivered</span>
+                  </button>
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/upload-returned"
+                  enctype="multipart/form-data"
+                  class="action-box return-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Dispatched → Returned',
+                    processingText:'Reading TRACKING_ID rows and moving only valid dispatched shipments to returned...',
+                    successTitle:'Returned Upload Completed'
+                  })"
+                >
+                  <button class="btn action-btn return-btn" type="submit">
+                    <span class="icon">↩</span>
+                    <span>Move to Returned</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="returned_file" accept=".xlsx,.xls" required />
+                </form>
+              </div>
+            </div>
+
+            <!-- DELIVERED -->
+            <div class="workflow-card status-card delivered-card">
+              <h3>Delivered</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-status?status=delivered',
+                      actionLabel:'Download Delivered',
+                      changeLabel:'This downloads the currently filtered delivered rows only. No status is changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+
+                    <span>Download</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- RETURNED -->
+            <div class="workflow-card status-card returned-card">
+              <h3>Returned</h3>
+              <div class="workflow-row">
+                <div class="action-box download-box">
+                  <button
+                    type="button"
+                    class="btn action-btn download-btn"
+                    onclick="confirmShipmentDownload({
+                      formId:'homeFiltersForm',
+                      endpoint:'/admin/shipments/download-status?status=returned',
+                      actionLabel:'Download Returned',
+                      changeLabel:'This downloads the currently filtered returned rows only. No status is changed.',
+                      confirmText:'Download'
+                    })"
+                  >
+
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/upload-returned-restart"
+                  enctype="multipart/form-data"
+                  class="action-box csv-box"
+                  onsubmit="return submitShipmentExcelWithModal(this, {
+                    title:'Returned → Pending',
+                    processingText:'Checking returned rows, tracking ids, and Start Again column before reopening valid rows back to pending...',
+                    successTitle:'Returned Restart Update Completed'
+                  })"
+                >
+                  <button class="btn action-btn csv-btn" type="submit">
+
+                    <span>Move to Pending (Excel)</span>
+                  </button>
+                  <input class="workflow-file" type="file" name="returned_restart_file" accept=".xlsx,.xls" required />
+                </form>
+
+                <form
+                  method="POST"
+                  action="/admin/shipments/bulk-advance-status"
+                  class="action-box bulk-box"
+                  onsubmit="return confirmBulkAdvance(this, {
+                    title:'Bulk Update Returned → Pending',
+                    html:'All currently filtered <strong>returned</strong> home-delivery shipments will be moved back to <strong>Pending</strong>.<br><br>This reopens them for fresh processing.',
+                    confirmText:'Reopen All'
+                  })"
+                >
+                  <input type="hidden" name="from_status" value="returned" />
+                  <input type="hidden" name="to_status" value="pending" />
+                  <input type="hidden" name="delivery_mode" value="home_delivery" />
+                  <input type="hidden" name="q" value="<%= activeTab === 'home' ? (filters.q || '') : '' %>" />
+                  <input type="hidden" name="date_from" value="<%= activeTab === 'home' ? (filters.dateFrom || '') : '' %>" />
+                  <input type="hidden" name="date_to" value="<%= activeTab === 'home' ? (filters.dateTo || '') : '' %>" />
+                  <button class="btn action-btn bulk-btn" type="submit">
+                    <span class="icon">⚡</span>
+                    <span>Move All to Pending</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- TEMPLE PICKUP TAB -->
+        <section class="tabpanel <%= activeTab === 'temple' ? 'active' : '' %>" data-panel="temple">
+          <div class="filter-card">
+            <div class="filter-head">
+              <div>
+                <h2>Temple Pickup</h2>
+                <p>
+                  Use this section for orders collected directly at the temple. The statuses here stay simple and clear: pending or handed over.
+                </p>
+              </div>
+            </div>
+
+            <form id="templeFiltersForm" method="GET" action="/admin/shipments">
+              <input type="hidden" name="delivery_mode" value="temple_pickup" />
+              <div class="filter-grid temple">
+                <div>
+                  <label for="temple_q">Search by name or mobile</label>
+                  <input id="temple_q" name="q" type="text" value="<%= activeTab === 'temple' ? (filters.q || '') : '' %>" placeholder="Search by name or phone" />
+                </div>
+
+                <div>
+                  <label for="temple_status">Shipment status</label>
+                  <select id="temple_status" name="status">
+                    <option value="all" <%= activeTab === 'temple' && filters.status==='all' ? 'selected' : '' %>>All</option>
+                    <option value="pending" <%= activeTab === 'temple' && filters.status==='pending' ? 'selected' : '' %>>Pending</option>
+                    <option value="handed_over" <%= activeTab === 'temple' && filters.status==='handed_over' ? 'selected' : '' %>>Handed Over</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="temple_date_from">From date</label>
+                  <input id="temple_date_from" name="date_from" type="date" value="<%= activeTab === 'temple' ? (filters.dateFrom || '') : '' %>" />
+                </div>
+
+                <div>
+                  <label for="temple_date_to">To date</label>
+                  <input id="temple_date_to" name="date_to" type="date" value="<%= activeTab === 'temple' ? (filters.dateTo || '') : '' %>" />
+                </div>
+
+                <div class="button-stack">
+                  <a class="btn ghost" href="/admin/shipments?delivery_mode=temple_pickup&status=all&page=1">Reset</a>
+                  <button class="btn primary" type="submit">Apply</button>
+                </div>
+
+                <div class="button-stack">
+                  <button type="button" class="btn refresh" onclick="refreshCurrentTab('temple')">Refresh</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="counts-grid">
+            <div class="count-card">
+              <div class="count-label">Pending</div>
+              <div class="count-value"><%= templeStats.pending || 0 %></div>
+              <div class="count-sub">Waiting for pickup handover</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Handed Over</div>
+              <div class="count-value"><%= templeStats.handed_over || 0 %></div>
+              <div class="count-sub">Already collected by participant</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ALL TAB -->
+        <section class="tabpanel <%= activeTab === 'all' ? 'active' : '' %>" data-panel="all">
+          <div class="filter-card">
+            <div class="filter-head">
+              <div>
+                <h2>All Shipments</h2>
+                <p>
+                  Use this section when you want one combined view. Filters here work across the selected delivery mode and date range.
+                </p>
+              </div>
+            </div>
+
+            <form id="allFiltersForm" method="GET" action="/admin/shipments">
+              <div class="filter-grid alltab">
+                <div>
+                  <label for="all_q">Search by name or mobile</label>
+                  <input id="all_q" name="q" type="text" value="<%= activeTab === 'all' ? (filters.q || '') : '' %>" placeholder="Search by name or phone" />
+                </div>
+
+                <div>
+                  <label for="all_delivery_mode">Delivery mode</label>
+                  <select id="all_delivery_mode" name="delivery_mode">
+                    <option value="all" <%= activeTab === 'all' && filters.deliveryMode==='all' ? 'selected' : '' %>>All</option>
+                    <option value="home_delivery" <%= activeTab === 'all' && filters.deliveryMode==='home_delivery' ? 'selected' : '' %>>Home Delivery</option>
+                    <option value="temple_pickup" <%= activeTab === 'all' && filters.deliveryMode==='temple_pickup' ? 'selected' : '' %>>Temple Pickup</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="all_status">Shipment status</label>
+                  <select id="all_status" name="status" data-current="<%= activeTab === 'all' ? (filters.status || 'all') : 'all' %>"></select>
+                </div>
+
+                <div>
+                  <label for="all_date_from">From date</label>
+                  <input id="all_date_from" name="date_from" type="date" value="<%= activeTab === 'all' ? (filters.dateFrom || '') : '' %>" />
+                </div>
+
+                <div>
+                  <label for="all_date_to">To date</label>
+                  <input id="all_date_to" name="date_to" type="date" value="<%= activeTab === 'all' ? (filters.dateTo || '') : '' %>" />
+                </div>
+
+                <div class="button-stack">
+                  <a class="btn ghost" href="/admin/shipments?delivery_mode=all&status=all&page=1">Reset</a>
+                  <button class="btn primary" type="submit">Apply</button>
+                </div>
+
+                <div class="button-stack">
+                  <button type="button" class="btn refresh" onclick="refreshCurrentTab('all')">Refresh</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="counts-grid">
+            <div class="count-card">
+              <div class="count-label">Pending</div>
+              <div class="count-value"><%= allStats.pending || 0 %></div>
+              <div class="count-sub">Across all delivery types</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Under Packing</div>
+              <div class="count-value"><%= allStats.under_packing || 0 %></div>
+              <div class="count-sub">Home delivery workflow</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Packed</div>
+              <div class="count-value"><%= allStats.packed || 0 %></div>
+              <div class="count-sub">Ready for dispatch or review</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Dispatched</div>
+              <div class="count-value"><%= allStats.dispatched || 0 %></div>
+              <div class="count-sub">Courier handoff completed</div>
+            </div>
+            <div class="count-card">
+              <div class="count-label">Delivered / Handed Over</div>
+              <div class="count-value"><%= (allStats.delivered || 0) + (allStats.handed_over || 0) %></div>
+              <div class="count-sub">Final completion statuses</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="pagination-bar">
+          <div class="pagination-meta">
+            Showing page <strong><%= currentPage %></strong> of <strong><%= pagesTotal %></strong>
+            <% if (totalCountValue) { %>
+              • Total shipments: <strong><%= totalCountValue %></strong>
+            <% } %>
+          </div>
+
+          <div class="pagination-links">
+            <% if (currentPage > 1) { %>
+              <a class="page-link" href="<%= pageHref(1, (filters && filters.deliveryMode) || 'home_delivery') %>">First</a>
+              <a class="page-link" href="<%= pageHref(currentPage - 1, (filters && filters.deliveryMode) || 'home_delivery') %>">Prev</a>
+            <% } %>
+
+            <a class="page-link active" href="javascript:void(0)"><%= currentPage %></a>
+
+            <% if (currentPage < pagesTotal) { %>
+              <a class="page-link" href="<%= pageHref(currentPage + 1, (filters && filters.deliveryMode) || 'home_delivery') %>">Next</a>
+              <a class="page-link" href="<%= pageHref(pagesTotal, (filters && filters.deliveryMode) || 'home_delivery') %>">Last</a>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="checkcell">
+                  <input type="checkbox" id="checkAll" />
+                </th>
+                <th>Shipment</th>
+                <th>User</th>
+                <th>Books / Contests</th>
+                <th>Address</th>
+                <th>Tracking</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% if (!items || !items.length) { %>
+                <tr>
+                  <td colspan="7" class="empty">
+                    No shipments found for the selected filters.
+                  </td>
+                </tr>
+              <% } %>
+
+              <% items.forEach(it => { %>
+                <tr>
+                  <td class="checkcell">
+                    <input
+                      type="checkbox"
+                      name="shipment_ids"
+                      value="<%= it.shipment_id %>"
+                      class="rowCheck"
+                    />
+                  </td>
+
+                  <td class="muted tiny">
+                    <div><strong>Shipment:</strong> <%= it.shipment_id %></div>
+                    <div><strong>Payment:</strong> <%= it.payment_id || '-' %></div>
+                    <div><strong>Mode:</strong> <%= it.delivery_mode || '-' %></div>
+                  </td>
+
+                  <td>
+                    <div style="font-weight:900"><%= it.user_name %></div>
+                    <div class="muted tiny"><%= it.email %> • <%= it.phone || '-' %></div>
+                  </td>
+
+                  <td>
+                    <div><strong>Books:</strong> <%= it.books_display || '-' %></div>
+                    <div class="muted tiny"><%= it.contest_titles || '-' %></div>
+                  </td>
+
+                  <td class="muted tiny">
+                    <div><%= it.address || '-' %></div>
+                    <div><%= it.city || '' %> <%= it.state || '' %> <%= it.pincode || '' %></div>
+                  </td>
+
+                  <td class="muted tiny">
+                    <div><strong>ID:</strong> <%= it.tracking_id || '-' %></div>
+                    <div><strong>Courier:</strong> <%= it.courier_mode || '-' %></div>
+                    <div style="margin-top:6px">
+                      <span class="pill <%= (it.status || 'pending').toLowerCase() %>"><%= it.status || 'pending' %></span>
+                    </div>
+                  </td>
+
+                  <td style="min-width:300px">
+                    <form method="POST" action="/admin/shipments/update" class="update-form">
+                      <input type="hidden" name="shipmentId" value="<%= it.shipment_id %>">
+
+                      <div class="tiny muted">
+                        <strong>Tracking:</strong> <%= it.tracking_id || '-' %>
+                      </div>
+
+                      <input
+                        type="text"
+                        name="tracking_id"
+                        value="<%= it.tracking_id || '' %>"
+                        placeholder="Tracking ID"
+                      />
+
+                      <input
+                        type="hidden"
+                        name="courier_mode"
+                        value="<%= it.courier_mode || 'india_post' %>"
+                      />
+
+                      <div class="tiny muted">
+                        Courier: <strong><%= it.courier_mode || 'india_post' %></strong>
+                      </div>
+
+                      <div>
+                        <label>Shipment status</label>
+                        <select name="status">
+                          <% if (it.delivery_mode === 'temple_pickup') { %>
+                            <option value="pending" <%= it.status==='pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="handed_over" <%= it.status==='handed_over' ? 'selected' : '' %>>Handed Over</option>
+                          <% } else { %>
+                            <option value="pending" <%= it.status==='pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="under_packing" <%= it.status==='under_packing' ? 'selected' : '' %>>Under Packing</option>
+                            <option value="packed" <%= it.status==='packed' ? 'selected' : '' %>>Packed</option>
+                            <option value="dispatched" <%= it.status==='dispatched' ? 'selected' : '' %>>Dispatched</option>
+                            <option value="delivered" <%= it.status==='delivered' ? 'selected' : '' %>>Delivered</option>
+                            <option value="returned" <%= it.status==='returned' ? 'selected' : '' %>>Returned</option>
+                          <% } %>
+                        </select>
+                      </div>
+
+                      <button class="btn primary" type="submit">Save</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination-meta">
+            Page <strong><%= currentPage %></strong> / <strong><%= pagesTotal %></strong>
+            <% if (pageSizeValue) { %> • Page size: <strong><%= pageSizeValue %></strong><% } %>
+          </div>
+
+          <div class="pagination-links">
+            <% if (currentPage > 1) { %>
+              <a class="page-link" href="<%= pageHref(1, (filters && filters.deliveryMode) || 'home_delivery') %>">First</a>
+              <a class="page-link" href="<%= pageHref(currentPage - 1, (filters && filters.deliveryMode) || 'home_delivery') %>">Prev</a>
+            <% } %>
+
+            <a class="page-link active" href="javascript:void(0)"><%= currentPage %></a>
+
+            <% if (currentPage < pagesTotal) { %>
+              <a class="page-link" href="<%= pageHref(currentPage + 1, (filters && filters.deliveryMode) || 'home_delivery') %>">Next</a>
+              <a class="page-link" href="<%= pageHref(pagesTotal, (filters && filters.deliveryMode) || 'home_delivery') %>">Last</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let modalConfirmHandler = null;
+
+  function toggleAdminMenu() {
+    document.body.classList.toggle("menu-open");
+  }
+
+  function closeAdminMenu() {
+    document.body.classList.remove("menu-open");
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      closeAdminMenu();
+      hideActionModal();
+    }
+  });
+
+  function closeAlert(btn) {
+    const box = btn.closest("[data-alert]");
+    if (box) box.remove();
+  }
+
+  function showActionModal({ title, html, note, confirmText = "Proceed", onConfirm }) {
+    const modal = document.getElementById("actionModal");
+    const titleEl = document.getElementById("actionModalTitle");
+    const textEl = document.getElementById("actionModalText");
+    const noteEl = document.getElementById("actionModalNote");
+    const confirmBtn = document.getElementById("actionModalConfirmBtn");
+
+    titleEl.textContent = title || "Confirm action";
+    textEl.innerHTML = html || "";
+    if (note) {
+      noteEl.style.display = "block";
+      noteEl.textContent = note;
+    } else {
+      noteEl.style.display = "none";
+      noteEl.textContent = "";
+    }
+    confirmBtn.textContent = confirmText;
+    modalConfirmHandler = onConfirm || null;
+    modal.classList.add("show");
+  }
+
+  function hideActionModal() {
+    const modal = document.getElementById("actionModal");
+    modal.classList.remove("show");
+    modalConfirmHandler = null;
+  }
+
+  document.getElementById("actionModalConfirmBtn").addEventListener("click", function () {
+    if (typeof modalConfirmHandler === "function") modalConfirmHandler();
+    hideActionModal();
+  });
+
+  (function () {
+    const checkAll = document.getElementById("checkAll");
+    const rowChecks = Array.from(document.querySelectorAll(".rowCheck"));
+    if (!checkAll) return;
+
+    checkAll.addEventListener("change", function () {
+      rowChecks.forEach(cb => cb.checked = checkAll.checked);
+    });
+  })();
+
+  (function () {
+    const tabs = Array.from(document.querySelectorAll(".tabbtn"));
+    const panels = Array.from(document.querySelectorAll(".tabpanel"));
+
+    function activateTab(tabName) {
+      tabs.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabName));
+      panels.forEach(panel => panel.classList.toggle("active", panel.dataset.panel === tabName));
+    }
+
+    tabs.forEach(btn => {
+      btn.addEventListener("click", function () {
+        activateTab(btn.dataset.tab);
+      });
+    });
+  })();
+
+  (function () {
+    const modeEl = document.getElementById("all_delivery_mode");
+    const statusEl = document.getElementById("all_status");
+    if (!modeEl || !statusEl) return;
+
+    const optionsMap = {
+      all: [
+        { value: "all", label: "All" },
+        { value: "pending", label: "Pending" },
+        { value: "under_packing", label: "Under Packing" },
+        { value: "packed", label: "Packed" },
+        { value: "dispatched", label: "Dispatched" },
+        { value: "delivered", label: "Delivered" },
+        { value: "returned", label: "Returned" },
+        { value: "handed_over", label: "Handed Over" }
+      ],
+      home_delivery: [
+        { value: "all", label: "All" },
+        { value: "pending", label: "Pending" },
+        { value: "under_packing", label: "Under Packing" },
+        { value: "packed", label: "Packed" },
+        { value: "dispatched", label: "Dispatched" },
+        { value: "delivered", label: "Delivered" },
+        { value: "returned", label: "Returned" }
+      ],
+      temple_pickup: [
+        { value: "all", label: "All" },
+        { value: "pending", label: "Pending" },
+        { value: "handed_over", label: "Handed Over" }
+      ]
+    };
+
+    function rebuildStatusOptions() {
+      const current = statusEl.dataset.current || "all";
+      const selectedMode = modeEl.value || "all";
+      const opts = optionsMap[selectedMode] || optionsMap.all;
+
+      statusEl.innerHTML = "";
+      opts.forEach(opt => {
+        const el = document.createElement("option");
+        el.value = opt.value;
+        el.textContent = opt.label;
+        if (opt.value === current) el.selected = true;
+        statusEl.appendChild(el);
+      });
+
+      if (!Array.from(statusEl.options).some(o => o.value === current)) {
+        statusEl.value = "all";
+      }
+    }
+
+    modeEl.addEventListener("change", function () {
+      statusEl.dataset.current = "all";
+      rebuildStatusOptions();
+    });
+
+    rebuildStatusOptions();
+  })();
+
+  function formQueryToParams(form) {
+    const params = new URLSearchParams();
+    const fd = new FormData(form);
+    for (const [key, val] of fd.entries()) {
+      if (val === undefined || val === null) continue;
+      const v = String(val).trim();
+      if (v !== "") params.set(key, v);
+    }
+    if (!params.get("status")) params.set("status", "all");
+    if (!params.get("page")) params.set("page", "1");
+    return params;
+  }
+
+  function refreshCurrentTab(tabName) {
+    const formId =
+      tabName === "temple" ? "templeFiltersForm" :
+      tabName === "all" ? "allFiltersForm" :
+      "homeFiltersForm";
+
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const params = formQueryToParams(form);
+    window.location.href = `${form.action}?${params.toString()}`;
+  }
+
+function confirmShipmentDownload({ formId, endpoint, actionLabel, changeLabel, confirmText }) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  const params = formQueryToParams(form);
+  params.delete("page");
+
+  const dateFrom = form.querySelector('input[name="date_from"]')?.value || "";
+  const dateTo = form.querySelector('input[name="date_to"]')?.value || "";
+  const status = form.querySelector('select[name="status"]')?.value || "all";
+
+  let dateSummary = "No date filter is applied. All currently matching rows will be included.";
+  if (dateFrom && dateTo) {
+    dateSummary = `Date range: <strong>${dateFrom}</strong> to <strong>${dateTo}</strong>`;
+  }
+
+  showActionModal({
+    title: actionLabel || "Confirm download",
+    html: `
+      ${changeLabel || "Please confirm this action."}<br><br>
+      <strong>Current status filter:</strong> ${status}<br>
+      ${dateSummary}
+    `,
+    note: "Please make sure the current filtered result is exactly what you want before continuing.",
+    confirmText: confirmText || "Proceed",
+    onConfirm: function () {
+  const url = new URL(endpoint, window.location.origin);
+
+  params.forEach((value, key) => {
+    if (!url.searchParams.has(key)) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  window.location.href = url.pathname + "?" + url.searchParams.toString();
+}
+  });
+}
+
+
+
+
+
+  function showResultModal({ title, html, statsHtml, rejectedFile }) {
+    const modal = document.getElementById("resultModal");
+    const titleEl = document.getElementById("resultModalTitle");
+    const textEl = document.getElementById("resultModalText");
+    const statsEl = document.getElementById("resultModalStats");
+    const actionsEl = document.getElementById("resultModalActions");
+
+    titleEl.textContent = title || "Shipment update completed";
+    textEl.innerHTML = html || "";
+    actionsEl.innerHTML = "";
+
+    if (statsHtml) {
+      statsEl.style.display = "block";
+      statsEl.innerHTML = statsHtml;
+    } else {
+      statsEl.style.display = "none";
+      statsEl.innerHTML = "";
+    }
+
+    if (rejectedFile) {
+      const a = document.createElement("a");
+      a.className = "btn ghost";
+      a.href = "/tmp/" + encodeURIComponent(rejectedFile);
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "Download Rejected Entries";
+      actionsEl.appendChild(a);
+    }
+
+    modal.classList.add("show");
+  }
+
+  function hideResultModal() {
+    const modal = document.getElementById("resultModal");
+    modal.classList.remove("show");
+  }
+
+  function confirmBulkAdvance(form, cfg) {
+    showActionModal({
+      title: cfg.title || "Confirm bulk update",
+      html: cfg.html || "Please confirm this bulk update action.",
+      confirmText: cfg.confirmText || "Proceed",
+      onConfirm: function () {
+        form.submit();
+      }
+    });
+    return false;
+  }
+
+  function showUploadingState(form) {
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.originalText = btn.textContent;
+      btn.textContent = "Processing...";
+    }
+    return true;
+  }
+
+  async function submitShipmentExcelWithModal(form, cfg) {
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+      showActionModal({
+        title: cfg.title || "File required",
+        html: "Please choose a file before continuing.",
+        confirmText: "OK",
+        onConfirm: function () {}
+      });
+      return false;
+    }
+
+    showActionModal({
+      title: cfg.title || "Confirm Excel update",
+      html: cfg.processingText || "The uploaded file will now be validated and processed.",
+      confirmText: "Proceed",
+      onConfirm: async function () {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.dataset.originalText = submitBtn.textContent;
+          submitBtn.textContent = "Processing...";
+        }
+
+        try {
+          const fd = new FormData(form);
+
+          const response = await fetch(form.action, {
+              method: "POST",
+              body: fd,
+              headers: {
+                "X-Requested-With": "XMLHttpRequest"
+              }
+            });
+
+          const data = await response.json().catch(() => null);
+
+          if (!response.ok || !data || data.ok === false) {
+            showResultModal({
+              title: "Shipment update failed",
+              html: data && data.message ? data.message : "Unable to process this file right now."
+            });
+            return;
+          }
+
+          showResultModal({
+            title: cfg.successTitle || "Shipment update completed",
+            html: data.message || "The uploaded file was processed successfully.",
+            statsHtml: `
+              <strong>Accepted:</strong> ${Number(data.acceptedCount || 0)}<br>
+              <strong>Rejected:</strong> ${Number(data.rejectedCount || 0)}
+            `,
+            rejectedFile: data.rejectedFile || ""
+          });
+
+          if (data.redirectUrl) {
+            setTimeout(() => {
+              window.location.href = data.redirectUrl;
+            }, 1200);
+          } else if (data.refresh) {
+            setTimeout(() => {
+              window.location.href = data.refresh;
+            }, 1200);
+          }
+        } catch (err) {
+          showResultModal({
+            title: "Shipment update failed",
+            html: "Something went wrong while processing the uploaded file."
+          });
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = submitBtn.dataset.originalText || "Submit";
+          }
+        }
+      }
+    });
+
+    return false;
+  }
+
+</script>
+</body>
+</html>

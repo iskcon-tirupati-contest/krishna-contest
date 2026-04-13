@@ -292,7 +292,7 @@ router.post(
   user.role === "admin"
     ? "/admin"
     : user.role === "agent"
-    ? "/agent-maintenance"
+    ? "/agent"
     : "/dashboard";
 
       console.log("✅ LOGIN SUCCESS", {

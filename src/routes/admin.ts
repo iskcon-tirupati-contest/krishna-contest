@@ -1465,6 +1465,15 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
       AND ${ORDER_IST_DATE} = ${IST_TODAY}
   `);
 
+
+   /* const todayOrdersAllQ = pool.query(`
+  SELECT COUNT(*)::int AS c
+  FROM orders o
+  WHERE ${onlineOrdersWhere("o")}
+    AND o.created_at::date = (NOW() AT TIME ZONE 'Asia/Kolkata')::date
+`);
+*/
+
   const todayPaidOrdersQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o

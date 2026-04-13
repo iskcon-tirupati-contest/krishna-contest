@@ -490,13 +490,13 @@
         </form>
       </div>
 
-      <div class="stats screen-only">
+     <!-- <div class="stats screen-only">
         <div class="stat"><div class="muted">Total Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.total_bookings %></div></div>
         <div class="stat"><div class="muted">Paid Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.paid_count %></div></div>
         <div class="stat"><div class="muted">Paid Amount</div><div style="font-size:28px;font-weight:900">₹<%= summary.paid_amount %></div></div>
         <div class="stat"><div class="muted">Checkout Pending</div><div style="font-size:28px;font-weight:900"><%= summary.checkout_pending_count %></div></div>
         <div class="stat"><div class="muted">Refunded</div><div style="font-size:28px;font-weight:900"><%= summary.refunded_count %></div></div>
-      </div>
+      </div>-->
 
       <div class="card screen-only">
         <h2 style="margin-top:0">Agent Summary</h2>
@@ -558,103 +558,6 @@
             <div style="font-size:28px;font-weight:900;color:var(--cyan)">₹<%= reportSummary.phonepe_amount || 0 %></div>
           </div>
         </div>
-
-        <div class="two-col" style="margin-top:18px">
-          <div>
-            <h3 style="margin:0 0 10px 0">Books Summary</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Book</th>
-                  <th>Language</th>
-                  <th>Qty</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% if ((bookSummary || []).length === 0) { %>
-                  <tr><td colspan="4" class="muted">No paid rows for selected filters</td></tr>
-                <% } %>
-                <% (bookSummary || []).forEach(function(r){ %>
-                  <tr>
-                    <td><span class="pill"><%= r.book_kind %></span></td>
-                    <td><%= r.book_title %></td>
-                    <td><%= r.book_language %></td>
-                    <td><strong><%= r.qty %></strong></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-
-          <div>
-            <h3 style="margin:0 0 10px 0">Quick Split</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Rows</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Regular Books</td>
-                  <td><%= regularBookSummary.length %></td>
-                </tr>
-                <tr>
-                  <td>Bonus Books</td>
-                  <td><%= bonusBookSummary.length %></td>
-                </tr>
-                <tr>
-                  <td>Paid Rows</td>
-                  <td><%= (printRows || []).length %></td>
-                </tr>
-                <tr>
-                  <td>Total Books</td>
-                  <td><%= totalBooks || 0 %></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div style="margin-top:18px">
-          <h3 style="margin:0 0 10px 0">Booking-wise Report</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Customer</th>
-                <th>Payment</th>
-                <th>Books</th>
-                <th>Contests</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if ((printRows || []).length === 0) { %>
-                <tr><td colspan="6" class="muted">No rows found</td></tr>
-              <% } %>
-              <% (printRows || []).forEach(function(r){ %>
-                <tr>
-                  <td><%= r.created_at || '-' %></td>
-                  <td>
-                    <div><strong><%= r.customer_name %></strong></div>
-                    <div class="muted"><%= r.customer_phone || '-' %></div>
-                  </td>
-                  <td>
-                    <div><span class="pill"><%= r.payment_method || '-' %></span></div>
-                    <div class="muted" style="margin-top:6px"><%= r.payment_id || '-' %></div>
-                  </td>
-                  <td><%= r.books_with_language || '-' %></td>
-                  <td><%= r.contest_titles || '-' %></td>
-                  <td>₹<%= r.total_amount %></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       <div class="card screen-only">
         <h2 style="margin-top:0">Offline Booking Rows</h2>

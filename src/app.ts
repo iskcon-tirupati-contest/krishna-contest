@@ -19,6 +19,8 @@ import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
 import agentRoutes from "./routes/agent";
 
+import campaignPaymentRouter from "./routes/campaignPayment";
+
 import cors from "cors";
 dotenv.config();
 
@@ -69,6 +71,8 @@ app.use("/forgot-password/reset", sensitiveLimiter);
 /* Middleware */
 // Razorpay webhooks need the raw body for signature verification
 app.use('/payment/hdfc/webhook', express.raw({ type: 'application/json' }));
+app.use("/payment/campaign/ramayana/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -144,6 +148,7 @@ app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
 app.use("/", agentRoutes);
+app.use(campaignPaymentRouter);
 /* Pages */
 
 //app.get("/", (_req, res) => res.render("index"));

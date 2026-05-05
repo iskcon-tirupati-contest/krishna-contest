@@ -1761,18 +1761,19 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
       AND o.payment_status='paid'
   `);
 
-  // REPLACE WITH:
-const failedOrdersQ = await pool.query(`
-  SELECT COUNT(*)::int AS c FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND LOWER(COALESCE(o.payment_status,'')) IN ('failed','failure','cancelled','canceled','error')
-`);
-const addedToCartQ = await pool.query(`
-  SELECT COUNT(*)::int AS c FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND LOWER(COALESCE(o.payment_status,'pending')) = 'pending'
-`);
+  const pendingOrdersQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='pending'
+  `);
 
+  const failedOrdersQ = await pool.query(`
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='failed'
+  `);
 
   const giftQ = await pool.query(`
     SELECT COUNT(*)::int AS c
@@ -1822,20 +1823,13 @@ const addedToCartQ = await pool.query(`
       AND ${ORDER_IST_DATE} = ${IST_TODAY}
   `);
 
-
   const todayFailedOrdersQ = await pool.query(`
-  SELECT COUNT(*)::int AS c FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND LOWER(COALESCE(o.payment_status,'')) IN ('failed','failure','cancelled','canceled','error')
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
-`);
-const todayAddedToCartQ = await pool.query(`
-  SELECT COUNT(*)::int AS c FROM orders o
-  WHERE ${onlineOrdersWhere("o")}
-    AND LOWER(COALESCE(o.payment_status,'pending')) = 'pending'
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
-`);
-
+    SELECT COUNT(*)::int AS c
+    FROM orders o
+    WHERE ${onlineOrdersWhere("o")}
+      AND o.payment_status='failed'
+      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+  `);
 
   const todayGiftQ = await pool.query(`
     SELECT COUNT(*)::int AS c
@@ -1983,7 +1977,7 @@ const salesMonthlyQ = await pool.query(`
       users: usersQ.rows[0].c,
       ordersAll: ordersAllQ.rows[0].c,
       paidOrders: paidOrdersQ.rows[0].c,
-
+      pendingOrders: pendingOrdersQ.rows[0].c + failedOrdersQ.rows[0].c,
       gift: giftQ.rows[0].c,
       donate: donateQ.rows[0].c,
       revenue: revenueQ.rows[0].total,
@@ -1991,12 +1985,7 @@ const salesMonthlyQ = await pool.query(`
 
       todayOrdersAll: todayOrdersAllQ.rows[0].c,
       todayPaidOrders: todayPaidOrdersQ.rows[0].c,
-
-      failedOrders: failedOrdersQ.rows[0].c,
-      addedToCart: addedToCartQ.rows[0].c,
-      todayFailedOrders: todayFailedOrdersQ.rows[0].c,
-      todayAddedToCart: todayAddedToCartQ.rows[0].c,
-
+      todayPendingOrders: todayPendingOrdersQ.rows[0].c + todayFailedOrdersQ.rows[0].c,
       todayGift: todayGiftQ.rows[0].c,
       todayDonate: todayDonateQ.rows[0].c,
 
@@ -8704,189 +8693,6 @@ router.post(
       console.error("update-books error:", e);
       return res.status(500).json({ error: "Failed to update books." });
     }
-  }
-);
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─── GROUP UNDISPATCHED SHIPMENTS BY PHONE ──────────────────────────────────
-// Helps admin merge multiple shipments going to the same person into one
-// physical parcel. Grouped by (phone, delivery_mode) — can't combine
-// home_delivery and temple_pickup into the same parcel.
-//
-// Filters:
-//   - Status: pending / under_packing / packed (anything before dispatch)
-//   - Paid book orders only, exclude DEV_ test orders
-//   - Skip junk phones: NULL, TEMP_*, non-10-digit
-//   - Only show groups of 2+ shipments (singletons don't benefit from grouping)
-async function fetchUndispatchedPhoneGroups(req: any) {
-  const page = Math.max(1, Number(req.query.page || 1));
-  const pageSize = 10;
-  const offset = (page - 1) * pageSize;
-
-  const baseWhere = `
-    LOWER(COALESCE(sh.status, 'pending')) IN ('pending', 'under_packing', 'packed')
-    AND o.payment_status = 'paid'
-    AND o.book_option = 'book'
-    AND ${shipmentsVisibleOrdersWhere("o")}
-    AND u.phone IS NOT NULL
-    AND TRIM(u.phone) NOT LIKE 'TEMP_%'
-    AND LENGTH(TRIM(u.phone)) = 10
-  `;
-
-  // Count groups (for pagination)
-  const countQ = await pool.query(`
-    SELECT COUNT(*)::int AS total_count
-    FROM (
-      SELECT u.phone, sh.delivery_mode
-      FROM shipments sh
-      JOIN shipment_items si ON si.shipment_id = sh.id
-      JOIN orders o ON o.id = si.order_id
-      JOIN users u ON u.id = o.user_id
-      WHERE ${baseWhere}
-      GROUP BY u.phone, sh.delivery_mode
-      HAVING COUNT(DISTINCT sh.id) >= 2
-    ) g
-  `);
-
-  // Get groups for current page (most shipments first, then phone)
-  const groupsQ = await pool.query(
-    `
-    SELECT
-      u.phone,
-      sh.delivery_mode,
-      COUNT(DISTINCT sh.id)::int AS shipment_count,
-      MAX(u.name) AS user_name
-    FROM shipments sh
-    JOIN shipment_items si ON si.shipment_id = sh.id
-    JOIN orders o ON o.id = si.order_id
-    JOIN users u ON u.id = o.user_id
-    WHERE ${baseWhere}
-    GROUP BY u.phone, sh.delivery_mode
-    HAVING COUNT(DISTINCT sh.id) >= 2
-    ORDER BY shipment_count DESC, u.phone ASC
-    LIMIT $1 OFFSET $2
-    `,
-    [pageSize, offset]
-  );
-
-  if (!groupsQ.rows.length) {
-    const totalCount = Number(countQ.rows[0]?.total_count || 0);
-    return {
-      groups: [],
-      page,
-      pageSize,
-      totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
-    };
-  }
-
-  // Get all shipments belonging to those groups in one query
-  const phoneList = groupsQ.rows.map((g: any) => String(g.phone));
-  const modeList = groupsQ.rows.map((g: any) => String(g.delivery_mode || ""));
-
-  const shipmentsQ = await pool.query(
-    `
-    SELECT
-      sh.id AS shipment_id,
-      sh.payment_id,
-      u.phone,
-      u.name AS user_name,
-      u.email,
-      sh.address,
-      sh.city,
-      sh.state,
-      sh.pincode,
-      sh.delivery_mode,
-      sh.status,
-      sh.tracking_id,
-      sh.updated_at,
-      STRING_AGG(
-        (COALESCE(c.title, '')),
-        ', ' ORDER BY COALESCE(c.title, ''), si.id
-      ) AS contest_titles,
-      STRING_AGG(
-        (COALESCE(si.book_title, '') || ' - ' || COALESCE(si.book_language, '')),
-        ', ' ORDER BY COALESCE(c.title, ''), COALESCE(si.book_title, ''), COALESCE(si.book_language, ''), si.id
-      ) AS regular_books_with_language,
-      bonus.bonus_books_with_language
-    FROM shipments sh
-    JOIN shipment_items si ON si.shipment_id = sh.id
-    JOIN orders o ON o.id = si.order_id
-    JOIN users u ON u.id = o.user_id
-    JOIN contests c ON c.id = o.contest_id
-    LEFT JOIN LATERAL (
-      SELECT STRING_AGG(
-        (COALESCE(sbi.book_title, '') || ' - ' || COALESCE(sbi.book_language, '')),
-        ', ' ORDER BY COALESCE(sbi.book_title, ''), COALESCE(sbi.book_language, ''), sbi.id
-      ) AS bonus_books_with_language
-      FROM shipment_bonus_items sbi
-      WHERE sbi.shipment_id = sh.id
-    ) bonus ON TRUE
-    WHERE ${baseWhere}
-      AND u.phone = ANY($1::text[])
-      AND COALESCE(sh.delivery_mode, '') = ANY($2::text[])
-    GROUP BY
-      sh.id, sh.payment_id, u.phone, u.name, u.email,
-      sh.address, sh.city, sh.state, sh.pincode,
-      sh.delivery_mode, sh.status, sh.tracking_id, sh.updated_at,
-      bonus.bonus_books_with_language
-    ORDER BY u.phone, sh.updated_at DESC NULLS LAST, sh.id
-    `,
-    [phoneList, modeList]
-  );
-
-  // Bucket shipments under their group key "phone||delivery_mode"
-  const bucket: Record<string, any[]> = {};
-  for (const s of shipmentsQ.rows) {
-    const key = `${s.phone}||${String(s.delivery_mode || "")}`;
-    if (!bucket[key]) bucket[key] = [];
-    bucket[key].push({
-      ...s,
-      books_display: buildShipmentBooksLabel(
-        s.regular_books_with_language,
-        s.bonus_books_with_language
-      ),
-    });
-  }
-
-  // Only keep group rows whose mode actually matches what we asked for
-  // (defensive — guard against ANY() matching the wrong combo)
-  const groups = groupsQ.rows
-    .map((g: any) => {
-      const key = `${g.phone}||${String(g.delivery_mode || "")}`;
-      return {
-        phone: g.phone,
-        delivery_mode: g.delivery_mode,
-        user_name: g.user_name,
-        shipment_count: g.shipment_count,
-        shipments: (bucket[key] || []).filter(
-          (s: any) =>
-            String(s.delivery_mode || "") === String(g.delivery_mode || "")
-        ),
-      };
-    })
-    .filter((g) => g.shipments.length >= 2);
-
-  const totalCount = Number(countQ.rows[0]?.total_count || 0);
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
-  return { groups, page, pageSize, totalCount, totalPages };
-}
-
-router.get(
-  "/admin/shipments/group-by-phone",
-  authMiddleware,
-  adminMiddleware,
-  async (req: any, res) => {
-    const result = await fetchUndispatchedPhoneGroups(req);
-    res.render("admin/admin-shipments-group", {
-      activeTab: "shipments",
-      groups: result.groups,
-      page: result.page,
-      pageSize: result.pageSize,
-      totalCount: result.totalCount,
-      totalPages: result.totalPages,
-    });
   }
 );
 // ─────────────────────────────────────────────────────────────────────────────

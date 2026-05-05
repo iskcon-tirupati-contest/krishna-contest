@@ -8,7 +8,33 @@
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;background:#fff;font-family:system-ui,sans-serif}
 
-
+    /* ── Browser alert popup ── */
+    .ba-overlay{
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(0,0,0,.5);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    .ba-overlay.hide{display:none}
+    .ba-popup{
+      background:#fff;border-radius:18px;
+      padding:24px 20px;max-width:340px;width:100%;
+      box-shadow:0 20px 60px rgba(0,0,0,.3);
+      position:relative;
+    }
+    .ba-icon{font-size:32px;text-align:center;display:block;margin-bottom:12px}
+    .ba-title{font-size:16px;font-weight:800;color:#92400e;text-align:center;margin-bottom:10px}
+    .ba-text{font-size:13px;color:#78350f;line-height:1.7;margin-bottom:8px}
+    .ba-text b{color:#92400e;font-weight:800}
+    .ba-divider{height:1px;background:#fde68a;margin:12px 0}
+    .ba-text-te{font-size:13px;color:#78350f;line-height:1.7}
+    .ba-text-te b{color:#92400e;font-weight:800}
+    .ba-close{
+      width:100%;margin-top:16px;border:none;border-radius:12px;
+      padding:12px;background:#1a237e;color:#fff;
+      font-size:14px;font-weight:700;cursor:pointer;
+    }
+    .ba-close:active{opacity:.85}
 
 
     /* ── Iframe fullscreen ── */
@@ -39,7 +65,23 @@
 </head>
 <body>
 
-
+  <!-- Browser alert popup -->
+  <div class="ba-overlay" id="baOverlay">
+    <div class="ba-popup">
+      <span class="ba-icon">⚠️</span>
+      <div class="ba-title">Important / ముఖ్యమైన సూచన</div>
+      <div class="ba-text">
+        If <b>PhonePe, Paytm, GPay</b> or other UPI options are not appearing, please try from <b>Google Chrome</b> browser.
+      </div>
+      <div class="ba-divider"></div>
+      <div class="ba-text-te">
+        <b>PhonePe, Paytm, GPay</b> లేదా ఇతర UPI options కనిపించకపోతే, దయచేసి <b>Google Chrome</b> బ్రౌజర్ నుండి ప్రయత్నించండి.
+      </div>
+      <button class="ba-close" onclick="document.getElementById('baOverlay').classList.add('hide')">
+        OK, I Understand / అర్థమైంది ✓
+      </button>
+    </div>
+  </div>
 
   <!-- Loader -->
   <div class="loader" id="loader">

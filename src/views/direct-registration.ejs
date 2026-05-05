@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ISKCON Tirupati Essay Writing Contest 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#1a1150;--navy2:#2d2080;--navy3:#4338ca;--navy4:#6d5ef5;
+      --gold:#f5a623;--gold2:#ffd166;--gold3:#fff8e6;--gold4:#ffeaa0;
+      --saffron:#f97316;--saffron2:#fb923c;
+      --teal:#0d9488;--teal2:#14b8a6;
+      --violet:#7c3aed;--violet2:#8b5cf6;
+      --green:#059669;--red:#dc2626;
+      --ink:#1e1b4b;--muted:#64748b;--border:#e2e8f0;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:linear-gradient(160deg,#0f0c2e 0%,#1a1150 40%,#2d1a6e 100%);
+      min-height:100vh;
+      padding-bottom:48px;
+      color:#1e1b4b;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar{
+      background:linear-gradient(135deg,#0f0c2e 0%,#1a1150 50%,#2d2080 100%);
+      padding:0 16px;
+      position:relative;overflow:hidden;
+    }
+    .topbar::after{
+      content:'';position:absolute;bottom:0;left:0;right:0;height:4px;
+      background:linear-gradient(90deg,#f5a623,#f97316,#f5a623,#ffd166,#f5a623);
+      background-size:300% 100%;
+      animation:goldShimmer 2.5s linear infinite;
+    }
+    @keyframes goldShimmer{0%{background-position:0%}100%{background-position:300%}}
+    .topbar-inner{
+      max-width:600px;margin:0 auto;
+      display:flex;align-items:center;gap:14px;
+      padding:18px 0 22px;position:relative;z-index:1;
+    }
+    .logo-box{
+      width:54px;height:54px;border-radius:14px;
+      background:rgba(255,255,255,.12);
+      border:2px solid rgba(245,166,35,.35);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;overflow:hidden;font-size:28px;
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .brand-title{
+      font-family:'Sora',sans-serif;font-size:17px;font-weight:800;
+      color:#fff;line-height:1.25;margin-bottom:2px;
+    }
+    .brand-sub{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.3px;display:flex;align-items:center;gap:6px;margin-top:2px}
+    .brand-year{background:linear-gradient(135deg,#f5a623,#ffd166);color:#7c3000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;flex-shrink:0}
+
+    /* ── PAGE WRAPPER ── */
+    .page{max-width:600px;margin:0 auto;padding:14px 14px 0}
+
+    /* ── HERO PRIZE SECTION ── */
+    .hero-prize{
+      background:linear-gradient(145deg,#1a1150,#2d2080,#1a1150);
+      border-radius:22px;
+      padding:22px 18px 20px;
+      margin-bottom:14px;
+      border:1.5px solid rgba(245,166,35,.25);
+      box-shadow:0 16px 48px rgba(0,0,0,.45);
+      position:relative;overflow:hidden;
+    }
+    .hero-prize::before{
+      content:'';position:absolute;top:-40px;right:-40px;
+      width:180px;height:180px;border-radius:50%;
+      background:radial-gradient(circle,rgba(245,166,35,.18) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .hero-prize::after{
+      content:'';position:absolute;bottom:-30px;left:-30px;
+      width:130px;height:130px;border-radius:50%;
+      background:radial-gradient(circle,rgba(109,94,245,.2) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .iskcon-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(245,166,35,.15);
+      border:1px solid rgba(245,166,35,.35);
+      border-radius:999px;padding:5px 13px;
+      font-size:11px;font-weight:700;color:rgba(255,255,255,.85);
+      margin-bottom:12px;position:relative;z-index:1;
+    }
+    .hero-main-title{
+      font-family:'Sora',sans-serif;
+      font-size:24px;font-weight:800;
+      line-height:1.25;
+      margin-bottom:4px;
+      position:relative;z-index:1;
+    }
+    .hero-main-title span{color:#f5a623}
+    .hero-main-title span.white{color:#fff}
+    .hero-dates{
+      font-size:12px;color:rgba(255,255,255,.6);
+      margin-bottom:16px;position:relative;z-index:1;
+    }
+
+    /* prize stat row */
+    .prize-stats{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+      margin-bottom:16px;position:relative;z-index:1;
+    }
+    .pstat{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;padding:13px 10px;
+      text-align:center;
+    }
+    .pstat-icon{font-size:22px;margin-bottom:6px;display:block}
+    .pstat-num{
+      font-family:'Sora',sans-serif;
+      font-size:26px;font-weight:800;
+      color:#f5a623;line-height:1;margin-bottom:4px;
+    }
+    .pstat-label{font-size:11px;font-weight:700;color:#fff;margin-bottom:2px}
+    .pstat-sub{font-size:10px;color:rgba(255,255,255,.5)}
+
+    /* compulsory perks banner */
+    .perks-banner{
+      position:relative;z-index:1;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:14px;
+      padding:11px 14px;
+      margin-bottom:10px;
+      display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    }
+    .perks-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);margin-right:4px;white-space:nowrap}
+    .pk{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+    .pk-book{background:rgba(249,115,22,.22);color:#fdba74}
+    .pk-cert{background:rgba(99,102,241,.25);color:#c7d2fe}
+    .pk-course{background:rgba(16,185,129,.22);color:#6ee7b7}
+
+    /* prize rank rows */
+    .prize-ranks{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .prize-rank{
+      display:flex;align-items:center;gap:12px;
+      padding:11px 14px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.1);
+    }
+    .pr-1{background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,165,0,.08))}
+    .pr-2{background:linear-gradient(135deg,rgba(100,180,255,.12),rgba(80,160,255,.05))}
+    .pr-3{background:linear-gradient(135deg,rgba(100,180,255,.10),rgba(80,160,255,.04))}
+    .pr-4{background:linear-gradient(135deg,rgba(167,139,250,.13),rgba(124,58,237,.05))}
+    .pr-5{background:linear-gradient(135deg,rgba(167,139,250,.10),rgba(124,58,237,.03))}
+    .rank-badge{
+      width:36px;height:36px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;flex-shrink:0;
+    }
+    .rb-gold{background:linear-gradient(135deg,#f5a623,#ffd166)}
+    .rb-blue{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
+    .rb-mem{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+    .rank-info{flex:1}
+    .rank-pos{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
+    .rank-prize{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#fff}
+    .rank-prize span{color:#f5a623}
+    .rpill{
+      font-size:10px;font-weight:700;
+      padding:3px 8px;border-radius:999px;
+      white-space:nowrap;
+    }
+    .rp-gold{background:rgba(245,166,35,.22);color:#ffd166}
+    .rp-trip{background:rgba(56,189,248,.2);color:#bae6fd}
+    .rp-mem{background:rgba(124,58,237,.25);color:#ddd6fe}
+
+    /* promo pills */
+    .promo-row{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:1}
+    .promo-pill{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:11px;font-weight:700;
+      padding:7px 13px;border-radius:999px;
+    }
+    .pp-combo{background:linear-gradient(135deg,#f97316,#f5a623);color:#fff;box-shadow:0 4px 12px rgba(249,115,22,.35)}
+    .pp-reg{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.15)}
+
+    /* ── MAIN FORM CARD ── */
+    .form-card{
+      background:#fff;
+      border-radius:22px;
+      box-shadow:0 16px 48px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .form-head{
+      background:linear-gradient(135deg,#1a1150 0%,#2d2080 60%,#4338ca 100%);
+      padding:18px 20px 16px;
+      position:relative;overflow:hidden;
+    }
+    .form-head::after{
+      content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,#f5a623,#ffd166,#f97316,#f5a623);
+      background-size:300% 100%;
+      animation:goldShimmer 2.5s linear infinite;
+    }
+    .form-head-title{
+      font-family:'Sora',sans-serif;font-size:17px;font-weight:800;
+      color:#fff;margin-bottom:4px;
+    }
+    .form-head-sub{font-size:12px;color:rgba(255,255,255,.65)}
+
+    /* ── Prizes & Benefits in header ── */
+    /* ── Grand prizes summary ── */
+    .grand-summary{margin-top:12px;margin-bottom:4px}
+    .gs-title{
+      font-family:'Sora',sans-serif;font-size:13px;font-weight:900;
+      color:#ffd700;margin-bottom:8px;letter-spacing:.2px;
+    }
+    .gs-row{
+      display:flex;align-items:flex-start;gap:8px;
+      margin-bottom:6px;
+    }
+    .gs-count{
+      font-family:'Sora',sans-serif;font-size:15px;font-weight:900;
+      color:#fbbf24;min-width:22px;flex-shrink:0;line-height:1.2;
+    }
+    .gs-info{display:flex;flex-direction:column;gap:1px}
+    .gs-label{
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
+      color:rgba(255,255,255,.92);line-height:1.3;
+    }
+    .gs-sub{font-size:10px;color:rgba(255,215,0,.65);font-style:italic;line-height:1.3}
+    .gs-divider{height:1px;background:rgba(255,255,255,.12);margin:8px 0}
+    .gs-offer{
+      background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);
+      border-radius:10px;padding:8px 10px;
+    }
+    .gs-offer-title{
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:800;
+      color:#fbbf24;margin-bottom:4px;
+    }
+    .gs-offer-line{font-size:10px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:2px}
+    .gs-offer-line b{color:#ffd700}
+
+    .head-prizes{
+      display:flex;flex-direction:column;gap:5px;
+      margin-top:12px;margin-bottom:4px;
+    }
+    .head-prize-row{
+      display:flex;align-items:center;gap:8px;
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
+      color:rgba(255,255,255,.9);
+    }
+    .head-prize-row .hpr-icon{font-size:13px;flex-shrink:0}
+    .head-prize-row .hpr-place{
+      font-size:9px;font-weight:700;color:rgba(255,215,0,.6);
+      margin-left:auto;white-space:nowrap;
+    }
+    .head-divider{
+      height:1px;background:rgba(255,255,255,.12);
+      margin:10px 0 8px;
+    }
+    .head-benefits{
+      display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;
+    }
+    .head-benefit{
+      display:inline-flex;align-items:center;gap:5px;
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;padding:4px 10px;
+      font-size:10px;font-weight:700;color:rgba(255,255,255,.9);
+    }
+    .head-benefit .hb-icon{font-size:11px}
+    .amount-pill{
+      margin-top:10px;
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,#f97316,#f5a623);
+      padding:8px 14px;border-radius:999px;
+      box-shadow:0 4px 16px rgba(249,115,22,.4);
+    }
+    .amount-pill span:first-child{font-size:11px;font-weight:700;color:rgba(255,255,255,.85)}
+    .amount-pill span:last-child{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff}
+
+    .form-body{padding:18px 18px 22px}
+    .err-banner{
+      background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;
+      padding:12px 14px;border-radius:14px;margin-bottom:14px;
+      font-size:13px;font-weight:600;
+    }
+
+    /* ── SECTIONS ── */
+    .section{margin-bottom:14px;border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+    .sec-hdr{padding:11px 16px;display:flex;align-items:center;gap:10px}
+    .sec-ico{
+      width:30px;height:30px;border-radius:9px;
+      background:rgba(255,255,255,.2);
+      display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+    }
+    .sec-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#fff}
+    .sec-body{padding:4px 16px 16px}
+
+    .sv .sec-hdr{background:linear-gradient(135deg,#6d28d9,#7c3aed)}
+    .sv{background:linear-gradient(160deg,#faf5ff,#fff);border:1.5px solid #c4b5fd}
+    .so .sec-hdr{background:linear-gradient(135deg,#c2410c,#ea580c)}
+    .so{background:linear-gradient(160deg,#fff7ed,#fff);border:1.5px solid #fed7aa}
+    .st .sec-hdr{background:linear-gradient(135deg,#0f766e,#0d9488)}
+    .st{background:linear-gradient(160deg,#f0fdfa,#fff);border:1.5px solid #99f6e4}
+    .sp .sec-hdr{background:linear-gradient(135deg,#86198f,#a21caf)}
+    .sp{background:linear-gradient(160deg,#fdf4ff,#fff);border:1.5px solid #f0abfc}
+
+    /* ── FIELDS ── */
+    .field{margin-bottom:11px;position:relative}
+    .field:last-child{margin-bottom:0}
+    .field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
+    .req{color:#f97316}
+    .field-wrap{position:relative;display:flex;align-items:center}
+    .field input,.field select{
+      width:100%;height:46px;padding:0 42px 0 14px;
+      border-radius:12px;border:1.5px solid #e2e8f0;
+      background:#f8fafc;color:#1e1b4b;
+      font-family:'DM Sans',sans-serif;font-size:14px;
+      outline:none;
+      transition:border-color .18s,box-shadow .18s,background .18s;
+      appearance:none;-webkit-appearance:none;
+    }
+    .field input:focus,.field select:focus{
+      border-color:#7c3aed;background:#fff;
+      box-shadow:0 0 0 4px rgba(124,58,237,.10);
+    }
+    .field input.valid{border-color:#10b981!important;background:#f0fdf8}
+    .field input.invalid{border-color:#ef4444!important;background:#fff8f8}
+    .field select.valid{border-color:#10b981!important;background:#f0fdf8}
+    .field select.invalid{border-color:#ef4444!important;background:#fff8f8}
+    .vico{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;display:none;line-height:1}
+    .vico.ok{display:block;color:#10b981}
+    .vico.er{display:block;color:#ef4444}
+    .sarr{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;font-size:11px}
+    .sarr.gone{display:none}
+    .hint{font-size:11.5px;margin-top:4px;padding-left:2px;display:none}
+    .hint.ok{display:block;color:#059669}
+    .hint.er{display:block;color:#dc2626}
+    .fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    /* ── RADIO CARDS ── */
+    .rg{display:grid;grid-template-columns:1fr;gap:9px}
+    .rcard{
+      display:flex;align-items:flex-start;gap:11px;
+      padding:13px 14px;border:2px solid #e2e8f0;
+      border-radius:14px;background:#fff;cursor:pointer;
+      transition:all .18s ease;position:relative;overflow:hidden;
+    }
+    .rcard::before{
+      content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+      border-radius:2px 0 0 2px;background:#e2e8f0;transition:background .2s;
+    }
+    .rcard:hover{border-color:#c4b5fd;transform:translateY(-1px);box-shadow:0 4px 14px rgba(124,58,237,.1)}
+    .rcard input[type=radio]{margin-top:2px;accent-color:#7c3aed;width:16px;height:16px;flex-shrink:0}
+    .rc-d:has(input:checked){border-color:#0d9488;background:linear-gradient(135deg,#f0fdfa,#fff)}
+    .rc-d:has(input:checked)::before{background:#0d9488}
+    .rc-t:has(input:checked){border-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#fff)}
+    .rc-t:has(input:checked)::before{background:#7c3aed}
+    .rc-n:has(input:checked){border-color:#f97316;background:linear-gradient(135deg,#fff7ed,#fff)}
+    .rc-n:has(input:checked)::before{background:#f97316}
+    .rci{font-size:22px;line-height:1;flex-shrink:0;margin-top:1px}
+    .rct{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#1e1b4b;margin-bottom:2px}
+    .rcs{font-size:12px;color:#64748b;line-height:1.45}
+
+    /* ── BOOK ROWS ── */
+    .book-row{
+      background:linear-gradient(135deg,#fafbff,#fff);
+      border:1.5px solid #e0e7ff;border-radius:14px;
+      padding:13px;margin-bottom:9px;
+    }
+    .book-row:last-child{margin-bottom:0}
+    .btop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:11px}
+    .bname{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#1e1b4b;line-height:1.4}
+    .bprice{
+      font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:#c2410c;
+      background:linear-gradient(135deg,#fff7ed,#ffedd5);
+      border:1px solid #fed7aa;padding:4px 9px;border-radius:9px;
+      white-space:nowrap;flex-shrink:0;
+    }
+    .bf2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+    /* ── BONUS CARD ── */
+    .bonus{
+      margin-top:10px;border:2px dashed #a78bfa;
+      border-radius:16px;padding:13px;
+      background:linear-gradient(135deg,#faf5ff,#fff);
+    }
+    .bonus-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:3px}
+    .bonus-sub{font-size:12px;color:#64748b;margin-bottom:9px;line-height:1.5}
+
+    /* ── FOOTER ── */
+    .footer-box{
+      margin-top:16px;padding:16px 18px;border-radius:18px;
+      background:linear-gradient(135deg,#1a1150,#2d2080,#4338ca);
+      box-shadow:0 8px 24px rgba(26,17,80,.35);
+    }
+    .frow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px}
+    .frow:last-child{margin-bottom:0}
+    .flabel{font-size:12px;color:rgba(255,255,255,.6);font-weight:600}
+    .fcat{font-size:12px;color:#fff;font-weight:700}
+    .famount{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#f5a623}
+    .fdiv{height:1px;background:rgba(255,255,255,.12);margin:8px 0}
+
+    /* ── SUBMIT ── */
+    .sbtn{
+      margin-top:14px;width:100%;height:54px;border:none;
+      border-radius:16px;
+      background:linear-gradient(135deg,#f97316 0%,#f5a623 50%,#f97316 100%);
+      background-size:200% 100%;
+      color:#fff;font-family:'Sora',sans-serif;
+      font-size:16px;font-weight:800;cursor:pointer;
+      box-shadow:0 8px 24px rgba(249,115,22,.45);
+      transition:transform .15s,box-shadow .15s,background-position .35s;
+      letter-spacing:.3px;
+    }
+    .sbtn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(249,115,22,.5);background-position:100% 0}
+    .sbtn:active{transform:scale(.98)}
+    .sbtn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+    .snote{margin-top:9px;text-align:center;font-size:12px;color:#64748b;line-height:1.5}
+
+    .hidden{display:none!important}
+
+    @media(max-width:520px){
+      .fg2,.bf2{grid-template-columns:1fr}
+      .btop{flex-direction:column;align-items:flex-start}
+      .prize-stats{grid-template-columns:repeat(3,1fr)}
+      .hero-main-title{font-size:20px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">
+      <img src="/images/logo_new.png" alt="ISKCON" onerror="this.style.display='none';this.parentElement.textContent='&#127812;'">
+    </div>
+    <div>
+      <div class="brand-title">ISKCON Tirupati</div>
+      <div class="brand-sub">Essay Writing Contest &nbsp;<span class="brand-year">2026</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── FORM CARD ── -->
+  <div class="form-card">
+    <div class="form-head">
+      <div class="form-head-title"><%= categoryLabel %></div>
+      <!-- Grand Prize Summary -->
+      <div class="grand-summary">
+        <div class="gs-title">🏆 Total 40 Grand Prizes</div>
+
+        <div class="gs-row">
+          <div class="gs-count">8</div>
+          <div class="gs-info">
+            <div class="gs-label">🥇 Pure Gold Medals — 10g each</div>
+            <div class="gs-sub">Each 10g gold medal costs approx ₹1.7 Lakh</div>
+          </div>
+        </div>
+
+        <div class="gs-row">
+          <div class="gs-count">16</div>
+          <div class="gs-info">
+            <div class="gs-label">🛕 Sacred Pilgrimage to Tirumala Tirupati</div>
+          </div>
+        </div>
+
+        <div class="gs-row">
+          <div class="gs-count">16</div>
+          <div class="gs-info">
+            <div class="gs-label">🪷 ISKCON Life Membership Cards</div>
+          </div>
+        </div>
+
+        <div class="gs-divider"></div>
+
+        <!-- Super Offer -->
+        <div class="gs-offer">
+          <div class="gs-offer-title">🎁 Additionally, a Super Offer!</div>
+          <div class="gs-offer-line">If you participate in <b>all 4 competitions</b>, you get the book <b>"Science of Self-Realization"</b> for free.</div>
+          <div class="gs-offer-line">If you write <b>4 essays</b>, you have a chance to win <b>4 prizes!</b></div>
+        </div>
+
+        <div class="gs-divider"></div>
+
+        <!-- Benefits -->
+        <div class="head-benefits">
+          <div class="head-benefit"><span class="hb-icon">📚</span>Free Book — Home Delivered</div>
+          <div class="head-benefit"><span class="hb-icon">🎓</span>Digital Certificate</div>
+          <div class="head-benefit"><span class="hb-icon">💻</span>Work-Life Balance Course</div>
+        </div>
+      </div>
+
+      <div class="amount-pill">
+        <span>Total Payable</span>
+        <span>&#8377;<%= category === 'combo' ? '1,596' : '399' %></span>
+      </div>
+    </div>
+
+    <div class="form-body">
+      <% if (error) { %>
+        <div class="err-banner">&#9888;&#65039; <%= error %></div>
+      <% } %>
+
+      <form method="POST" id="regForm" novalidate>
+
+        <!-- SECTION 1: PARTICIPANT
+             name   → norm() → users.name + shipments.recipient_name (non-empty required)
+             phone  → normPhone() strips non-digits, last 10 (non-empty required)
+             age_category → norm() → orders.age_category (stored as enum string)
+        -->
+        <div class="section sv" id="sec1">
+          <div class="sec-hdr">
+            <div class="sec-ico">&#128100;</div>
+            <div class="sec-title">Participant Details</div>
+          </div>
+          <div class="sec-body">
+
+            <div class="field">
+              <label for="name">Full Name <span class="req">*</span></label>
+              <div class="field-wrap">
+                <input id="name" name="name" type="text"
+                  placeholder="Enter your full name"
+                  autocomplete="name"
+                  value="<%= old?.name || '' %>">
+                <span class="vico" id="vi-name"></span>
+              </div>
+              <div class="hint" id="h-name"></div>
+            </div>
+
+            <div class="field">
+              <label for="phone">Mobile Number <span class="req">*</span></label>
+              <div class="field-wrap">
+                <input id="phone" name="phone" type="tel"
+                  placeholder="10-digit mobile number"
+                  maxlength="10" inputmode="numeric"
+                  autocomplete="tel"
+                  value="<%= old?.phone || phone || '' %>">
+                <span class="vico" id="vi-phone"></span>
+              </div>
+              <div class="hint" id="h-phone"></div>
+            </div>
+
+            <div class="field">
+              <label for="age_category">Age Category <span class="req">*</span></label>
+              <div class="field-wrap">
+                <select id="age_category" name="age_category">
+                  <option value="">Select age category</option>
+                  <option value="0-25"     <%= old?.age_category === '0-25'     ? 'selected' : '' %>>0 to 25 years</option>
+                  <option value="above-25" <%= old?.age_category === 'above-25' ? 'selected' : '' %>>Above 25 years</option>
+                </select>
+                <span class="sarr" id="sa-age">&#9660;</span>
+                <span class="vico" id="vi-age"></span>
+              </div>
+              <div class="hint" id="h-age"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECTION 2: DELIVERY MODE
+             delivery_mode → normalizeDeliveryMode() → 'deliver'|'temple_pickup'|'donate'
+             'donate'       → no shipment row; address + books hidden
+             'deliver'      → shipment with address cols + shipment_items
+             'temple_pickup'→ shipment (address cols empty ok) + shipment_items
+        -->
+        <div class="section so" id="sec2">
+          <div class="sec-hdr">
+            <div class="sec-ico">&#128666;</div>
+            <div class="sec-title">Delivery Mode</div>
+          </div>
+          <div class="sec-body">
+            <div class="rg">
+              <label class="rcard rc-d">
+                <input type="radio" name="delivery_mode" value="deliver"
+                  <%= (old?.delivery_mode||'')==='deliver'?'checked':'' %>>
+                <div class="rci">&#127968;</div>
+                <div>
+                  <div class="rct">Home Delivery</div>
+                  <div class="rcs">Books shipped directly to your doorstep anywhere in India.</div>
+                </div>
+              </label>
+              <label class="rcard rc-t">
+                <input type="radio" name="delivery_mode" value="temple_pickup"
+                  <%= (old?.delivery_mode||'') === 'temple_pickup' ? 'checked' : '' %>>
+                <div class="rci">🛕</div>
+                <div>
+                  <div class="rct">Temple Pickup</div>
+                  <div class="rcs">Collect books directly from ISKCON Tirupati temple.</div>
+                </div>
+              </label>
+              <label class="rcard rc-n">
+                <input type="radio" name="delivery_mode" value="donate"
+                  <%= (old?.delivery_mode||'') === 'donate' ? 'checked' : '' %>>
+                <div class="rci">&#127873;</div>
+                <div>
+                  <div class="rct">Donation</div>
+                  <div class="rcs">Books donated on your behalf — no address required.</div>
+                </div>
+              </label>
+            </div>
+            <div class="hint er" id="h-delivery" style="display:none">&#9888; Please select a delivery mode to continue.</div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: ADDRESS (only for 'deliver')
+             address → norm() → shipments.address
+             city    → norm() → shipments.city
+             state   → norm() → shipments.state   (full state name string)
+             pincode → norm() → shipments.pincode  (6-digit string)
+        -->
+        <div class="section st hidden" id="sec3">
+          <div class="sec-hdr">
+            <div class="sec-ico">&#128205;</div>
+            <div class="sec-title">Delivery Address</div>
+          </div>
+          <div class="sec-body">
+
+            <div class="field">
+              <label for="address">Address <span class="req">*</span></label>
+              <div class="field-wrap">
+                <input id="address" name="address" type="text"
+                  placeholder="House no., street, locality, area"
+                  autocomplete="address-line1"
+                  value="<%= old?.address || '' %>">
+                <span class="vico" id="vi-addr"></span>
+              </div>
+              <div class="hint" id="h-addr"></div>
+            </div>
+
+            <div class="fg2">
+              <div class="field">
+                <label for="city">City <span class="req">*</span></label>
+                <div class="field-wrap">
+                  <input id="city" name="city" type="text"
+                    placeholder="City / District"
+                    autocomplete="address-level2"
+                    value="<%= old?.city || '' %>">
+                  <span class="vico" id="vi-city"></span>
+                </div>
+              </div>
+              <div class="field">
+                <label for="state">State <span class="req">*</span></label>
+                <div class="field-wrap">
+                  <select id="state" name="state">
+                    <option value="">Select state</option>
+                    <%
+                      var STATES=[
+                        "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+                        "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka",
+                        "Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram",
+                        "Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana",
+                        "Tripura","Uttar Pradesh","Uttarakhand","West Bengal",
+                        "Andaman and Nicobar Islands","Chandigarh",
+                        "Dadra and Nagar Haveli and Daman and Diu",
+                        "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
+                      ];
+                      STATES.forEach(function(s){
+                    %>
+                      <option value="<%= s %>" <%= old?.state===s?'selected':'' %>><%= s %></option>
+                    <% }); %>
+                  </select>
+                  <span class="sarr" id="sa-state">&#9660;</span>
+                  <span class="vico" id="vi-state"></span>
+                </div>
+                <div class="hint" id="h-state"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="pincode">Pincode <span class="req">*</span></label>
+              <div class="field-wrap">
+                <input id="pincode" name="pincode" type="text"
+                  inputmode="numeric" maxlength="6"
+                  placeholder="6-digit pincode"
+                  autocomplete="postal-code"
+                  value="<%= old?.pincode || '' %>">
+                <span class="vico" id="vi-pin"></span>
+              </div>
+              <div class="hint" id="h-pin"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="section sp hidden" id="sec4">
+          <div class="sec-hdr">
+            <div class="sec-ico">&#128218;</div>
+            <div class="sec-title">Book Selection</div>
+          </div>
+          <div class="sec-body">
+
+            <% contestTitles.forEach(function(title, index){ %>
+              <div class="book-row">
+                <div class="btop">
+                  <div class="bname"><%= title %></div>
+                  <div class="bprice">&#8377; 399</div>
+                </div>
+                <div class="bf2">
+                  <div class="field">
+                    <label>Book <span class="req">*</span></label>
+                    <div class="field-wrap">
+                      <select name="bookTitle[]" class="book-select" data-index="<%= index %>">
+                        <option value="">Select book</option>
+                        <% selectableBooks.forEach(function(b){ %>
+                          <option value="<%= b %>"
+                            <%= Array.isArray(old&&old.bookTitle)&&old.bookTitle[index]===b?'selected':'' %>
+                          ><%= b %></option>
+                        <% }); %>
+                      </select>
+                      <span class="sarr">&#9660;</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Language <span class="req">*</span></label>
+                    <div class="field-wrap">
+                      <select name="bookLanguage[]" class="lang-select" data-index="<%= index %>">
+                        <option value="">Select language</option>
+                      </select>
+                      <span class="sarr">&#9660;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+
+            <% if(category==='combo'){ %>
+              <div class="bonus">
+                <div class="bonus-title">&#127381; Free Bonus Book Included!</div>
+                <div class="bonus-sub">Science of Self Realization added free with your combo registration.</div>
+                <div class="field">
+                  <label for="ssrLanguage">Bonus Book Language</label>
+                  <div class="field-wrap">
+                    <select name="ssrLanguage" id="ssrLanguage">
+                      <option value="">Select language</option>
+                      <% ssrLanguages.forEach(function(l){ %>
+                        <option value="<%= l %>"><%= l %></option>
+                      <% }); %>
+                    </select>
+                    <span class="sarr">&#9660;</span>
+                  </div>
+                  <div class="v-inline" id="vi-ssr"></div>
+                </div>
+              </div>
+            <% } %>
+
+          </div>
+        </div>
+
+        <!-- FOOTER SUMMARY -->
+        <div class="footer-box">
+          <div class="frow">
+            <span class="flabel">Category</span>
+            <span class="fcat"><%= categoryLabel %></span>
+          </div>
+          <div class="fdiv"></div>
+          <div class="frow">
+            <span class="flabel">Total Payable</span>
+            <span class="famount">&#8377;<%= category==='combo'?'1,596':'399' %></span>
+          </div>
+        </div>
+
+        <button type="submit" class="sbtn" id="submitBtn">
+          &#128274; Proceed to Secure Payment &rarr;
+        </button>
+        <div class="snote">
+          Your details are encrypted &amp; secure. Payment gateway opens immediately after this step.
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  var BLM  = <%- JSON.stringify(availableBookLanguages||{}) %>;
+  var OBL  = <%- JSON.stringify(old&&old.bookLanguage||[]) %>;
+
+  /* ── VALIDATION HELPERS ── */
+  function sv(el,iid,msg){
+    el.classList.remove('invalid');el.classList.add('valid');
+    var ic=document.getElementById(iid);
+    if(ic){ic.className='vico ok';ic.textContent='\u2713';}
+    var ht=document.getElementById(iid.replace('vi-','h-'));
+    if(ht){ht.className=msg?'hint ok':'hint';ht.textContent=msg||'';}
+  }
+  function iv(el,iid,msg){
+    el.classList.remove('valid');el.classList.add('invalid');
+    var ic=document.getElementById(iid);
+    if(ic){ic.className='vico er';ic.textContent='\u2715';}
+    var ht=document.getElementById(iid.replace('vi-','h-'));
+    if(ht){ht.className='hint er';ht.textContent=msg||'';}
+  }
+  function cv(el,iid){
+    el.classList.remove('valid','invalid');
+    var ic=document.getElementById(iid);
+    if(ic){ic.className='vico';ic.textContent='';}
+    var ht=document.getElementById(iid.replace('vi-','h-'));
+    if(ht){ht.className='hint';ht.textContent='';}
+  }
+
+  function getMode(){
+    var m=document.querySelector('input[name="delivery_mode"]:checked');
+    return m?m.value:'';
+  }
+
+  /* ── NAME ── */
+  document.getElementById('name').addEventListener('input',function(){
+    var v=this.value.trim();
+    if(!v){cv(this,'vi-name');return;}
+    if(v.length<3)                        iv(this,'vi-name','Minimum 3 characters');
+    else if(!/^[a-zA-Z\s.\-']+$/.test(v))iv(this,'vi-name','Letters, spaces and hyphens only');
+    else{sv(this,'vi-name','Looks great!');}
+  });
+
+  /* ── PHONE ── */
+  document.getElementById('phone').addEventListener('input',function(){
+    this.value=this.value.replace(/\D/g,'').slice(0,10);
+    var v=this.value;
+    if(!v){cv(this,'vi-phone');return;}
+    if(v.length<10)          iv(this,'vi-phone',v.length+' of 10 digits');
+    else if(!/^[6-9]/.test(v))iv(this,'vi-phone','Must start with 6, 7, 8 or 9');
+    else{sv(this,'vi-phone','Valid number');}
+  });
+
+  /* ── AGE ── */
+  document.getElementById('age_category').addEventListener('change',function(){
+    var sa=document.getElementById('sa-age');
+    if(this.value){sv(this,'vi-age','');if(sa)sa.classList.add('gone');}
+    else{cv(this,'vi-age');if(sa)sa.classList.remove('gone');}
+  });
+
+  /* ── DELIVERY MODE ── */
+  document.querySelectorAll('input[name="delivery_mode"]').forEach(function(inp){
+    inp.addEventListener('change',function(){
+      var mode=this.value;
+      document.getElementById('sec3').classList.toggle('hidden',mode!=='deliver');
+      document.getElementById('sec4').classList.toggle('hidden',mode==='donate');
+      document.getElementById('h-delivery').style.display='none';
+
+    });
+  });
+
+  /* ── ADDRESS ── */
+  document.getElementById('address').addEventListener('input',function(){
+    var v=this.value.trim();
+    if(!v){cv(this,'vi-addr');return;}
+    if(v.length<5) iv(this,'vi-addr','Enter a complete address');
+    else{sv(this,'vi-addr','');}
+  });
+  document.getElementById('city').addEventListener('input',function(){
+    var v=this.value.trim();
+    if(!v){cv(this,'vi-city');return;}
+    if(v.length<2) iv(this,'vi-city','Enter city name');
+    else{sv(this,'vi-city','');}
+  });
+  document.getElementById('state').addEventListener('change',function(){
+    var sa=document.getElementById('sa-state');
+    if(this.value){sv(this,'vi-state','');if(sa)sa.classList.add('gone');}
+    else{cv(this,'vi-state');if(sa)sa.classList.remove('gone');}
+  });
+  document.getElementById('pincode').addEventListener('input',function(){
+    this.value=this.value.replace(/\D/g,'').slice(0,6);
+    var v=this.value;
+    if(!v){cv(this,'vi-pin');return;}
+    if(/^\d{6}$/.test(v)){sv(this,'vi-pin','Valid pincode');}
+    else iv(this,'vi-pin',v.length+' of 6 digits');
+  });
+
+  /* ── BOOK → LANGUAGE CHAIN ── */
+  function populateLangs(bookSel){
+    var idx=bookSel.dataset.index;
+    var lsel=document.querySelector('.lang-select[data-index="'+idx+'"]');
+    var prev=Array.isArray(OBL)?OBL[idx]:'';
+    lsel.innerHTML='<option value="">Select language</option>';
+    (BLM[bookSel.value]||[]).forEach(function(lang){
+      var o=document.createElement('option');
+      o.value=lang;o.textContent=lang;
+      if(prev&&prev===lang)o.selected=true;
+      lsel.appendChild(o);
+    });
+
+  }
+  document.querySelectorAll('.book-select').forEach(function(sel){
+    sel.addEventListener('change',function(){populateLangs(this);});
+    if(sel.value)populateLangs(sel);
+  });
+  document.querySelectorAll('.lang-select').forEach(function(sel){
+    sel.addEventListener('change',function(){});
+  });
+
+  /* ── SUBMIT GATE (mirrors route validation exactly) ── */
+  document.getElementById('regForm').addEventListener('submit',function(e){
+    var ok=true;
+    function focusFirst(el){
+      if(ok){el.focus();el.closest('.section')&&el.closest('.section').scrollIntoView({behavior:'smooth',block:'center'});}
+      ok=false;
+    }
+    var nm=document.getElementById('name');
+    var nv=nm.value.trim();
+    if(!nv||nv.length<3||!/^[a-zA-Z\s.\-']+$/.test(nv)){iv(nm,'vi-name','Enter your full name');focusFirst(nm);}
+
+    var ph=document.getElementById('phone');
+    if(ph.value.length!==10||!/^[6-9]/.test(ph.value)){iv(ph,'vi-phone','Enter a valid 10-digit mobile number');focusFirst(ph);}
+
+    var ag=document.getElementById('age_category');
+    if(!ag.value){iv(ag,'vi-age','Please select an age category');focusFirst(ag);}
+
+    var modeEl=document.querySelector('input[name="delivery_mode"]:checked');
+    if(!modeEl){
+      document.getElementById('h-delivery').style.display='block';
+      if(ok)document.getElementById('h-delivery').scrollIntoView({behavior:'smooth',block:'center'});
+      ok=false;
+    }
+
+    var mode=modeEl?modeEl.value:'';
+    if(mode==='deliver'){
+      var ad=document.getElementById('address');
+      var ct=document.getElementById('city');
+      var st=document.getElementById('state');
+      var pi=document.getElementById('pincode');
+      if(ad.value.trim().length<5){iv(ad,'vi-addr','Enter a complete address');focusFirst(ad);}
+      if(ct.value.trim().length<2){iv(ct,'vi-city','Enter city name');focusFirst(ct);}
+      if(!st.value){iv(st,'vi-state','Please select your state');focusFirst(st);}
+      if(!/^\d{6}$/.test(pi.value)){iv(pi,'vi-pin','Enter a valid 6-digit pincode');focusFirst(pi);}
+    }
+
+    if(mode==='deliver'||mode==='temple_pickup'){
+      document.querySelectorAll('.book-select').forEach(function(bs){
+        if(!bs.value){focusFirst(bs);}
+        var ls=document.querySelector('.lang-select[data-index="'+bs.dataset.index+'"]');
+        if(bs.value&&!ls.value){focusFirst(ls);}
+      });
+    }
+
+    /* ── SSR language validation — combo only ── */
+    var ssrEl=document.getElementById('ssrLanguage');
+    if(ssrEl&&!ssrEl.value){
+      iv(ssrEl,'vi-ssr','Please select a language for the bonus book');
+      focusFirst(ssrEl);
+    }
+
+    if(!ok){e.preventDefault();return;}
+    /* Simple double-click prevention — 3 second window only */
+    if(window._submitting) { e.preventDefault(); return; }
+    window._submitting = true;
+    /* Auto reset after 5 seconds — handles back button on all browsers */
+    setTimeout(function() { window._submitting = false; }, 5000);
+  });
+</script>
+</body>
+</html>

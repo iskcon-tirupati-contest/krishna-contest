@@ -271,7 +271,7 @@ router.post(
       if (!user.password_hash) {
         return res.status(400).json({
           ok: false,
-          message: "Password login is not enabled for this account yet.",
+          message: "Password is not set for this account. Please press Forgot/reset password",
         });
       }
 

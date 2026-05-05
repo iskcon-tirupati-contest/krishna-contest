@@ -395,6 +395,67 @@
         white-space:nowrap;
       }
     }
+
+
+    .alert-ok,
+    .alert-err{
+      border-radius:12px;
+      padding:12px 14px;
+      margin-top:14px;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .alert-ok{
+      background:rgba(16,185,129,.12);
+      border:1px solid rgba(16,185,129,.28);
+      color:#b7ffdf;
+    }
+
+    .alert-err{
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.28);
+      color:#ffd1d1;
+    }
+
+    .assign-wrap{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:end;
+      margin-top:12px;
+    }
+
+    .assign-box{
+      min-width:260px;
+      flex:1;
+    }
+
+    .count-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:34px;
+      height:34px;
+      padding:0 10px;
+      border-radius:999px;
+      background:rgba(34,211,238,.12);
+      color:var(--cyan);
+      border:1px solid rgba(34,211,238,.22);
+      font-weight:900;
+    }
+
+    .check-cell{
+      width:44px;
+      text-align:center;
+    }
+
+    .check-cell input[type="checkbox"]{
+      width:18px;
+      height:18px;
+      accent-color:#22d3ee;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
@@ -449,7 +510,13 @@
         <div class="muted">Bookings created through agents only</div>
 
         <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
+<% if (okMsg) { %>
+          <div class="alert-ok"><%= okMsg %></div>
+        <% } %>
 
+        <% if (errMsg) { %>
+          <div class="alert-err"><%= errMsg %></div>
+        <% } %>
         <form method="GET" action="/admin/offline-orders">
           <div class="grid">
             <div>
@@ -490,7 +557,7 @@
         </form>
       </div>
 
-     <!-- <div class="stats screen-only">
+     <!--<div class="stats screen-only">
         <div class="stat"><div class="muted">Total Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.total_bookings %></div></div>
         <div class="stat"><div class="muted">Paid Bookings</div><div style="font-size:28px;font-weight:900"><%= summary.paid_count %></div></div>
         <div class="stat"><div class="muted">Paid Amount</div><div style="font-size:28px;font-weight:900">₹<%= summary.paid_amount %></div></div>
@@ -526,7 +593,7 @@
       <div class="card screen-only">
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div>
-            <h2 style="margin:0 0 6px 0">Daily Sales Report</h2>
+            <h2 style="margin:0 0 6px 0">Sales Summary</h2>
             <div class="muted">Use Agent + Paid + Date for best results</div>
           </div>
           <button type="button" class="btn ghost" onclick="window.print()">Print Report</button>
@@ -559,54 +626,163 @@
           </div>
         </div>
 
-      <div class="card screen-only">
-        <h2 style="margin-top:0">Offline Booking Rows</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Created</th>
-              <th>Agent</th>
-              <th>Customer</th>
-              <th>Payment</th>
-              <th>Status</th>
-              <th>Delivery</th>
-              <th>Amount</th>
-              <th>Contests</th>
-              <th>Refund</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% items.forEach(function(r){ %>
+              <div class="card screen-only">
+        <form id="assignAgentForm" method="POST" action="/admin/offline-orders/assign-agent">
+          <input type="hidden" name="return_qs" value="<%= qs || '' %>">
+
+          <div class="row" style="justify-content:space-between;align-items:flex-start">
+            <div>
+              <h2 style="margin:0 0 6px 0">Offline Booking History</h2>
+              <div class="muted">Select bookings and assign them to the original agent using mobile number.</div>
+            </div>
+            <div class="count-badge">
+              <span id="selectedBookingsCount">0</span>
+            </div>
+          </div>
+
+          <div class="assign-wrap">
+            <div class="assign-box">
+              <div class="muted" style="margin-bottom:6px">Original Agent Mobile Number</div>
+              <input
+                id="target_agent_phone"
+                type="tel"
+                name="target_agent_phone"
+                placeholder="Enter 10-digit agent mobile number"
+                inputmode="numeric"
+                maxlength="10"
+                pattern="[0-9]{10}"
+                oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"
+                required
+              >
+            </div>
+
+            <div class="row">
+              <button class="btn" type="submit">Assign Selected</button>
+              <button class="btn ghost" type="button" onclick="clearBookingSelection()">Clear Selection</button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
               <tr>
-                <td><%= r.created_at %></td>
-                <td>
-                  <div><strong><%= r.agent_name %></strong></div>
-                  <div class="muted"><%= r.agent_phone || '-' %></div>
-                </td>
-                <td>
-                  <div><strong><%= r.customer_name %></strong></div>
-                  <div class="muted"><%= r.customer_phone || '-' %></div>
-                </td>
-                <td>
-                  <div><span class="pill"><%= r.payment_method || '-' %></span></div>
-                  <div style="margin-top:6px"><%= r.payment_id || '-' %></div>
-                </td>
-                <td><span class="pill"><%= r.status %></span></td>
-                <td><%= r.delivery_mode || '-' %></td>
-                <td>₹<%= r.total_amount %></td>
-                <td><%= r.contest_titles || '-' %></td>
-                <td>
-                  <% if (r.is_refunded) { %>
-                    <div><span class="pill">Refunded</span></div>
-                    <div class="muted" style="margin-top:6px"><%= r.refund_note || '' %></div>
-                  <% } else { %>
-                    -
-                  <% } %>
-                </td>
+                <th class="check-cell">
+                  <input type="checkbox" id="selectAllBookings" title="Select all visible bookings">
+                </th>
+                <th>Created</th>
+                <th>Agent</th>
+                <th>Customer</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Delivery</th>
+                <th>Amount</th>
+                <th>Contests</th>
+                <th>Refund</th>
               </tr>
-            <% }) %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <% items.forEach(function(r){ %>
+                <tr>
+                  <td class="check-cell">
+                    <input
+                      type="checkbox"
+                      class="booking-check"
+                      name="booking_ids"
+                      value="<%= r.id %>"
+                    >
+                  </td>
+                  <td><%= r.created_at %></td>
+                  <td>
+                    <div><strong><%= r.agent_name %></strong></div>
+                    <div class="muted"><%= r.agent_phone || '-' %></div>
+                  </td>
+                  <td>
+                    <div><strong><%= r.customer_name %></strong></div>
+                    <div class="muted"><%= r.customer_phone || '-' %></div>
+                  </td>
+                  <td>
+                    <div><span class="pill"><%= r.payment_method || '-' %></span></div>
+                    <div style="margin-top:6px"><%= r.payment_id || '-' %></div>
+                  </td>
+                  <td><span class="pill"><%= r.status %></span></td>
+                  <td><%= r.delivery_mode || '-' %></td>
+                  <td>₹<%= r.total_amount %></td>
+                  <td><%= r.contest_titles || '-' %></td>
+                  <td>
+                    <% if (r.is_refunded) { %>
+                      <div><span class="pill">Refunded</span></div>
+                      <div class="muted" style="margin-top:6px"><%= r.refund_note || '' %></div>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </form>
+      </div>
+
+
+         <div class="two-col" style="margin-top:18px">
+          <div>
+            <h3 style="margin:0 0 10px 0">Books Summary</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Book</th>
+                  <th>Language</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if ((bookSummary || []).length === 0) { %>
+                  <tr><td colspan="4" class="muted">No paid rows for selected filters</td></tr>
+                <% } %>
+                <% (bookSummary || []).forEach(function(r){ %>
+                  <tr>
+                    <td><span class="pill"><%= r.book_kind %></span></td>
+                    <td><%= r.book_title %></td>
+                    <td><%= r.book_language %></td>
+                    <td><strong><%= r.qty %></strong></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3 style="margin:0 0 10px 0">Quick Split</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Rows</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Regular Books</td>
+                  <td><%= regularBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Bonus Books</td>
+                  <td><%= bonusBookSummary.length %></td>
+                </tr>
+                <tr>
+                  <td>Paid Rows</td>
+                  <td><%= (printRows || []).length %></td>
+                </tr>
+                <tr>
+                  <td>Total Books</td>
+                  <td><%= totalBooks || 0 %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
       </div>
 
       <!-- PRINT: STOCK COPY -->
@@ -755,6 +931,85 @@
     var safeAgent = agentName.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
     var safeDate = reportDate.replace(/[^0-9\-]+/g, "-");
     document.title = (safeAgent || "offline-report") + "-" + (safeDate || "report");
+  })();
+
+    (function () {
+    var form = document.getElementById("assignAgentForm");
+    var master = document.getElementById("selectAllBookings");
+    var countEl = document.getElementById("selectedBookingsCount");
+    var phoneEl = document.getElementById("target_agent_phone");
+
+    if (!form || !master || !countEl) return;
+
+    function getChecks() {
+      return Array.prototype.slice.call(document.querySelectorAll(".booking-check"));
+    }
+
+    function updateSelectionUi() {
+      var checks = getChecks();
+      var selected = checks.filter(function (cb) { return cb.checked; }).length;
+      countEl.textContent = String(selected);
+
+      if (!checks.length) {
+        master.checked = false;
+        master.indeterminate = false;
+        return;
+      }
+
+      master.checked = selected === checks.length;
+      master.indeterminate = selected > 0 && selected < checks.length;
+    }
+
+    master.addEventListener("change", function () {
+      getChecks().forEach(function (cb) {
+        cb.checked = master.checked;
+      });
+      updateSelectionUi();
+    });
+
+    document.addEventListener("change", function (e) {
+      var t = e.target;
+      if (t && t.classList && t.classList.contains("booking-check")) {
+        updateSelectionUi();
+      }
+    });
+
+    window.clearBookingSelection = function () {
+      master.checked = false;
+      getChecks().forEach(function (cb) {
+        cb.checked = false;
+      });
+      updateSelectionUi();
+    };
+
+    form.addEventListener("submit", function (e) {
+      var checks = getChecks();
+      var selected = checks.filter(function (cb) { return cb.checked; }).length;
+
+      if (!selected) {
+        e.preventDefault();
+        alert("Please select at least one booking.");
+        return;
+      }
+
+      var phone = String((phoneEl && phoneEl.value) || "").replace(/\D/g, "");
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        e.preventDefault();
+        alert("Please enter a valid 10-digit agent mobile number.");
+        if (phoneEl) phoneEl.focus();
+        return;
+      }
+
+      var ok = confirm(
+        "Assign " + selected + " selected booking(s) to agent mobile number " + phone + "?"
+      );
+
+      if (!ok) {
+        e.preventDefault();
+      }
+    });
+
+    updateSelectionUi();
   })();
 </script>
 </body>

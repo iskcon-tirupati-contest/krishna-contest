@@ -139,24 +139,17 @@
   <h2 style="margin:0 0 10px 0;font-size:22px">📅 Today's Stats</h2>
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <div class="stat">
-      <div class="muted">Contests Attempted Today</div>
+      <div class="muted">Orders Today</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayOrdersAll %></div>
     </div>
     <div class="stat">
       <div class="muted">Paid Today</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayPaidOrders %></div>
     </div>
-
     <div class="stat">
-  <div class="muted">Failed Today</div>
-  <div style="font-size:28px;font-weight:900"><%= stats.todayFailedOrders %></div>
-  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Payment attempted & failed</div>
-</div>
-<div class="stat">
-  <div class="muted">Added to Cart Today</div>
-  <div style="font-size:28px;font-weight:900"><%= stats.todayAddedToCart %></div>
-  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Reached checkout, dropped off</div>
-</div>
+      <div class="muted">Pending/Failed Today</div>
+      <div style="font-size:28px;font-weight:900"><%= stats.todayPendingOrders %></div>
+    </div>
 
     <div class="stat">
       <div class="muted">Gift Book Today</div>
@@ -175,23 +168,17 @@
   <h2 style="margin:0 0 10px 0;font-size:22px">📊 Total Stats</h2>
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <div class="stat">
-      <div class="muted">Total Contests Attempted</div>
+      <div class="muted">Total Orders</div>
       <div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div>
     </div>
     <div class="stat">
-      <div class="muted">Paid Contests</div>
+      <div class="muted">Paid Orders</div>
       <div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div>
     </div>
     <div class="stat">
-  <div class="muted">Failed Contests</div>
-  <div style="font-size:28px;font-weight:900"><%= stats.failedOrders %></div>
-  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Payment attempted & failed</div>
-</div>
-<div class="stat">
-  <div class="muted">Contests-Added to Cart</div>
-  <div style="font-size:28px;font-weight:900"><%= stats.addedToCart %></div>
-  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Reached checkout, dropped off</div>
-</div>
+      <div class="muted">Pending/Failed</div>
+      <div style="font-size:28px;font-weight:900"><%= stats.pendingOrders %></div>
+    </div>
 
     <div class="stat">
       <div class="muted">Gift Book (paid)</div>
@@ -215,7 +202,7 @@
       <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.65)">Successful payment users</div>
     </div>
     <div class="stat">
-      <div class="muted">Added To Cart Users</div>
+      <div class="muted">Pending Users</div>
       <div style="font-size:28px;font-weight:900"><%= userStats?.pending_users || 0 %></div>
       <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.65)">Added to cart / not yet paid</div>
     </div>

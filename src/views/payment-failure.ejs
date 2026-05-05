@@ -4,52 +4,515 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Payment Not Completed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Segoe UI,Tahoma,Verdana,sans-serif;background:#f5f7fb;padding:18px;color:#132238}
-    .wrap{max-width:760px;margin:0 auto;background:#fff;border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.08);overflow:hidden}
-    .top{padding:22px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff}
-    .top h1{font-size:28px;margin-bottom:6px}
-    .top p{opacity:.95;font-size:14px;line-height:1.6}
-    .content{padding:18px}
-    .box{border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:14px}
-    .title{font-size:20px;font-weight:1000;margin-bottom:10px;color:#0f172a}
-    .muted{color:#64748b;font-size:14px;line-height:1.6}
-    .support{background:#eff6ff;border:1px solid #bfdbfe}
-    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-    .btn{display:inline-block;border-radius:14px;padding:13px 18px;font-weight:1000;text-decoration:none}
-    .primary{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff}
-    .ghost{background:#fff;border:1px solid #cbd5e1;color:#1e293b}
+    :root{
+      --navy:#1a237e;--navy-mid:#283593;--navy-light:#3949ab;
+      --red:#dc2626;--red-mid:#ef4444;
+      --amber:#d97706;--amber-soft:#fffbeb;--amber-border:#fde68a;--amber-deep:#92400e;
+      --green:#10b981;--green-mid:#059669;--green-soft:#f0fdf4;--green-border:#86efac;
+      --indigo-soft:#eef2ff;--indigo-border:#c7d2fe;
+      --slate-soft:#f8fafc;--slate-border:#e2e8f0;
+      --text-dark:#0f172a;--text-mid:#334155;--text-muted:#64748b;
+      --shadow-sm:0 2px 8px rgba(15,23,42,.06);
+      --shadow:0 12px 32px rgba(26,35,126,.12);
+      --shadow-lg:0 24px 60px rgba(26,35,126,.18);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:linear-gradient(160deg,#eef2ff 0%,#f8fafc 50%,#fef2f2 100%);min-height:100vh;padding:24px 16px 60px;color:var(--text-dark);line-height:1.5}
+
+    /* Telugu styling — slightly larger to compensate for script size */
+    .te{font-family:'Noto Sans Telugu','DM Sans',sans-serif;font-weight:500}
+
+    .wrap{max-width:780px;margin:0 auto;background:#fff;border-radius:24px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(226,232,240,.6)}
+
+    /* ── HEADER ── */
+    .top{padding:30px 24px 26px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,var(--navy-light) 100%);color:#fff;position:relative;overflow:hidden}
+    .top::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(239,68,68,.18) 0%,transparent 55%),radial-gradient(circle at 10% 90%,rgba(92,107,192,.25) 0%,transparent 55%);pointer-events:none}
+    .top > *{position:relative}
+
+    .failure-icon-wrap{width:68px;height:68px;margin-bottom:16px}
+    .failure-circle{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--red-mid),var(--red));display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 12px rgba(239,68,68,.2),0 8px 20px rgba(220,38,38,.35);animation:popIn .45s cubic-bezier(.34,1.56,.64,1) both}
+    .failure-circle svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+    .failure-circle svg path{stroke-dasharray:20;stroke-dashoffset:20;animation:drawX .3s .35s ease forwards}
+    .failure-circle svg path:nth-child(2){animation-delay:.55s}
+    @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes drawX{to{stroke-dashoffset:0}}
+
+    .top h1{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+    .top h1-te{font-family:'Noto Sans Telugu',sans-serif;font-size:16px;font-weight:600;color:rgba(255,255,255,.9);margin-bottom:10px;display:block}
+    .top-sub{font-size:14px;color:rgba(255,255,255,.85);margin-bottom:14px;line-height:1.6}
+    .reason-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;color:#fff}
+    .reason-pill .reason-label{color:rgba(255,255,255,.7);font-weight:500;font-size:12px}
+    .reason-pill b{font-weight:700}
+
+    /* ── CONTENT ── */
+    .content{padding:22px 22px 24px;display:flex;flex-direction:column;gap:14px}
+
+    .section{border-radius:18px;padding:20px;border:1.5px solid var(--slate-border);background:#fff}
+    .sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+    .sec-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;box-shadow:var(--shadow-sm)}
+    .sec-title-wrap{flex:1;min-width:0}
+    .sec-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:var(--text-dark);letter-spacing:-.1px;line-height:1.3}
+    .sec-title-te{font-family:'Noto Sans Telugu',sans-serif;font-size:13px;font-weight:500;color:var(--text-muted);margin-top:3px;line-height:1.4}
+
+    /* SECTION 1 — money debited (amber) */
+    .section.debit{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:var(--amber-border)}
+    .section.debit .sec-icon{background:linear-gradient(135deg,#fbbf24,var(--amber));color:#fff}
+    .section.debit .sec-title{color:var(--amber-deep)}
+    .scenario-grid{display:flex;flex-direction:column;gap:8px;margin:10px 0 16px}
+    .scenario{display:flex;gap:11px;padding:11px 12px;background:rgba(255,255,255,.75);border:1px solid var(--amber-border);border-radius:10px;font-size:14px;line-height:1.55;color:var(--text-mid)}
+    .scenario-num{width:24px;height:24px;border-radius:7px;background:var(--amber);color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .scenario-text b{color:var(--amber-deep);font-weight:700}
+    .scenario-te{display:block;font-family:'Noto Sans Telugu',sans-serif;font-size:12.5px;font-weight:500;color:var(--text-muted);margin-top:3px;line-height:1.5}
+
+    .complaint-cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,var(--amber),#b45309);color:#fff;border:none;border-radius:12px;padding:15px 20px;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(217,119,6,.32);transition:transform .14s,box-shadow .14s;flex-direction:column;line-height:1.3}
+    .complaint-cta-text{display:flex;align-items:center;gap:8px}
+    .complaint-cta-te{font-family:'Noto Sans Telugu',sans-serif;font-size:12px;font-weight:500;opacity:.85;letter-spacing:.2px}
+    .complaint-cta:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(217,119,6,.45)}
+    .complaint-cta:active{transform:scale(.98)}
+    .complaint-cta:disabled{opacity:.7;cursor:wait;transform:none}
+    .complaint-cta svg{width:16px;height:16px}
+
+    /* SECTION 2 — retry (indigo) */
+    .section.retry{background:linear-gradient(135deg,var(--indigo-soft),#dbeafe);border-color:var(--indigo-border)}
+    .section.retry .sec-icon{background:linear-gradient(135deg,var(--navy-light),var(--navy-mid));color:#fff}
+    .section.retry .sec-title{color:var(--navy)}
+    .sec-body{font-size:14px;color:var(--text-mid);line-height:1.6}
+    .sec-body-te{font-family:'Noto Sans Telugu',sans-serif;font-size:13px;color:var(--text-muted);margin-top:4px;line-height:1.55}
+    .tip-list{list-style:none;padding:0;margin:12px 0}
+    .tip-list li{display:flex;gap:10px;padding:7px 0;font-size:14px;color:var(--text-mid);line-height:1.55;align-items:flex-start}
+    .tip-list li b{color:var(--text-dark);font-weight:700}
+    .tip-tick{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .tip-tick svg{width:11px;height:11px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .retry-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;text-decoration:none;border-radius:12px;padding:14px 20px;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;box-shadow:0 6px 16px rgba(26,35,126,.3);transition:transform .14s,box-shadow .14s;margin-top:10px}
+    .retry-cta-text{display:flex;align-items:center;gap:8px}
+    .retry-cta-te{font-family:'Noto Sans Telugu',sans-serif;font-size:12px;font-weight:500;opacity:.85}
+    .retry-cta:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(26,35,126,.42)}
+    .retry-cta:active{transform:scale(.98)}
+    .retry-cta svg{width:16px;height:16px;fill:#fff}
+
+    .upi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+    .upi-pill{padding:10px 8px;text-align:center;background:rgba(255,255,255,.8);border:1px solid var(--indigo-border);border-radius:10px;font-size:12.5px;font-weight:600;color:var(--navy-mid)}
+
+    /* SECTION 3 — help */
+    .section.help{background:#fff;border-color:var(--slate-border)}
+    .section.help .sec-icon{background:linear-gradient(135deg,#475569,#1e293b);color:#fff}
+    .help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .help-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--slate-soft);border:1px solid var(--slate-border);border-radius:10px;text-decoration:none;color:var(--text-dark);transition:background .14s,border-color .14s}
+    .help-item:hover{background:#fff;border-color:var(--navy-light)}
+    .help-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .help-icon.wa{background:#dcfce7;color:var(--green-mid)}
+    .help-icon.call{background:#dbeafe;color:var(--navy-light)}
+    .help-icon svg{width:18px;height:18px}
+    .help-label{font-family:'Sora',sans-serif;font-size:12.5px;font-weight:700;color:var(--text-dark);line-height:1.2}
+    .help-meta{font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:500}
+
+    .ref-row{margin-top:14px;padding:11px 13px;background:var(--slate-soft);border:1px dashed var(--slate-border);border-radius:10px;font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:3px}
+    .ref-row b{font-family:'Sora',sans-serif;color:var(--text-dark);font-size:12.5px;letter-spacing:.2px;user-select:all;word-break:break-all}
+
+    /* ── POPUP ── */
+    .popup-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:fadeIn .25s ease both}
+    .popup-overlay.show{display:flex}
+    .popup{max-width:420px;width:100%;background:#fff;border-radius:24px;padding:32px 26px 24px;text-align:center;box-shadow:var(--shadow-lg);animation:popUp .4s cubic-bezier(.34,1.56,.64,1) both}
+    .success-icon-wrap{width:72px;height:72px;margin:0 auto 18px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-mid));display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 14px rgba(16,185,129,.18),0 10px 24px rgba(16,185,129,.35);animation:popIn .45s .15s cubic-bezier(.34,1.56,.64,1) both;opacity:0}
+    .success-icon-wrap svg{width:34px;height:34px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+    .success-icon-wrap svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:drawCheck .45s .55s ease forwards}
+    @keyframes drawCheck{to{stroke-dashoffset:0}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes popUp{from{transform:scale(.85) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+    .popup h3{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text-dark);margin-bottom:6px;letter-spacing:-.2px}
+    .popup-h3-te{font-family:'Noto Sans Telugu',sans-serif;font-size:14px;font-weight:500;color:var(--text-muted);margin-bottom:10px}
+    .popup-msg{font-size:14px;color:var(--text-mid);line-height:1.65;margin-bottom:6px}
+    .popup-msg-te{font-family:'Noto Sans Telugu',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:16px}
+    .popup-ticket{display:inline-block;background:var(--green-soft);border:1px solid var(--green-border);color:var(--green-mid);padding:8px 14px;border-radius:10px;font-family:'Sora',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.4px;margin-bottom:18px}
+    .popup-ticket span{opacity:.75;font-weight:500;margin-right:5px}
+    .popup-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:12px;padding:13px 24px;font-family:'Sora',sans-serif;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;border:none;width:100%;background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;box-shadow:0 4px 12px rgba(26,35,126,.28)}
+
+    /* spinner */
+    .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* trust strip */
+    .trust-strip{margin-top:16px;display:flex;align-items:center;justify-content:center;gap:14px;padding:11px;background:var(--slate-soft);border-radius:12px;border:1px solid var(--slate-border);font-size:11.5px;color:var(--text-muted);font-weight:600;flex-wrap:wrap}
+    .trust-strip svg{width:13px;height:13px;flex-shrink:0}
+    .trust-item{display:inline-flex;align-items:center;gap:5px}
+
+    @media(max-width:480px){
+      body{padding:14px 10px 40px}
+      .top{padding:24px 20px 22px}
+      .top h1{font-size:22px}
+      .content{padding:18px 16px 20px;gap:12px}
+      .section{padding:18px 16px}
+      .help-grid{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
+<%
+  // Categorize the error
+  var code = String(errorCode || '').toUpperCase();
+  var desc = String(errorDescription || '').toLowerCase();
+  var category = 'generic';
+  if (desc.indexOf('time') > -1 || code.indexOf('TIMEOUT') > -1) category = 'timeout';
+  else if (desc.indexOf('insufficient') > -1) category = 'insufficient';
+  else if (desc.indexOf('declined') > -1) category = 'declined';
+  else if (desc.indexOf('cancelled') > -1 || code === 'USER_CANCELLED') category = 'cancelled';
+  else if (desc.indexOf('pin') > -1 || desc.indexOf('mpin') > -1 || desc.indexOf('otp') > -1) category = 'wrong_pin';
+
+  // Simple English reason + Telugu
+  var reasonText = '';
+  var reasonTextTe = '';
+  if (category === 'timeout') {
+    reasonText = "You took too long to enter UPI PIN";
+    reasonTextTe = "UPI PIN సమయానికి వేయలేదు";
+  } else if (category === 'insufficient') {
+    reasonText = "Not enough money in your account";
+    reasonTextTe = "ఖాతాలో తగినంత డబ్బు లేదు";
+  } else if (category === 'declined') {
+    reasonText = "Bank stopped this payment";
+    reasonTextTe = "బ్యాంక్ చెల్లింపును ఆపివేసింది";
+  } else if (category === 'cancelled') {
+    reasonText = "Payment was cancelled";
+    reasonTextTe = "చెల్లింపు రద్దు అయింది";
+  } else if (category === 'wrong_pin') {
+    reasonText = "Wrong UPI PIN entered";
+    reasonTextTe = "తప్పు UPI PIN ఇచ్చారు";
+  } else {
+    reasonText = (errorDescription || "Payment did not complete");
+    reasonTextTe = "చెల్లింపు పూర్తి కాలేదు";
+  }
+%>
+
 <div class="wrap">
+  <!-- ── HEADER ── -->
   <div class="top">
-    <h1>Payment Not Completed ⚠️</h1>
-    <p>Your payment could not be completed successfully.</p>
+    <div class="failure-icon-wrap">
+      <div class="failure-circle">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 6 L18 18"/>
+          <path d="M18 6 L6 18"/>
+        </svg>
+      </div>
+    </div>
+    <h1>Payment Not Completed</h1>
+    <span class="te" style="display:block;font-size:16px;color:rgba(255,255,255,.92);font-weight:600;margin-bottom:10px">చెల్లింపు పూర్తి కాలేదు</span>
+
+    <div class="reason-pill">
+      <span class="reason-label">Reason / కారణం:</span>
+      <b><%= reasonText %></b>
+      <span class="te" style="opacity:.85;margin-left:4px"> · <%= reasonTextTe %></span>
+    </div>
   </div>
 
   <div class="content">
-    <div class="box">
-      <div class="title">What to do next</div>
-      <div class="muted">
-        Please go to <b>Profile → Payments</b> to resume your payment.<br>
-        If needed, you can also raise a complaint from the same Payments section.
+
+    <!-- ── SECTION 1: AMOUNT WAS DEBITED ── -->
+    <div class="section debit">
+      <div class="sec-head">
+        <div class="sec-icon">💳</div>
+        <div class="sec-title-wrap">
+          <div class="sec-title">Was money debited from your account?</div>
+          <div class="sec-title-te">మీ ఖాతా నుండి డబ్బు తీసివేయబడిందా?</div>
+        </div>
+      </div>
+
+      <div class="scenario-grid">
+        <div class="scenario">
+          <div class="scenario-num">1</div>
+          <div>
+            <span class="scenario-text">Bank will <b>refund automatically</b> in <b>5–7 working days</b>.</span>
+            <span class="scenario-te te">5–7 పని దినాలలో బ్యాంకు మీకే తిరిగి ఇస్తుంది.</span>
+          </div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-num">2</div>
+          <div>
+            <span class="scenario-text">If money reached us late, we will <b>mark you as Paid in 24 hours</b>. No need to pay again.</span>
+            <span class="scenario-te te">24 గంటలలో మేము మిమ్మల్ని "చెల్లింపు పూర్తి" అని గుర్తిస్తాము. మళ్ళీ చెల్లించాల్సిన అవసరం లేదు.</span>
+          </div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-num">3</div>
+          <div>
+            <span class="scenario-text">Not sure? <b>Click below to register a complaint</b>. We will check and reply in <b>1 working day</b>.</span>
+            <span class="scenario-te te">సందేహమా? క్రింద ఫిర్యాదు చేయండి. 1 పని దినంలో మీకు సమాధానం ఇస్తాము.</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="complaint-cta" id="complaintBtn" type="button">
+        <span class="complaint-cta-text">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/></svg>
+          <span id="complaintBtnText">Register Complaint Now</span>
+        </span>
+        <span class="complaint-cta-te" id="complaintBtnTextTe">ఇప్పుడు ఫిర్యాదు చేయండి</span>
+      </button>
+    </div>
+
+    <!-- ── SECTION 2: AMOUNT NOT DEBITED — RETRY ── -->
+    <div class="section retry">
+      <div class="sec-head">
+        <div class="sec-icon">🔁</div>
+        <div class="sec-title-wrap">
+          <div class="sec-title">Money not debited? Try payment again</div>
+          <div class="sec-title-te">డబ్బు తీయబడలేదా? మళ్ళీ చెల్లించండి</div>
+        </div>
+      </div>
+
+      <ul class="tip-list">
+        <% if (category === 'timeout') { %>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              <b>Keep your UPI PIN ready</b> before tapping Pay.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">Pay నొక్కే ముందు UPI PIN సిద్ధంగా ఉంచుకోండి.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              <b>Do not close this page</b> or open other apps.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">ఈ పేజీని మూసివేయవద్దు, వేరే యాప్‌లు తెరవవద్దు.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              Use <b>good internet</b> (4G or WiFi).
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">మంచి ఇంటర్నెట్ (4G లేదా WiFi) వాడండి.</span>
+            </span>
+          </li>
+        <% } else if (category === 'insufficient') { %>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              <b>Check your balance</b> before retrying.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">మళ్ళీ చెల్లించే ముందు మీ ఖాతాలో డబ్బు ఉందో చూసుకోండి.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              Try a <b>different bank account</b> or UPI app.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">వేరే బ్యాంక్ ఖాతా లేదా UPI యాప్ ఉపయోగించండి.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              You can also pay by <b>credit / debit card</b>.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">క్రెడిట్/డెబిట్ కార్డ్‌తో కూడా చెల్లించవచ్చు.</span>
+            </span>
+          </li>
+        <% } else { %>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              Use the <b>UPI app you know best</b>.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">మీకు బాగా తెలిసిన UPI యాప్ వాడండి.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              Enter PIN <b>within 5 minutes</b>.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">5 నిమిషాలలోపు PIN ఇవ్వండి.</span>
+            </span>
+          </li>
+          <li>
+            <span class="tip-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>
+            <span>
+              If UPI fails, try <b>card payment</b>.
+              <span class="te" style="display:block;font-size:12.5px;color:var(--text-muted);margin-top:2px">UPI పని చేయకపోతే కార్డ్‌తో చెల్లించండి.</span>
+            </span>
+          </li>
+        <% } %>
+      </ul>
+
+      <a class="retry-cta" href="<%= retryUrl %>">
+        <span class="retry-cta-text">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4l-2.35 2.35z"/></svg>
+          Retry Payment Now
+        </span>
+        <span class="retry-cta-te">మళ్ళీ చెల్లించండి</span>
+      </a>
+
+      <div class="upi-row">
+        <div class="upi-pill">📱 PhonePe</div>
+        <div class="upi-pill">💚 Google Pay</div>
+        <div class="upi-pill">💙 Paytm</div>
       </div>
     </div>
 
-    <div class="box support">
-      <div class="title">Need Help?</div>
-      <div class="muted">
-        For any queries, please send <b>Hi</b> to <b>9493805059</b> on WhatsApp. We are ready to help you 24x7.
+    <!-- ── SECTION 3: HELP ── -->
+    <div class="section help">
+      <div class="sec-head">
+        <div class="sec-icon">💬</div>
+        <div class="sec-title-wrap">
+          <div class="sec-title">Need help? We're here 24×7</div>
+          <div class="sec-title-te">సహాయం కావాలా? మేము 24×7 అందుబాటులో ఉన్నాము</div>
+        </div>
+      </div>
+
+      <div class="help-grid">
+        <a class="help-item" href="https://wa.me/919493805059?text=Hi" target="_blank" rel="noopener">
+          <div class="help-icon wa">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          </div>
+          <div>
+            <div class="help-label">WhatsApp Us</div>
+            <div class="help-meta">Send "Hi" to 9493805059</div>
+          </div>
+        </a>
+        <a class="help-item" href="tel:+919493805059">
+          <div class="help-icon call">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 00-1.02.24l-2.2 2.2a15.04 15.04 0 01-6.59-6.58l2.2-2.21a1 1 0 00.25-1.02C8.7 6.45 8.5 5.25 8.5 4a1 1 0 00-1-1H4a1 1 0 00-1 1c0 9.39 7.61 17 17 17a1 1 0 001-1v-3.5a1 1 0 00-1-1z"/></svg>
+          </div>
+          <div>
+            <div class="help-label">Call Support</div>
+            <div class="help-meta">+91 94938 05059</div>
+          </div>
+        </a>
+      </div>
+
+      <% if (gatewayOrderId) { %>
+        <div class="ref-row">
+          <span>Payment Reference / చెల్లింపు సంఖ్య:</span>
+          <b><%= gatewayOrderId %></b>
+        </div>
+      <% } %>
+
+      <div class="trust-strip">
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="#10b981"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm-1 14l-4-4 1.4-1.4L11 12.2l5.6-5.6L18 8l-7 7z"/></svg>
+          Secured by HDFC Bank
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="#3949ab"><path d="M12 2L4 6v6c0 5 3.5 9.7 8 11 4.5-1.3 8-6 8-11V6l-8-4z"/></svg>
+          PCI DSS Compliant
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="#d97706"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93A8.014 8.014 0 014.07 13H7v-2H4.07A8.014 8.014 0 0111 4.07V7h2V4.07A8.014 8.014 0 0119.93 11H17v2h2.93A8.014 8.014 0 0113 19.93V17h-2v2.93z"/></svg>
+          24×7 Support
+        </div>
       </div>
     </div>
 
-    <div class="btnRow">
-      <a class="btn primary" href="/dashboard/profile?tab=payments">Go to Payments</a>
-      <a class="btn ghost" href="/dashboard">Back to Dashboard</a>
-    </div>
   </div>
 </div>
+
+<!-- ── SUCCESS POPUP — only Close button ── -->
+<div class="popup-overlay" id="successPopup">
+  <div class="popup">
+    <div class="success-icon-wrap">
+      <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h3 id="popupTitle">Complaint Registered</h3>
+    <div class="popup-h3-te" id="popupTitleTe">ఫిర్యాదు నమోదు అయింది</div>
+    <div class="popup-msg" id="popupMsg">
+      Our team will check and contact you within <b>24 hours</b>.
+    </div>
+    <div class="popup-msg-te te" id="popupMsgTe">
+      మా బృందం పరిశీలించి 24 గంటలలో మిమ్మల్ని సంప్రదిస్తుంది.
+    </div>
+    <div class="popup-ticket" id="popupTicket" style="display:none">
+      <span>Ticket:</span><b id="ticketRefVal">—</b>
+    </div>
+    <button class="popup-btn" type="button" onclick="closePopup()">
+      Close · మూసివేయండి
+    </button>
+  </div>
+</div>
+
+<script>
+  const PAYMENT_CTX = {
+    gatewayOrderId:   <%- JSON.stringify(gatewayOrderId   || "") %>,
+    errorCode:        <%- JSON.stringify(errorCode        || "") %>,
+    errorDescription: <%- JSON.stringify(errorDescription || "") %>,
+    errorReason:      <%- JSON.stringify(errorReason      || "") %>,
+    reasonCategory:   <%- JSON.stringify(category) %>
+  };
+
+  const btn       = document.getElementById('complaintBtn');
+  const btnText   = document.getElementById('complaintBtnText');
+  const btnTextTe = document.getElementById('complaintBtnTextTe');
+  const popup     = document.getElementById('successPopup');
+  const popupMsg  = document.getElementById('popupMsg');
+  const popupMsgTe = document.getElementById('popupMsgTe');
+  const popupTitle = document.getElementById('popupTitle');
+  const popupTitleTe = document.getElementById('popupTitleTe');
+  const ticketBox = document.getElementById('popupTicket');
+  const ticketVal = document.getElementById('ticketRefVal');
+
+  function showPopup(opts) {
+    if (opts.title) popupTitle.textContent = opts.title;
+    if (opts.titleTe) popupTitleTe.textContent = opts.titleTe;
+    if (opts.message) popupMsg.innerHTML = opts.message;
+    if (opts.messageTe) popupMsgTe.textContent = opts.messageTe;
+    if (opts.ticketRef) {
+      ticketVal.textContent = opts.ticketRef;
+      ticketBox.style.display = 'inline-block';
+    } else {
+      ticketBox.style.display = 'none';
+    }
+    popup.classList.add('show');
+  }
+
+  function closePopup() {
+    popup.classList.remove('show');
+  }
+
+  async function raiseAutoComplaint() {
+    if (!PAYMENT_CTX.gatewayOrderId) {
+      alert('Payment reference not found. చెల్లింపు సంఖ్య దొరకలేదు.');
+      return;
+    }
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spin"></span>&nbsp; Submitting...';
+    btnTextTe.textContent = 'నమోదు అవుతోంది...';
+
+    try {
+      const resp = await fetch('/payment/auto-complaint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(PAYMENT_CTX)
+      });
+      const data = await resp.json();
+
+      if (data.ok) {
+        showPopup({
+          title: data.already ? 'Already Registered' : 'Complaint Registered',
+          titleTe: data.already ? 'ముందే నమోదు అయింది' : 'ఫిర్యాదు నమోదు అయింది',
+          message: data.message ||
+            'Our team will check and contact you within <b>24 hours</b>.',
+          messageTe: 'మా బృందం పరిశీలించి 24 గంటలలో మిమ్మల్ని సంప్రదిస్తుంది.',
+          ticketRef: data.ticketRef || null
+        });
+        btn.disabled = true;
+        btnText.textContent = data.already ? 'Already Registered' : '✓ Complaint Registered';
+        btnTextTe.textContent = data.already ? 'ముందే నమోదు అయింది' : 'ఫిర్యాదు నమోదు అయింది';
+      } else {
+        btn.disabled = false;
+        btnText.textContent = 'Register Complaint Now';
+        btnTextTe.textContent = 'ఇప్పుడు ఫిర్యాదు చేయండి';
+        alert(data.message || 'Could not register. Please call us / మాకు కాల్ చేయండి.');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btnText.textContent = 'Register Complaint Now';
+      btnTextTe.textContent = 'ఇప్పుడు ఫిర్యాదు చేయండి';
+      alert('Network issue. Please try again. / ఇంటర్నెట్ సమస్య. మళ్ళీ ప్రయత్నించండి.');
+    }
+  }
+
+  btn.addEventListener('click', raiseAutoComplaint);
+
+  popup.addEventListener('click', function(ev){
+    if (ev.target === popup) closePopup();
+  });
+</script>
+
 </body>
 </html>

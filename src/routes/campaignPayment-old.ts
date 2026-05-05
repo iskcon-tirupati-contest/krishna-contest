@@ -12,6 +12,8 @@ const RZP_CAMPAIGN_WEBHOOK_SECRET = process.env.RZP_CAMPAIGN_WEBHOOK_SECRET || "
 // Fixed Ramayana campaign config
 const CAMPAIGN_SOURCE = "ramayana_campaign_2026";
 const RAMAYANA_CONTEST_ID = "5c4c57df-5913-4abe-a0f0-9c42114bc3c0";
+//const EXPECTED_AMOUNT_PAISE = 39900;
+//const EXPECTED_AMOUNT_RUPEES = 399;
 
 const EXPECTED_AMOUNT_PAISE = 39900;
 const EXPECTED_AMOUNT_RUPEES = 399;
@@ -190,6 +192,7 @@ function normalizeDeliveryMode(v: string): "home_delivery" | "temple_pickup" | "
   return null;
 }
 
+
 function safeJsonParse(raw: Buffer): any {
   try {
     return JSON.parse(raw.toString("utf8"));
@@ -253,23 +256,36 @@ async function createUser(params: {
 
 router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
   try {
+/*
+  console.log("Campaign webhook hit========", {
+  method: req.method,
+  contentType: req.headers["content-type"],
+  hasSig: !!req.headers["x-razorpay-signature"],
+  isBuffer: Buffer.isBuffer(req.body),
+  bodyType: typeof req.body,
+});
+*/
     const rawBody: Buffer = req.body;
     const sig = String(req.headers["x-razorpay-signature"] || "");
 
     if (!Buffer.isBuffer(rawBody)) {
+     //  console.log("========Expected raw body issue");
       return res.status(400).send("Expected raw body");
     }
 
     if (!sig) {
+     // console.log("===========Missing x-razorpay-signature");
       return res.status(400).send("Missing x-razorpay-signature");
     }
 
     if (!verifyWebhookSignature(rawBody, sig)) {
+   //   console.log("===========Invalid webhook signature");
       return res.status(400).send("Invalid webhook signature");
     }
 
     const event = safeJsonParse(rawBody);
     if (!event) {
+    //  console.log("Invalid JSON");
       return res.status(400).send("Invalid JSON");
     }
 
@@ -281,14 +297,21 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
     const webhookOrderId = norm(paymentEntity?.order_id);
     const webhookStatus = norm(paymentEntity?.status);
 
+
+     //console.log("REACJED 00=================================");
+
     if (eventType !== "payment.captured") {
+
+    //   console.log("=========Payment not captured hence returning....");
       return res.status(200).json({ ok: true, ignored: true, reason: "not_payment_captured" });
     }
 
     if (!webhookPaymentId) {
+	// console.log("=======Payment id webhook empty hence returning....");
       return res.status(200).json({ ok: true, ignored: true, reason: "missing_payment_id" });
     }
 
+    // console.log("REACJED 001=================================");
     // Dual verification from Razorpay API
     const pay = await rzpRequest<RazorpayPayment>(
       "GET",
@@ -302,15 +325,20 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
     const verifiedCurrency = norm(pay.currency || "INR");
     const notes = (pay.notes || {}) as Record<string, any>;
 
+
     if (!verifiedPaymentId || verifiedPaymentId !== webhookPaymentId) {
+    //  console.log("========Payment verification mismatch:", verifiedPaymentId);
+     // console.log("========webhookPaymentId  mismatch:", webhookPaymentId);
       return res.status(400).send("Payment verification mismatch");
     }
 
     if (verifiedStatus !== "captured") {
+   //   console.log("CAPTURE STATUS NOT MATCHING ",verifiedStatus);
       return res.status(200).json({ ok: true, ignored: true, reason: "payment_not_captured" });
     }
 
     if (verifiedAmount < EXPECTED_AMOUNT_PAISE) {
+    //  console.log("==========verifiedAmount NOT MATCHING ",verifiedAmount);
       return res.status(400).send("Unexpected payment amount");
     }
 
@@ -319,6 +347,7 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
     const address = pickNote(notes, "address");
     const city = pickNote(notes, "city");
     const state = pickNote(notes, "state");
+
     const pincode = pickNote(notes, "pincode") || pickNote(notes, "pin_code");
     const bookLanguage = pickNote(notes, "book_language");
     const ageRaw = pickNote(notes, "age");
@@ -331,7 +360,8 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
     const deliveryMode = normalizeDeliveryMode(deliveryModeRaw);
     const email = emailRaw ? normEmail(emailRaw) : null;
 
-    // Detect missing/placeholder phone — Razorpay sends 9999999999 when user doesn't fill phone field
+    // KEY FIX: detect missing/placeholder phone
+    // Razorpay sends 9999999999 when user doesn't fill phone field
     const hasRealPhone = rawPhone.length === 10 && !PLACEHOLDER_PHONES.has(rawPhone);
 
     // Real phone → use it. No phone → unique temp that fits varchar(20)
@@ -343,26 +373,22 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
     const shipmentStatus = hasRealPhone ? "pending" : "invalid";
 
     console.log("USER DETAILS============");
-    console.log("Name:", fullName);
-    console.log("Payer Name:", payerName);
-    console.log("Phone:", phone);
-
+    console.log("Name:",fullName);
+    console.log("Payer Name:",payerName);
+    console.log("phone:",phone);
+    /*console.log("age:",fullName);
+    console.log("delivery:",fullName);
+    console.log("addres:",fullName);
+    console.log("city:",fullName);
+    console.log("state:",fullName);
+    console.log("pin code:",fullName);
+*/
     const contest = await findContest();
     const internalPaymentId = genInternalPaymentId();
-
+   //  console.log("REACJED 1=================================");
     await pool.query("BEGIN");
-
-    // FIX 1: Advisory lock — serializes concurrent webhook calls for the same payment_id.
-    // If two Razorpay retries arrive simultaneously, the second one waits here until
-    // the first transaction commits or rolls back. This prevents the race condition
-    // where both pass the campaign_payment_events duplicate check before either commits.
-    await pool.query(
-      `SELECT pg_advisory_xact_lock(hashtext($1))`,
-      [webhookPaymentId]
-    );
-
     try {
-      // Duplicate guard on campaign_payment_events — first line of defence
+      // First duplicate guard
       const eventInsert = await pool.query(
         `INSERT INTO campaign_payment_events
          (source, razorpay_event_id, razorpay_payment_id, razorpay_order_id, internal_payment_id, status, meta)
@@ -386,18 +412,17 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
           }),
         ]
       );
-
       if (eventInsert.rows.length === 0) {
-        // Already processed — safe to ignore
+      //  console.log("===========EVENT INSERT ROWS ==0 HECE RETURNIONG....");
         await pool.query("ROLLBACK");
         return res.status(200).json({ ok: true, duplicate: true });
       }
-
+     //  console.log("REACJED 2 =================================");
       // Only look up existing user if phone is real — never match on 9999999999
       let user = hasRealPhone ? await findUserByPhone(phone) : null;
 
       if (!user) {
-        // Email unique safety: if email already belongs to another user, store null instead
+        // email unique safety: if email already belongs to another user, store null instead
         let emailToSave: string | null = email;
 
         if (emailToSave) {
@@ -432,22 +457,21 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
           );
         }
       }
-
-      // FIX 2: ON CONFLICT DO NOTHING as a safety net on payment_sessions.
-      // Even with the advisory lock above, this provides a second layer of protection.
+     //console.log("REACJED 3=================================");
       const paymentSessionQ = await pool.query(
         `INSERT INTO payment_sessions (user_id, payment_id, amount, status)
          VALUES ($1,$2,$3,'paid')
-         ON CONFLICT (payment_id) DO NOTHING
+          ON CONFLICT (payment_id) DO NOTHING
          RETURNING id`,
         [user.id, verifiedOrderId || verifiedPaymentId, EXPECTED_AMOUNT_RUPEES]
       );
 
       if (paymentSessionQ.rows.length === 0) {
-        // payment_session already exists — this payment was already fully processed
-        await pool.query("ROLLBACK");
-        return res.status(200).json({ ok: true, duplicate: true });
-      }
+      await pool.query("ROLLBACK");
+      return res.status(200).json({ ok: true, duplicate: true });
+    }
+
+
 
       const paymentSessionId = paymentSessionQ.rows[0].id;
 
@@ -469,34 +493,33 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
         ]
       );
       const orderId = orderQ.rows[0].id;
-
-      const shipmentQ =
-        deliveryMode === "temple_pickup"
-          ? await pool.query(
-              `INSERT INTO shipments
-               (payment_id, recipient_name, recipient_phone, delivery_mode, status, updated_at)
-               VALUES ($1,$2,$3,'temple_pickup',$4,NOW())
-               RETURNING id`,
-              [internalPaymentId, fullName, hasRealPhone ? phone : null, shipmentStatus]
-            )
-          : deliveryMode === "donation"
-          ? await pool.query(
-              `INSERT INTO shipments
-               (payment_id, delivery_mode, status, updated_at)
-               VALUES ($1,'donation',$2,NOW())
-               RETURNING id`,
-              [internalPaymentId, shipmentStatus]
-            )
-          : await pool.query(
-              `INSERT INTO shipments
-               (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,'home_delivery',$8,NOW())
-               RETURNING id`,
-              [internalPaymentId, fullName, hasRealPhone ? phone : null, address, city, state, pincode, shipmentStatus]
-            );
-
+     //  console.log("REACJED 4================================");
+       const shipmentQ =
+  deliveryMode === "temple_pickup"
+    ? await pool.query(
+        `INSERT INTO shipments
+         (payment_id, recipient_name, recipient_phone, delivery_mode, status, updated_at)
+         VALUES ($1,$2,$3,'temple_pickup',$4,NOW())
+         RETURNING id`,
+        [internalPaymentId, fullName, hasRealPhone ? phone : null, shipmentStatus]
+      )
+    : deliveryMode === "donation"
+    ? await pool.query(
+        `INSERT INTO shipments
+         (payment_id, delivery_mode, status, updated_at)
+         VALUES ($1,'donation',$2,NOW())
+         RETURNING id`,
+        [internalPaymentId, shipmentStatus]
+      )
+    : await pool.query(
+        `INSERT INTO shipments
+         (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,'home_delivery',$8,NOW())
+         RETURNING id`,
+        [internalPaymentId, fullName, hasRealPhone ? phone : null, address, city, state, pincode, shipmentStatus]
+      );
       const shipmentId = shipmentQ.rows[0].id;
-
+      // console.log("REACJED 5=================================");
       await pool.query(
         `INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
          VALUES ($1,$2,$3,$4)`,
@@ -511,31 +534,31 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
       );
 
       await pool.query("COMMIT");
-
       console.log("Ramayana contest successfully registered");
-      console.log("Full name:", fullName);
+      console.log("Full name: ", fullName);
       console.log("Phone:", phone, "| hasRealPhone:", hasRealPhone);
-      console.log("Shipment id:", shipmentId, "| shipment status:", shipmentStatus);
-      console.log("Order id:", orderId);
+      console.log("shipment id:", shipmentId, "| shipment status:", shipmentStatus);
+      console.log("order id id:", orderId);
 
-      // Only send confirmation message if we have a real phone number
-      if (hasRealPhone) {
-        try {
-          await sendCampaignRegistrationMessageOnce({
-            paymentId: internalPaymentId,
-            paymentSessionId,
-            userId: String(user.id),
-            phone: String(phone || ""),
-            userName: String(fullName || "Participant"),
-            contestTitle: "Ramayana Essay Writing Contest",
-            loginHelpText: "Login with your mobile number, reset password in profile, then submit your essay.",
-          });
-        } catch (e) {
-          console.error("Campaign registration confirmation send error:", e);
-        }
-      } else {
-        console.warn(`No real phone for ${fullName} — SMS skipped. Shipment marked invalid. Temp phone: ${phone}`);
+    // Only send confirmation SMS if we have a real phone number
+    if (hasRealPhone) {
+      try {
+        await sendCampaignRegistrationMessageOnce({
+          paymentId: internalPaymentId,
+          paymentSessionId,
+          userId: String(user.id),
+          phone: String(phone || ""),
+          userName: String(fullName || "Participant"),
+          contestTitle: "Ramayana Essay Writing Contest",
+          loginHelpText: "Login with your mobile number, reset password in profile, then submit your essay.",
+        });
+      } catch (e) {
+        console.error("campaign registration confirmation send error:", e);
       }
+    } else {
+      console.warn(`No real phone for ${fullName} — SMS skipped. Shipment marked invalid. Temp phone: ${phone}`);
+    }
+
 
       return res.status(200).json({
         ok: true,
@@ -548,7 +571,7 @@ router.post("/payment/campaign/ramayana/webhook", async (req: any, res) => {
         shipmentStatus,
       });
     } catch (dbErr) {
-      console.error("Database error in webhook handler:", dbErr);
+      console.log("===========DATABASE ERROR, HECE RETURNIONG....");
       await pool.query("ROLLBACK");
       throw dbErr;
     }

@@ -509,7 +509,7 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   );
 
   const userQ = await pool.query(
-    `SELECT name, phone, password_hash
+    `SELECT name, phone
      FROM users
      WHERE id=$1
      LIMIT 1`,
@@ -548,7 +548,6 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
     bonusItems: bonusItemsQ.rows,
     user: userQ.rows[0] || null,
     payment_session_id: ordersQ.rows[0].payment_session_id,
-    isNewUser: paid && userQ.rows[0] ? !userQ.rows[0].password_hash : false,
   });
 });
 

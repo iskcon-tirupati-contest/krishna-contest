@@ -17,11 +17,16 @@ import checkoutRoutes from "./routes/checkout";
 import paymentRoutes from "./routes/payment";
 import profileRoutes from "./routes/profile";
 import adminRoutes from "./routes/admin";
-import agentRoutes from "./routes/agent";
-
-import campaignPaymentRouter from "./routes/campaignPayment";
-
 import cors from "cors";
+import agentRoutes from "./routes/agent";
+import campaignPaymentRouter from "./routes/campaignPayment";
+import ivrRoutes from "./routes/IVR";
+import directRegistration from "./routes/directRegistration";
+import setPassword from "./routes/setPassword";
+import complaintRouter from "./routes/complaint";
+import wabaBookTracking from "./routes/WABABookTracking";
+import paymentComplaintRouter from "./routes/paymentComplaint";
+
 dotenv.config();
 
 const app = express();
@@ -36,7 +41,7 @@ app.use(
     contentSecurityPolicy: false,
   })
 );
-
+app.use("/tmp", express.static(path.join(process.cwd(), "tmp")));
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === "production" ? 600 : 2000,
@@ -148,10 +153,19 @@ app.use(paymentRoutes);
 app.use("/", profileRoutes);
 app.use("/", adminRoutes);
 app.use("/", agentRoutes);
+//CAMPAIGN ROUTES
 app.use(campaignPaymentRouter);
+//IVR ROUTES
+app.use(ivrRoutes);
+app.use(directRegistration);
+app.use(setPassword);
+app.use("/", complaintRouter);
+app.use("/", wabaBookTracking);
+app.use("/", paymentComplaintRouter);
+
 /* Pages */
 
-//app.get("/", (_req, res) => res.render("index"));
+
 
 app.get("/", async (_req, res) => {
   const contestsRes = await pool.query(`

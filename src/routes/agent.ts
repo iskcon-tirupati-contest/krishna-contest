@@ -135,6 +135,10 @@ async function loadBookingForAgent(bookingId: string, agentUserId: string) {
       ab.*,
       cu.name AS customer_name,
       cu.phone AS customer_phone,
+      cu.address AS customer_address,
+      cu.city AS customer_city,
+      cu.state AS customer_state,
+      cu.pincode AS customer_pincode,
       au.name AS agent_name
     FROM agent_bookings ab
     JOIN users cu ON cu.id = ab.customer_user_id
@@ -659,6 +663,10 @@ const orders = lines.map((row: any) => {
     ssrSelectedLanguages: [],
     ssrLanguages,
     availableBookLanguages,
+    formAddress: "",
+  formCity: "",
+  formState: "",
+  formPincode: "",
   });
 });
 
@@ -708,6 +716,10 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
       ssrSelectedLanguages,
       ssrLanguages,
       availableBookLanguages,
+      formAddress: String(req.body.address || ""),
+      formCity: String(req.body.city || ""),
+      formState: String(req.body.state || ""),
+      formPincode: String(req.body.pincode || ""),
     });
   };
 
@@ -715,11 +727,27 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
   const phoneStr = normPhone(req.body.phone || booking.customer_phone || "");
   const deliveryMode = String(req.body.deliveryMode || "").trim();
   const paymentMethod = String(req.body.offlineMethod || "cash").trim().toLowerCase();
+  const address = norm(req.body.address || "");
+  const city = norm(req.body.city || "");
+  const state = norm(req.body.state || "");
+  const pincode = norm(req.body.pincode || "");
 
   if (fullName.length < 2) return renderError("Receiver name is required.");
   if (!isValidIndianMobile(phoneStr)) return renderError("Please enter a valid 10-digit mobile number.");
-  if (!["handover", "donate"].includes(deliveryMode)) return renderError("Please choose Handover or Donate.");
+  if (!["handover", "donate", "home_delivery"].includes(deliveryMode)) {
+    return renderError("Please choose Direct Delivery, Temple Donation, or Home Delivery.");
+  }
   if (!["cash", "phonepe"].includes(paymentMethod)) return renderError("Please choose payment method.");
+
+  if (deliveryMode === "home_delivery") {
+    if (!address || !city || !state) {
+      return renderError("Please fill Address, City, and State for home delivery.");
+    }
+
+    if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+      return renderError("Please enter a valid 6-digit pincode for home delivery.");
+    }
+  }
 
  for (let i = 0; i < orders.length; i++) {
   const age = String(orders[i].age_category || "").trim();
@@ -727,7 +755,7 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
     return renderError("Please choose valid age category for every contest row.");
   }
 
-  if (deliveryMode === "handover") {
+  if (deliveryMode !== "donate") {
     const selectedBook = String(orders[i].selected_book_title || "").trim();
     const lang = String(orders[i].saved_book_language || "").trim();
     const allowedLanguages = orders[i].available_languages || [];
@@ -740,7 +768,7 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
   }
 }
 
-  if (deliveryMode === "handover") {
+  if (deliveryMode !== "donate") {
     if (ssrSelectedLanguages.length !== ssrCount) {
       return renderError("Please select language for all free Science of Self Realization books.");
     }
@@ -771,6 +799,20 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
     );
     const paymentSessionId = ps.rows[0].id;
 
+    if (deliveryMode === "home_delivery") {
+      await client.query(
+        `
+        UPDATE users
+        SET address=$2,
+            city=$3,
+            state=$4,
+            pincode=$5
+        WHERE id=$1
+        `,
+        [booking.customer_user_id, address, city, state, pincode]
+      );
+    }
+
     for (let i = 0; i < orders.length; i++) {
       const row = orders[i];
       const bookOption = deliveryMode === "donate" ? "donation" : "book";
@@ -792,7 +834,7 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
           row.age_category,
           bookOption,
           fullName,
-          deliveryMode === "handover" ? row.selected_book_title : null,
+          deliveryMode === "donate" ? null : row.selected_book_title,
         ]
       );
 
@@ -811,15 +853,15 @@ const selectedBooks = ([] as any[]).concat(req.body.bookTitle || []).map((x) => 
           row.line_id,
           ins.rows[0].id,
           row.age_category,
-          deliveryMode === "handover" ? row.selected_book_title : null,
-          deliveryMode === "handover" ? row.saved_book_language : null,
+          deliveryMode === "donate" ? null : row.selected_book_title,
+          deliveryMode === "donate" ? null : row.saved_book_language,
         ]
       );
     }
 
     await client.query(`DELETE FROM agent_booking_bonus_items WHERE agent_booking_id=$1`, [bookingId]);
 
-    if (deliveryMode === "handover") {
+    if (deliveryMode !== "donate") {
       for (let i = 0; i < ssrCount; i++) {
         await client.query(
           `
@@ -925,6 +967,181 @@ router.post("/agent/bookings/:bookingId/payment/complete", authMiddleware, agent
       `UPDATE agent_bookings SET status='paid', updated_at=NOW() WHERE id=$1`,
       [bookingId]
     );
+
+    if (String(booking.delivery_mode || "").trim() === "home_delivery") {
+      console.log("agent shipment branch entered", {
+        bookingId,
+        paymentId: booking.payment_id,
+        deliveryMode: booking.delivery_mode,
+        customerUserId: booking.customer_user_id,
+      });
+
+      const customerQ = await client.query(
+        `
+        SELECT name, phone, address, city, state, pincode
+        FROM users
+        WHERE id=$1
+        LIMIT 1
+        `,
+        [booking.customer_user_id]
+      );
+
+      const customer = customerQ.rows[0] || {};
+      const shipmentAddress = String(customer.address || "").trim();
+      const shipmentCity = String(customer.city || "").trim();
+      const shipmentState = String(customer.state || "").trim();
+      const shipmentPincode = String(customer.pincode || "").trim();
+
+      console.log("agent shipment address resolved", {
+        shipmentAddress,
+        shipmentCity,
+        shipmentState,
+        shipmentPincode,
+      });
+
+      if (!shipmentAddress || !shipmentCity || !shipmentState || !shipmentPincode) {
+        throw new Error("Home delivery shipment address is incomplete.");
+      }
+
+      let shipmentId: string | null = null;
+
+      const existingShipmentQ = await client.query(
+        `
+        SELECT id
+        FROM shipments
+        WHERE payment_id = $1
+        LIMIT 1
+        `,
+        [booking.payment_id]
+      );
+
+      if (existingShipmentQ.rows.length > 0) {
+        shipmentId = existingShipmentQ.rows[0].id;
+
+        await client.query(
+          `
+          UPDATE shipments
+          SET
+            delivery_mode = COALESCE(NULLIF(TRIM(delivery_mode), ''), 'home_delivery'),
+            recipient_name = COALESCE(NULLIF(TRIM(recipient_name), ''), $2),
+            recipient_phone = COALESCE(NULLIF(TRIM(recipient_phone), ''), $3),
+            address = COALESCE(NULLIF(TRIM(address), ''), $4),
+            city = COALESCE(NULLIF(TRIM(city), ''), $5),
+            state = COALESCE(NULLIF(TRIM(state), ''), $6),
+            pincode = COALESCE(NULLIF(TRIM(pincode), ''), $7),
+            updated_at = NOW()
+          WHERE id = $1
+          `,
+          [
+            shipmentId,
+            String(booking.full_name || customer.name || "").trim(),
+            String(booking.phone || customer.phone || "").trim(),
+            shipmentAddress,
+            shipmentCity,
+            shipmentState,
+            shipmentPincode,
+          ]
+        );
+
+        console.log("agent shipment existing row found", { shipmentId });
+      } else {
+        const shipmentInsertQ = await client.query(
+          `
+          INSERT INTO shipments
+            (payment_id, recipient_name, recipient_phone, address, city, state, pincode, delivery_mode, status, updated_at)
+          VALUES
+            ($1,$2,$3,$4,$5,$6,$7,'home_delivery','pending',NOW())
+          RETURNING id
+          `,
+          [
+            booking.payment_id,
+            String(booking.full_name || customer.name || "").trim(),
+            String(booking.phone || customer.phone || "").trim(),
+            shipmentAddress,
+            shipmentCity,
+            shipmentState,
+            shipmentPincode,
+          ]
+        );
+
+        shipmentId = shipmentInsertQ.rows[0]?.id || null;
+        console.log("agent shipment inserted", { shipmentId });
+      }
+
+      if (!shipmentId) {
+        throw new Error("Shipment creation failed");
+      }
+
+      const existingItemsCheckQ = await client.query(
+        `
+        SELECT 1
+        FROM shipment_items
+        WHERE shipment_id=$1
+        LIMIT 1
+        `,
+        [shipmentId]
+      );
+
+      if (!existingItemsCheckQ.rows.length) {
+        const paidLinesQ = await client.query(
+          `
+          SELECT order_id, book_title, book_language
+          FROM agent_booking_lines
+          WHERE agent_booking_id=$1
+            AND line_status='paid'
+            AND order_id IS NOT NULL
+          ORDER BY created_at ASC
+          `,
+          [bookingId]
+        );
+
+        console.log("agent shipment paid lines count", { count: paidLinesQ.rows.length });
+
+        for (const row of paidLinesQ.rows) {
+          await client.query(
+            `
+            INSERT INTO shipment_items (shipment_id, order_id, book_title, book_language)
+            VALUES ($1,$2,$3,$4)
+            `,
+            [
+              shipmentId,
+              row.order_id,
+              String(row.book_title || "").trim(),
+              String(row.book_language || "").trim(),
+            ]
+          );
+        }
+
+        const bonusQ = await client.query(
+          `
+          SELECT book_title, book_language, quantity
+          FROM agent_booking_bonus_items
+          WHERE agent_booking_id=$1
+          ORDER BY created_at ASC
+          `,
+          [bookingId]
+        );
+
+        console.log("agent shipment bonus count", { count: bonusQ.rows.length });
+
+        for (const row of bonusQ.rows) {
+          await client.query(
+            `
+            INSERT INTO shipment_bonus_items (shipment_id, book_title, book_language, quantity)
+            VALUES ($1,$2,$3,$4)
+            `,
+            [
+              shipmentId,
+              String(row.book_title || "").trim(),
+              String(row.book_language || "").trim(),
+              Number(row.quantity || 1),
+            ]
+          );
+        }
+      } else {
+        console.log("agent shipment items already exist, skipping duplicate insert", { shipmentId });
+      }
+    }
 
     await client.query("COMMIT");
 
@@ -1582,15 +1799,21 @@ router.post("/agent/bookings/:bookingId/edit-details", authMiddleware, agentMidd
   const selectedAges = ([] as any[]).concat(req.body.ageCategory || []).map((x) => String(x || "").trim());
   const selectedLangs = ([] as any[]).concat(req.body.bookLanguage || []).map((x) => String(x || "").trim());
 
+  const isHomeDelivery = String(booking.delivery_mode || "").trim() === "home_delivery";
+
   const editableOrders = lines.map((row: any, idx: number) => {
-    const currentBook = selectedBooks[idx] || String(row.book_title || row.default_book_title || "").trim();
+    const currentBook = String(row.book_title || row.default_book_title || "").trim();
 
     return {
       line_id: row.id,
       contest_title: row.contest_title,
-      selected_book_title: currentBook,
+      selected_book_title: isHomeDelivery
+        ? currentBook
+        : (selectedBooks[idx] || currentBook),
       age_category: selectedAges[idx] || String(row.age_category || "0-25").trim(),
-      saved_book_language: selectedLangs[idx] || String(row.book_language || "").trim(),
+      saved_book_language: isHomeDelivery
+        ? String(row.book_language || "").trim()
+        : (selectedLangs[idx] || String(row.book_language || "").trim()),
       available_books: allBookTitles,
       available_languages: availableBookLanguages[currentBook] || [],
       amount: Number(row.unit_amount || 0),
@@ -1608,25 +1831,71 @@ router.post("/agent/bookings/:bookingId/edit-details", authMiddleware, agentMidd
     });
   };
 
+  for (let i = 0; i < editableOrders.length; i++) {
+    const age = String(editableOrders[i].age_category || "").trim();
+    if (!["0-25", "above-25"].includes(age)) {
+      return renderError("Please choose valid age category for every contest row.");
+    }
+  }
+
+  // HOME DELIVERY: ONLY AGE CAN BE CHANGED
+  if (isHomeDelivery) {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      for (let i = 0; i < lines.length; i++) {
+        await client.query(
+          `
+          UPDATE agent_booking_lines
+          SET age_category=$2,
+              updated_at=NOW()
+          WHERE id=$1
+          `,
+          [
+            lines[i].id,
+            editableOrders[i].age_category,
+          ]
+        );
+      }
+
+      await client.query(
+        `
+        UPDATE agent_bookings
+        SET updated_at=NOW()
+        WHERE id=$1
+        `,
+        [bookingId]
+      );
+
+      await client.query("COMMIT");
+      return res.redirect(`/agent/bookings/${bookingId}/edit-details?from=${encodeURIComponent(from)}&ok=saved`);
+    } catch (e) {
+      await client.query("ROLLBACK");
+      console.error("agent home delivery edit details error:", e);
+      return renderError("Failed to update booking details.");
+    } finally {
+      client.release();
+    }
+  }
+
+  // NON-HOME-DELIVERY: NORMAL EDIT FLOW
   const fullName = norm(req.body.fullName || booking.full_name || booking.customer_name || "");
   const phoneStr = normPhone(req.body.phone || booking.phone || booking.customer_phone || "");
   const deliveryMode = String(req.body.deliveryMode || booking.delivery_mode || "handover").trim();
 
   if (fullName.length < 2) return renderError("Receiver name is required.");
   if (!isValidIndianMobile(phoneStr)) return renderError("Please enter a valid 10-digit mobile number.");
-  if (!["handover", "donate"].includes(deliveryMode)) return renderError("Please choose valid delivery mode.");
+  if (!["handover", "donate", "home_delivery"].includes(deliveryMode)) {
+    return renderError("Please choose valid delivery mode.");
+  }
 
   for (let i = 0; i < editableOrders.length; i++) {
-    const age = String(editableOrders[i].age_category || "").trim();
     const selectedBook = String(editableOrders[i].selected_book_title || "").trim();
     const lang = String(editableOrders[i].saved_book_language || "").trim();
     const allowedLanguages = editableOrders[i].available_languages || [];
 
-    if (!["0-25", "above-25"].includes(age)) {
-      return renderError("Please choose valid age category for every contest row.");
-    }
-
-    if (deliveryMode === "handover") {
+    if (deliveryMode !== "donate") {
       if (!selectedBook) return renderError("Please select a book for every contest row.");
       if (!lang) return renderError("Please select language for every row.");
       if (!allowedLanguages.includes(lang)) {
@@ -1664,8 +1933,8 @@ router.post("/agent/bookings/:bookingId/edit-details", authMiddleware, agentMidd
         [
           lines[i].id,
           editableOrders[i].age_category,
-          deliveryMode === "handover" ? editableOrders[i].selected_book_title : null,
-          deliveryMode === "handover" ? editableOrders[i].saved_book_language : null,
+          deliveryMode === "donate" ? null : editableOrders[i].selected_book_title,
+          deliveryMode === "donate" ? null : editableOrders[i].saved_book_language,
         ]
       );
     }
@@ -1680,7 +1949,6 @@ router.post("/agent/bookings/:bookingId/edit-details", authMiddleware, agentMidd
     client.release();
   }
 });
-
 
 async function loadBookingLineByIdForAgent(lineId: string, bookingId: string, agentUserId: string) {
   const q = await pool.query(

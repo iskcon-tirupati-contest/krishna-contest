@@ -232,6 +232,60 @@
               <input type="radio" name="deliveryMode" value="donate" <%= deliveryMode==='donate'?'checked':'' %>>
               <span class="rcard-ico">🛕</span> Donate Book to Temple
             </label>
+            <label class="rcard">
+              <input type="radio" name="deliveryMode" value="home_delivery" <%= deliveryMode==='home_delivery'?'checked':'' %>>
+              <span class="rcard-ico">🏠</span> Home Delivery
+            </label>
+          </div>
+        </div>
+
+        <div id="homeDeliveryFields" style="<%= deliveryMode === 'home_delivery' ? '' : 'display:none;' %>">
+          <div class="field">
+            <label for="address">Address</label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              placeholder="House no, street, area"
+              value="<%= formAddress || '' %>"
+            />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="city">City</label>
+              <input
+                id="city"
+                name="city"
+                type="text"
+                placeholder="City"
+                value="<%= formCity || '' %>"
+              />
+            </div>
+
+            <div class="field">
+              <label for="state">State</label>
+              <input
+                id="state"
+                name="state"
+                type="text"
+                placeholder="State"
+                value="<%= formState || '' %>"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pincode">Pincode</label>
+            <input
+              id="pincode"
+              name="pincode"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="6-digit pincode"
+              value="<%= formPincode || '' %>"
+            />
           </div>
         </div>
         <div class="field">
@@ -341,6 +395,22 @@
     document.querySelectorAll('select[name="ssrLanguage"]').forEach(function(el) {
       el.required = mode !== 'donate';
     });
+
+    const homeFields = document.getElementById('homeDeliveryFields');
+    const addressInput = document.getElementById('address');
+    const cityInput = document.getElementById('city');
+    const stateInput = document.getElementById('state');
+    const pincodeInput = document.getElementById('pincode');
+
+    if (homeFields) {
+      homeFields.style.display = mode === 'home_delivery' ? '' : 'none';
+    }
+
+    const required = mode === 'home_delivery';
+    if (addressInput) addressInput.required = required;
+    if (cityInput) cityInput.required = required;
+    if (stateInput) stateInput.required = required;
+    if (pincodeInput) pincodeInput.required = required;
   }
 
   function refillLanguage(bookSelect, langSelect) {

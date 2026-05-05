@@ -50,32 +50,16 @@
     .topbar-title-line1{font-family:'Sora',sans-serif;font-size:clamp(12px,3.2vw,16px);font-weight:800;color:#ffd700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
     .topbar-title-line2{font-family:'Sora',sans-serif;font-size:clamp(9px,2.4vw,12px);font-weight:600;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
 
-    /* ═══ SLIDESHOW — height = 100dvh - navHeight ═══ */
-    .slideshow{
-      position:relative;overflow:hidden;
-      /* KEY FIX: exact viewport height minus nav */
-      height:calc(100dvh - 54px);
-      min-height:520px;
-      background:linear-gradient(160deg,var(--navy) 0%,#101c6b 60%,#0a1545 100%);
-    }
-    /* fallback for browsers without dvh */
-    @supports not (height: 100dvh){
-      .slideshow{height:calc(100vh - 54px)}
-    }
-    .slideshow::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 15% 40%,rgba(245,158,11,.1) 0%,transparent 50%),radial-gradient(ellipse at 85% 20%,rgba(92,107,192,.15) 0%,transparent 50%)}
-    .slideshow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px}
 
-    .slides{display:flex;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);position:relative;z-index:1}
-    .slide{
-      min-width:100%;height:100%;
-      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-      text-align:center;
-      overflow-y:auto;
-      /* KEY FIX: padding accounts for dot nav at bottom */
-      padding:14px 16px 52px;
-      -ms-overflow-style:none;scrollbar-width:none;
-    }
-    .slide::-webkit-scrollbar{display:none}
+
+    /* fallback for browsers without dvh */
+
+
+
+
+
+
+
 
     /* ── Slide badge ── */
     .slide-badge{
@@ -88,22 +72,64 @@
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
     /* ── Slide 1 typography ── */
-    .slide h1{font-family:'Sora',sans-serif;font-size:clamp(24px,6vw,52px);font-weight:900;line-height:1.08;margin-bottom:8px;background:linear-gradient(135deg,#ffd700 0%,#fff 45%,#ffd700 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0}
-    .slide-sub{font-size:clamp(12px,3vw,15px);color:#c7d9ff;line-height:1.5;margin-bottom:10px;max-width:600px;flex-shrink:0}
+    .slide h1{font-family:'Sora',sans-serif;font-size:clamp(24px,6vw,52px);font-weight:900;line-height:1.08;margin-bottom:8px;flex-shrink:0}
+    .slide-sub{font-size:clamp(13px,3.2vw,16px);color:#c7d9ff;font-weight:500;line-height:1.5;margin-bottom:10px;max-width:600px;flex-shrink:0}
 
     /* ── Contest name tags on slide 1 ── */
     .contest-names{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
     .cn-tag{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#e2e8ff}
 
-    /* ── Prize strip ── */
-    .prize-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px;max-width:560px;width:100%}
-    .prize-chip{
-      background:rgba(255,255,255,.07);border:1px solid rgba(255,215,0,.22);
-      border-radius:11px;padding:7px 10px;flex:1;min-width:90px;max-width:120px;
+    /* ── Grand prize section — slide 1 ── */
+    .grand-headline{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(180deg,rgba(245,158,11,.22) 0%,rgba(245,158,11,.10) 100%);
+      border:none;border-radius:14px;padding:10px 18px;margin-bottom:12px;flex-shrink:0;
+      width:100%;max-width:480px;justify-content:center;
+      box-shadow:
+        inset 0 1px 0 rgba(255,215,0,.3),
+        inset 0 -3px 0 rgba(0,0,0,.35),
+        0 6px 18px rgba(0,0,0,.35),
+        0 2px 4px rgba(0,0,0,.25);
     }
-    .pc-rank{font-size:18px;margin-bottom:2px}
-    .pc-amt{font-family:'Sora',sans-serif;font-size:11px;font-weight:800;color:#ffd700;line-height:1.3;margin-bottom:1px}
-    .pc-label{font-size:10px;color:#94a3b8}
+    .grand-headline span{font-family:'Sora',sans-serif;font-size:clamp(11px,2.5vw,13px);font-weight:800;color:#ffd700;letter-spacing:.3px;text-transform:uppercase}
+    .grand-headline .gh-num{font-size:clamp(18px,4vw,26px);font-weight:900;color:#fbbf24;line-height:1}
+    .prize-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;max-width:520px;width:100%}
+    .prize-card{
+      background:linear-gradient(180deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.04) 100%);
+      border:none;
+      border-radius:16px;padding:12px 8px;text-align:center;
+      position:relative;overflow:hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        inset 0 -3px 0 rgba(0,0,0,.35),
+        inset 1px 0 0 rgba(255,255,255,.06),
+        0 8px 20px rgba(0,0,0,.45),
+        0 2px 4px rgba(0,0,0,.3);
+      transition:transform .2s,box-shadow .2s;
+    }
+    .prize-card:hover{
+      transform:translateY(-3px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.22),
+        inset 0 -3px 0 rgba(0,0,0,.3),
+        0 14px 28px rgba(0,0,0,.5),
+        0 4px 8px rgba(245,158,11,.15);
+    }
+    .prize-card::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.08),transparent);pointer-events:none;border-radius:16px 16px 0 0}
+    .pc-big-num{font-family:'Sora',sans-serif;font-size:clamp(26px,6vw,38px);font-weight:900;line-height:1;margin-bottom:3px}
+    .pc-big-num.gold{color:#fbbf24}.pc-big-num.teal{color:#5eead4}.pc-big-num.purple{color:#c4b5fd}
+    .pc-icon{font-size:clamp(18px,4vw,24px);margin-bottom:4px;display:block}
+    .pc-title{font-family:'Sora',sans-serif;font-size:clamp(9px,2vw,11px);font-weight:800;color:#ffd700;line-height:1.3;margin-bottom:2px}
+    .pc-sub{font-size:clamp(8px,1.8vw,10px);color:#94a3b8;line-height:1.4}
+    .gold-value{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:6px 14px;margin-bottom:10px;flex-shrink:0}
+    .gold-value svg{width:14px;height:14px;fill:#fbbf24;flex-shrink:0}
+    .gold-value span{font-family:'Sora',sans-serif;font-size:clamp(10px,2.2vw,12px);font-weight:700;color:#fde68a}
+    .gold-value b{color:#fbbf24}
+    .write4{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.08));border:1.5px solid rgba(239,68,68,.35);border-radius:10px;padding:6px 14px;margin-bottom:10px;flex-shrink:0}
+    .write4 span{font-family:'Sora',sans-serif;font-size:clamp(10px,2.5vw,12px);font-weight:800;color:#fca5a5;letter-spacing:.2px}
+    .write4 b{color:#f87171}
+    .combo-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:4px 12px;font-size:clamp(10px,2vw,12px);font-weight:700;color:#86efac;margin-bottom:10px;flex-shrink:0}
+    .combo-pill b{color:#4ade80}
 
     /* ── CTA buttons ── */
     .slide-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;flex-shrink:0;margin-top:2px}
@@ -171,16 +197,152 @@
     .ip-text{font-size:11px;color:#c7d9ff;line-height:1.4;font-weight:600}
 
     /* ── Slide nav dots ── */
-    .slide-nav{position:absolute;bottom:10px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:6px;z-index:5}
-    .slide-dot{width:7px;height:7px;border-radius:999px;background:rgba(255,255,255,.25);cursor:pointer;transition:all .25s;border:none;padding:0}
-    .slide-dot.active{background:#f59e0b;width:20px}
+
+
+
 
     /* ── Slide arrows ── */
-    .slide-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;backdrop-filter:blur(6px)}
-    .slide-arrow:hover{background:rgba(245,158,11,.25);border-color:#f59e0b}
-    .slide-arrow svg{width:16px;height:16px;fill:currentColor}
-    .slide-arrow.prev{left:8px}.slide-arrow.next{right:8px}
-    @media(max-width:480px){.slide-arrow{display:none}}
+
+
+
+
+    @media(max-width:480px){}
+
+    /* ── Join buttons grid ── */
+    .join-grid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:480px;margin-bottom:14px}
+    .join-btn{
+      display:flex;align-items:center;justify-content:center;
+      padding:14px 24px;border-radius:999px;
+      font-family:'Sora',sans-serif;font-size:13px;font-weight:800;
+      border:none;
+      background:linear-gradient(180deg,#f59e0b 0%,#d97706 100%);
+      color:#fff;cursor:pointer;
+      transition:all .2s ease;text-decoration:none;
+      line-height:1.2;width:100%;text-align:center;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 -4px 0 rgba(0,0,0,.25),
+        0 6px 18px rgba(217,119,6,.5),
+        0 2px 4px rgba(0,0,0,.3);
+      letter-spacing:.2px;
+    }
+    .join-btn:hover{
+      background:linear-gradient(180deg,#fbbf24 0%,#f59e0b 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.4),
+        inset 0 -4px 0 rgba(0,0,0,.2),
+        0 12px 28px rgba(217,119,6,.65),
+        0 3px 6px rgba(0,0,0,.3);
+      transform:translateY(-2px);
+      color:#fff;
+    }
+    .join-btn:active{
+      transform:translateY(2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.2),
+        inset 0 -1px 0 rgba(0,0,0,.2),
+        0 2px 6px rgba(217,119,6,.4);
+    }
+    .join-btn .jb-text{display:flex;flex-direction:column}
+    .join-btn .jb-name{font-size:13px;color:#fff;font-weight:800;line-height:1;display:inline}
+    .join-btn:hover .jb-name{color:#fff}
+    .join-btn.gold-btn{
+      background:linear-gradient(180deg,#fb923c 0%,#c2410c 100%);
+      border:none;color:#fff;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 -4px 0 rgba(0,0,0,.3),
+        0 6px 20px rgba(194,65,12,.55),
+        0 2px 4px rgba(0,0,0,.3);
+    }
+    .join-btn.gold-btn:hover{
+      background:linear-gradient(180deg,#fdba74 0%,#ea580c 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.4),
+        inset 0 -4px 0 rgba(0,0,0,.25),
+        0 12px 30px rgba(194,65,12,.65),
+        0 3px 6px rgba(0,0,0,.3);
+      transform:translateY(-2px);color:#fff;
+    }
+    .join-btn.login-btn{
+      background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.05) 100%);
+      border:1.5px solid rgba(255,255,255,.3);
+      color:#e2e8ff;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        inset 0 -3px 0 rgba(0,0,0,.3),
+        0 5px 14px rgba(0,0,0,.3),
+        0 2px 4px rgba(0,0,0,.2);
+    }
+    .join-btn.login-btn:hover{
+      background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.12) 100%);
+      border-color:rgba(255,255,255,.55);transform:translateY(-2px);color:#fff;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.25),
+        inset 0 -3px 0 rgba(0,0,0,.25),
+        0 10px 24px rgba(0,0,0,.4),
+        0 3px 6px rgba(0,0,0,.25);
+    }
+    .join-btn.login-btn .jb-name{color:#e2e8ff}
+
+
+
+    /* ═══ HERO SECTION ═══ */
+    .hero-section{
+      background:linear-gradient(160deg,var(--navy) 0%,#101c6b 60%,#0a1545 100%);
+      padding:32px 16px 40px;
+      position:relative;overflow:hidden;
+    }
+    .hero-section::before{content:'';position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse at 15% 40%,rgba(245,158,11,.1) 0%,transparent 50%),
+                 radial-gradient(ellipse at 85% 20%,rgba(92,107,192,.15) 0%,transparent 50%)}
+    .hero-section::after{content:'';position:absolute;inset:0;pointer-events:none;
+      background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);
+      background-size:28px 28px}
+    .hero-inner{max-width:600px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1}
+    .hero-inner h1{
+      font-family:'Sora',sans-serif;
+      font-size:clamp(26px,7vw,52px);
+      font-weight:900;line-height:1.08;margin-bottom:8px;
+      background:linear-gradient(135deg,#fb923c 0%,#fbbf24 40%,#f97316 70%,#fb923c 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      background-size:200% auto;
+      animation:glowShift 3s ease-in-out infinite;
+      filter:drop-shadow(0 0 18px rgba(251,146,60,.5));
+    }
+    @keyframes glowShift{
+      0%{background-position:0% center}
+      50%{background-position:100% center}
+      100%{background-position:0% center}
+    }
+
+    /* ── Benefits bar ── */
+    .benefits-bar{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+      gap:4px 8px;margin-bottom:14px;
+      background:linear-gradient(180deg,rgba(255,255,255,.09) 0%,rgba(255,255,255,.04) 100%);
+      border:none;
+      border-radius:999px;padding:10px 18px;width:100%;max-width:480px;
+      font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:#fde68a;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.15),
+        inset 0 -2px 0 rgba(0,0,0,.3),
+        0 5px 14px rgba(0,0,0,.35),
+        0 1px 3px rgba(0,0,0,.25);
+    }
+    .benefits-bar .bsep{color:rgba(255,215,0,.35);font-size:10px}
+
+    /* ── join-grid max-width for all screens ── */
+    .join-grid{display:flex;flex-direction:column;gap:10px;width:100%;max-width:480px;margin-bottom:14px}
+
+    /* ── Hero fits any phone — no scroll needed ── */
+    .hero-inner{padding:0 4px}
+    .prize-trio{max-width:100%}
+    @media(max-width:360px){
+      .slide h1,.hero-inner h1{font-size:22px}
+      .pc-big-num{font-size:22px}
+      .join-btn{font-size:12px;padding:11px 18px}
+    }
 
     /* ═══ STATS BAR ═══ */
     .stats-bar{background:linear-gradient(135deg,#d97706,#f59e0b,#d97706);padding:12px 20px}
@@ -198,29 +360,33 @@
     .sec-sub{text-align:center;color:#94a3b8;font-size:14px;max-width:580px;margin:0 auto 32px;line-height:1.6}
     .sec-wrap{max-width:1160px;margin:0 auto}
 
-    /* ═══ CONTESTS GRID ═══ */
-    .contests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
-    .ccard{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,215,0,.16);border-radius:20px;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
-    .ccard:hover{transform:translateY(-5px);border-color:#ffd700;box-shadow:0 12px 36px rgba(245,158,11,.18)}
-    .ccard-img{width:100%;height:160px;object-fit:cover;background:linear-gradient(135deg,#1e2d82,#2a3d9e)}
-    .ccard-img-fallback{width:100%;height:160px;background:linear-gradient(135deg,#1e2d82,#2a3d9e);display:flex;align-items:center;justify-content:center;font-size:52px}
-    .ccard-body{padding:14px}
-    .ccard-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#ffd700;margin-bottom:5px;line-height:1.3}
-    .ccard-desc{font-size:12px;color:#94a3b8;line-height:1.55;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .ccard-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
-    .ccard-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#c7d9ff}
-    .ccard-benefits{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
-    .cb-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#6ee7b7}
-    .cb-icon{font-size:12px;flex-shrink:0}
-    .ccard-prizes{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
-    .cp-row{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.12);font-size:11px;font-weight:700;color:#fde68a}
-    .cp-row span:first-child{font-size:13px;flex-shrink:0}
-    .cp-place{font-size:10px;color:#64748b;font-weight:500;margin-left:auto}
-    .ccard-price{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#ffd700;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .ccard-price span{font-size:11px;color:#64748b;font-weight:500}
-    .ccard-btn{display:block;width:100%;padding:10px;border-radius:10px;text-align:center;background:linear-gradient(135deg,var(--navy3),var(--navy4));color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.1);transition:all .18s}
-    .ccard-btn:hover{background:linear-gradient(135deg,#d97706,#f59e0b);border-color:transparent}
-    .ccard.combo{border-color:rgba(245,158,11,.4);background:linear-gradient(145deg,rgba(245,158,11,.07),rgba(26,35,126,.1))}
+    /* ═══ CONTESTS LIST ═══ */
+    .contests-grid{display:flex;flex-direction:column;gap:12px;max-width:720px;margin:0 auto}
+    .ccard{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,215,0,.16);border-radius:18px;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+    .ccard:hover{transform:translateY(-2px);border-color:#ffd700;box-shadow:0 8px 28px rgba(245,158,11,.18)}
+    .ccard-inner{display:flex;align-items:center;gap:14px;padding:14px 16px}
+    .ccard-emoji{font-size:36px;flex-shrink:0;width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border-radius:14px;border:1px solid rgba(255,215,0,.2)}
+    .ccard-info{flex:1;min-width:0}
+    .ccard-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#ffd700;margin-bottom:2px;line-height:1.2}
+    .ccard-prizes-inline{font-size:11px;color:#94a3b8;margin-bottom:4px}
+    .ccard-prizes-inline b{color:#6ee7b7}
+    .ccard-price-tag{font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:#fbbf24}
+    .ccard-join-btn{
+      flex-shrink:0;padding:12px 20px;border-radius:12px;
+      background:linear-gradient(135deg,#d97706,#f59e0b);
+      color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;
+      border:none;cursor:pointer;white-space:nowrap;
+      box-shadow:0 4px 14px rgba(217,119,6,.35);
+      transition:all .18s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;
+    }
+    .ccard-join-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(217,119,6,.5)}
+    .ccard-join-btn:active{transform:scale(.97)}
+    .ccard.combo{border-color:rgba(245,158,11,.5);background:linear-gradient(145deg,rgba(245,158,11,.09),rgba(26,35,126,.12))}
+    .ccard.combo .ccard-join-btn{background:linear-gradient(135deg,#b45309,#d97706,#f59e0b);box-shadow:0 4px 16px rgba(180,83,9,.45)}
+    @media(max-width:480px){
+      .ccard-inner{flex-wrap:wrap;gap:10px}
+      .ccard-join-btn{width:100%;justify-content:center}
+    }
 
     /* ═══ PROMO BAND ═══ */
     .promo-band{background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#b45309 100%);border-radius:22px;padding:22px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 10px 36px rgba(120,53,15,.4);margin:0 auto;max-width:900px}
@@ -344,175 +510,82 @@
     </div>
 
     <div class="nav-btns">
-      <a class="nav-btn nav-ghost" href="/login">Login</a>
-      <a class="nav-btn nav-gold" href="/register">Register</a>
+      <a class="nav-btn" style="color:red"  href="/login">Already Registered? Login</a>
     </div>
   </div>
 </nav>
 
-<!-- ═══ SLIDESHOW ═══ -->
-<div class="slideshow" id="slideshow">
-  <button class="slide-arrow prev" id="prevBtn" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg></button>
-  <button class="slide-arrow next" id="nextBtn" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
+<!-- ═══ HERO ═══ -->
+<div class="hero-section">
+  <div class="hero-inner">
+    <h1>Iskcon Tirupati<br>Presents 🙏</h1>
+    <p class="slide-sub">India's biggest essay writing contest on vedic texts —<br>write with devotion, win amazing prizes!</p>
 
-  <div class="slides" id="slidesTrack">
+    <div class="grand-headline">
+      <span class="gh-num">40</span>
+      <span>Grand Prizes &nbsp;·&nbsp; 8 Gold Medals of 10g Each<br><small style="font-size:10px;font-weight:600;opacity:.8">worth ₹1.7 Lakhs approx. each</small></span>
+    </div>
 
-    <!-- ── SLIDE 1: Overview ── -->
-    <div class="slide">
-
-      <h1>Iskcon Tirupati<br>Presents 🙏</h1>
-      <p class="slide-sub">India's biggest essay writing contest on sacred texts — write with devotion, win amazing prizes!</p>
-
-       <a class="s-btn s-btn-gold" href="/register">Join now only @ 399 rs</a>
-       <br> 
-      <div class="contest-names">
-        <span class="cn-tag">📖 Bhagavad Gita Esssay Writing</span>
-        <span class="cn-tag">📿 Bhagavatam Esssay Writing</span>
-        <span class="cn-tag">🏹 Ramayana Esssay Writing</span>
-        <span class="cn-tag">🪈 Krishna Esssay Writing</span>
-        <span class="cn-tag" style="background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fde68a">🎯 Combo Pack</span>
+    <div class="prize-trio">
+      <div class="prize-card">
+        <span class="pc-icon">🥇</span>
+        <div class="pc-big-num gold">8</div>
+        <div class="pc-title">Pure Gold Medals</div>
+        <div class="pc-sub">10 grams each</div>
       </div>
-
-      <div class="prize-strip">
-        <div class="prize-chip"><div class="pc-rank">🥇</div><div class="pc-amt">10g Pure Gold Medal (Worth 1.7 lakhs approx.)</div><div class="pc-label">1st Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">2nd Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🛕</div><div class="pc-amt">VIP Darshan Tirumala Balaji</div><div class="pc-label">3rd Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">4th Prize</div></div>
-        <div class="prize-chip"><div class="pc-rank">🪷</div><div class="pc-amt">ISKCON Life Patron Membership</div><div class="pc-label">5th Prize</div></div>
+      <div class="prize-card">
+        <span class="pc-icon">🛕</span>
+        <div class="pc-big-num teal">16</div>
+        <div class="pc-title">Sacred Pilgrimage</div>
+        <div class="pc-sub">Tirumala Tirupati Darshan</div>
       </div>
-      <div class="slide-badge"><span class="bdot"></span>Registration Open · 27 Mar – 04 Sep 2026</div>
-      <div class="slide-btns">
-        
-        <a class="s-btn s-btn-outline" href="#contests">Explore ↓</a>
+      <div class="prize-card">
+        <span class="pc-icon">🪷</span>
+        <div class="pc-big-num purple">16</div>
+        <div class="pc-title">Life Memberships</div>
+        <div class="pc-sub">ISKCON Life Patron Card</div>
       </div>
     </div>
 
-    <!-- ── SLIDES: Individual Contests ── -->
-    <% allContests.forEach((c) => {
-      const emoji = getEmoji(c.title);
-    %>
-    <div class="slide">
-      <% if(c.image_url){ %>
-        <img class="slide-img" src="<%= c.image_url %>" alt="<%= c.title %>" loading="lazy" onerror="this.style.display='none'">
-      <% } else { %>
-        <div class="slide-icon"><%= emoji %></div>
-      <% } %>
-      <h2><%= c.title %></h2>
-      <p class="slide-desc"><%= c.description %></p>
-
-      <div class="slide-benefits">
-        <div class="sb-item"><span class="sb-icon">📚</span>Free Book <span class="sb-val">(₹399 value)</span></div>
-        <div class="sb-item"><span class="sb-icon">💻</span>Free Course <span class="sb-val">(₹4,999 value)</span></div>
-        <div class="sb-item"><span class="sb-icon">🎓</span>Digital Certificate</div>
-      </div>
-
-      <div class="slide-prizes">
-        <div class="sp-row"><span>🥇</span><span>10g Pure Gold Medal(Worth Rs. 1.7 lakhs approx.)</span><span class="sp-place">1st Prize</span></div>
-        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">2nd</span></div>
-        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">3rd</span></div>
-        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">4th</span></div>
-        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">5th</span></div>
-      </div>
-
-      <div class="slide-pills">
-        <span class="spill gold">₹<%= Number(c.price||399) %> per entry</span>
-        <% if(Array.isArray(c.age_categories)){ c.age_categories.forEach(a=>{ %><span class="spill"><%= a %></span><% }) } %>
-        <span class="spill">📅 Submit by 09/09/2026</span>
-      </div>
-      <div class="slide-btns">
-        <a class="s-btn s-btn-gold" href="/register">Join This Contest</a>
-      </div>
-    </div>
-    <% }) %>
-
-    <!-- ── Combo Slide ── -->
-    <% if(comboContest){ %>
-    <div class="slide">
-      <div class="slide-icon">🎯</div>
-      <div class="slide-badge" style="background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.5)">🔥 Best Value — Most Popular</div>
-      <h2><%= comboContest.title %></h2>
-      <p class="slide-desc">All 4 contests in one pack — Gita · Bhagavatam · Ramayana · Krishna</p>
-      <div class="slide-benefits">
-        <div class="sb-item"><span class="sb-icon">📚</span>Free Book <span class="sb-val">Science of Self Realization</span></div>
-        <div class="sb-item"><span class="sb-icon">💻</span>Free Course <span class="sb-val">(₹4,999 value)</span></div>
-        <div class="sb-item"><span class="sb-icon">🎓</span>Digital Certificate</div>
-      </div>
-      <div class="slide-prizes">
-        <div class="sp-row"><span>🥇</span><span>10g Pure Gold Medal(Worth Rs. 1.7 lakhs approx.)</span><span class="sp-place">1st Prize</span></div>
-        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">2nd</span></div>
-        <div class="sp-row"><span>🛕</span><span>VIP Darshan Tirumala Balaji</span><span class="sp-place">3rd</span></div>
-        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">4th</span></div>
-        <div class="sp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="sp-place">5th</span></div>
-      </div>
-      <div class="slide-pills">
-        <span class="spill gold">₹<%= Number(comboContest.price||1596) %> for all 4 contests</span>
-        <span class="spill gold">🎁 FREE Book included</span>
-        <span class="spill">📅 Submit by 09/09/2026</span>
-      </div>
-      <div class="slide-btns"><a class="s-btn s-btn-gold" href="/register">Get the Combo Deal 🔥</a></div>
-    </div>
-    <% } %>
-
-    <!-- ── Previous Contest Slide ── -->
-    <div class="slide">
-      <div class="slide-badge" style="background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.35);color:#6ee7b7"><span class="bdot" style="background:#10b981"></span>Proven Track Record</div>
-      <h2 style="color:#ffd700;margin-bottom:6px">Previous Contest<br>Huge Success! 🏆</h2>
-      <p class="slide-desc" style="margin-bottom:10px">Value Based Bhagavad Gita Contest · Dec 2025 – Jan 2026</p>
-
-      <div class="prev-slide-stats">
-        <div class="pss"><strong>25,000+</strong><span>Participants</span></div>
-        <div class="pss"><strong>1 Book</strong><span>Per participant</span></div>
-        <div class="pss"><strong>₹7 Lakh</strong><span>Total prizes</span></div>
-      </div>
-
-      <!-- Winner photos -->
-      <div class="winner-photos">
-        <div class="wphoto">
-          <img src="/images/winner1.png" alt="Venkatesh Reddy" onerror="this.parentElement.style.display='none'">
-          <div class="wphoto-info"><span class="wphoto-rank">🥇 1st Place</span><span class="wphoto-name">Venkatesh Reddy</span></div>
-        </div>
-        <div class="wphoto">
-          <img src="/images/winner2.png" alt="Rani Durgamba" onerror="this.parentElement.style.display='none'">
-          <div class="wphoto-info"><span class="wphoto-rank">🥈 2nd Place</span><span class="wphoto-name">Rani Durgamba</span></div>
-        </div>
-        <div class="wphoto">
-          <img src="/images/winner3.png" alt="P Kiranmai" onerror="this.parentElement.style.display='none'">
-          <div class="wphoto-info"><span class="wphoto-rank">🥉 3rd Place</span><span class="wphoto-name">P Kiranmai</span></div>
-        </div>
-      </div>
-
-      <div class="slide-btns"><a class="s-btn s-btn-gold" href="/register">Join 2026 Edition →</a></div>
+    <div class="benefits-bar">
+      <span>📚 Free Book</span><span class="bsep">·</span>
+      <span>🎓 Certificate</span><span class="bsep">·</span>
+      <span>💻 Online Course</span><span class="bsep">·</span>
+      <span>📅 27 Mar – 04 Sep 2026</span>
     </div>
 
-    <!-- ── ISKCON Slide ── -->
-    <div class="slide">
-      <img class="slide-img" src="/images/iskcon_tirupati.png" alt="" loading="lazy" onerror="this.style.display='none'">
-      <h2 style="margin-bottom:5px">Organised by<br>ISKCON Tirupati</h2>
-      <p class="slide-desc" style="margin-bottom:10px">International Society for Krishna Consciousness — spreading Vedic wisdom, values & devotion since decades</p>
-      <div class="iskcon-pillars">
-        <div class="ip"><span class="ip-icon">🎓</span><span class="ip-text">Spiritual Education</span></div>
-        <div class="ip"><span class="ip-icon">📖</span><span class="ip-text">Book Distribution</span></div>
-        <div class="ip"><span class="ip-icon">🙏</span><span class="ip-text">Youth Programs</span></div>
-        <div class="ip"><span class="ip-icon">🏛️</span><span class="ip-text">Tirupati, AP</span></div>
-        <div class="ip"><span class="ip-icon">📞</span><span class="ip-text">+91-9493805059</span></div>
-        <div class="ip"><span class="ip-icon"><a href="https://wa.me/919493805059?text=Hi" target="_blank"></span><span class="ip-text">WhatsApp 24×7</span></div>
-      </div>
-      <div class="slide-btns">
-        <a class="s-btn s-btn-gold" href="/register">Be Part of This Mission</a>
-        <a class="s-btn s-btn-outline" href="#about">Learn More ↓</a>
-      </div>
+    <div class="join-grid">
+      <a class="join-btn" href="/join/ramayana">
+        <span class="jb-name">Join Ramayana Essay Writing Contest @ ₹399</span>
+      </a>
+      <a class="join-btn" href="/join/bhagavatam">
+        <span class="jb-name">Join Bhagavatam Essay Writing Contest @ ₹399</span>
+      </a>
+      <a class="join-btn" href="/join/krishna">
+        <span class="jb-name">Join Krishna Book Essay Writing Contest @ ₹399</span>
+      </a>
+      <a class="join-btn" href="/join/gita">
+        <span class="jb-name">Join Bhagavad Gita Essay Writing Contest @ ₹399</span>
+      </a>
+      <a class="join-btn gold-btn" href="/join/combo">
+        <span class="jb-name">🔥 Join All 4 Contests — Combo Pack @ ₹1,596</span>
+      </a>
+      <a class="join-btn" href="/register">
+        <span class="jb-name">Join Multiple Contests</span>
+      </a>
+      <a class="join-btn login-btn" href="/login">
+        <span class="jb-name">Already Registered? Login →</span>
+      </a>
     </div>
-
-  </div><!-- /slides -->
-  <div class="slide-nav" id="dotNav"></div>
-</div><!-- /slideshow -->
+  </div>
+</div>
 
 <!-- ═══ STATS BAR ═══ -->
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item"><div class="stat-num">25,000+</div><div class="stat-label">Previous Participants</div></div>
     <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Essay Contests</div></div>
-    <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">Amazing Prizes</div></div>
+    <div class="stat-item"><div class="stat-num">40</div><div class="stat-label">Amazing Prizes</div></div>
     <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Age Categories</div></div>
     <div class="stat-item"><div class="stat-num">FREE</div><div class="stat-label">Book + Course Bonus</div></div>
   </div>
@@ -527,7 +600,7 @@
         <div class="pt1">🔥 FREE Book + Course Worth ₹5,149!</div>
         <div class="pt2">Register for <strong>any 4 contests</strong> or the <strong>Combo Pack</strong> and receive <em>Science of Self Realization book</em> + <em>WorkLife Balance Online Course (₹4,999)</em> — absolutely FREE!</div>
       </div>
-      <a class="promo-btn" href="/register">Claim Now →</a>
+      <a class="promo-btn" href="/join/combo">Claim Now →</a>
     </div>
   </div>
 </div>
@@ -540,8 +613,8 @@
     <div class="steps-row">
       <div class="step-box reveal"><div class="step-num">1</div><div class="step-emoji">📝</div><div class="step-title">Register</div><div class="step-desc">Create free account with mobile number</div></div>
       <div class="step-box reveal" style="transition-delay:.1s"><div class="step-num">2</div><div class="step-emoji">🛒</div><div class="step-title">Choose Contest</div><div class="step-desc">Pick contests & add to cart</div></div>
-      <div class="step-box reveal" style="transition-delay:.2s"><div class="step-num">3</div><div class="step-emoji">✍️</div><div class="step-title">Write Essay</div><div class="step-desc">Read the sacred text & write 1,000–2,000 words</div></div>
-      <div class="step-box reveal" style="transition-delay:.3s"><div class="step-num">4</div><div class="step-emoji">🏆</div><div class="step-title">Win Prizes</div><div class="step-desc">Upload PDF/DOCX before deadline · Win gold medal, VIP darshan & more!</div></div>
+      <div class="step-box reveal" style="transition-delay:.2s"><div class="step-num">3</div><div class="step-emoji">✍️</div><div class="step-title">Write Essay</div><div class="step-desc">Read the sacred text & write 500–2,000 words</div></div>
+      <div class="step-box reveal" style="transition-delay:.3s"><div class="step-num">4</div><div class="step-emoji">🏆</div><div class="step-title">Win Prizes</div><div class="step-desc">Upload PDF/DOCX before deadline · Win gold medal, Tirumala darshan & more!</div></div>
     </div>
   </div>
 </div>
@@ -555,39 +628,22 @@
       <% (Array.isArray(contests)?contests:[]).forEach((c,i) => {
         const isCombo = String(c.title||'').toLowerCase().includes('combo');
         const emoji = getEmoji(c.title);
+        const joinUrl =
+          c.title&&c.title.toLowerCase().includes('ramayana') ? '/join/ramayana' :
+          c.title&&c.title.toLowerCase().includes('bhagavatam') ? '/join/bhagavatam' :
+          c.title&&c.title.toLowerCase().includes('krishna') ? '/join/krishna' :
+          c.title&&c.title.toLowerCase().includes('gita') ? '/join/gita' :
+          isCombo ? '/join/combo' : '/register';
       %>
       <div class="ccard <%= isCombo?'combo':'' %> reveal" style="transition-delay:<%=i*0.07%>s">
-        <% if(c.image_url && !isCombo){ %>
-          <img class="ccard-img" src="<%= c.image_url %>" alt="<%= c.title %>" loading="lazy" onerror="this.parentElement.innerHTML='<div class=ccard-img-fallback><%=emoji%></div>'">
-        <% } else { %>
-          <div class="ccard-img-fallback"><%= emoji %></div>
-        <% } %>
-        <div class="ccard-body">
-          <div class="ccard-title"><%= c.title %></div>
-          <div class="ccard-desc"><%= c.description %></div>
-          <div class="ccard-meta">
-            <% if(Array.isArray(c.age_categories)){ c.age_categories.slice(0,2).forEach(a=>{ %><span class="ccard-tag"><%= a %></span><% }) } %>
-            <span class="ccard-tag">📅 09 Sep 2026</span>
+        <div class="ccard-inner">
+          <div class="ccard-emoji"><%= emoji %></div>
+          <div class="ccard-info">
+            <div class="ccard-title"><%= c.title %></div>
+            <div class="ccard-prizes-inline">🥇 Gold Medal · 🛕 Tirumala · 🪷 Life Membership · <b>📚 Free Book</b></div>
+            <div class="ccard-price-tag">₹<%= Number(c.price||399) %><%= isCombo ? ' — All 4 Contests 🔥' : ' per entry' %></div>
           </div>
-          <% if(!isCombo){ %>
-          <div class="ccard-benefits">
-            <div class="cb-row"><span class="cb-icon">📚</span><span>Free Book Delivered <em style="color:#64748b;font-style:normal">(₹399 value)</em></span></div>
-            <div class="cb-row"><span class="cb-icon">💻</span><span>Free Online Course <em style="color:#64748b;font-style:normal">(₹4,999 value)</em></span></div>
-            <div class="cb-row"><span class="cb-icon">🎓</span><span>Digital Certificate</span></div>
-          </div>
-          <% } %>
-          <div class="ccard-prizes">
-            <div class="cp-row"><span>🥇</span><span>10g Pure Gold Medal(Worth Rs. 1.7 lakhs approx.)</span><span class="cp-place">1st Prize</span></div>
-            <div class="cp-row"><span>🛕</span><span>VIP Darshan – Tirumala Balaji</span><span class="cp-place">2nd</span></div>
-            <div class="cp-row"><span>🛕</span><span>VIP Darshan – Tirumala Balaji</span><span class="cp-place">3rd</span></div>
-            <div class="cp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="cp-place">4th</span></div>
-            <div class="cp-row"><span>🪷</span><span>ISKCON Life Patron Membership</span><span class="cp-place">5th</span></div>
-          </div>
-          <div class="ccard-price">
-            <span>₹<%= Number(c.price||399) %></span>
-            <% if(isCombo){ %><span style="color:#f59e0b;font-size:11px;font-weight:700">🔥 Best Value</span><% }else{ %><span>per entry</span><% } %>
-          </div>
-          <a href="/register" class="ccard-btn">Register for This Contest →</a>
+          <a href="<%= joinUrl %>" class="ccard-join-btn">Join Now →</a>
         </div>
       </div>
       <% }) %>
@@ -662,7 +718,7 @@
           <div class="pillar"><div class="pi">✍️</div><div class="pt"><strong>Essay Expression</strong>Articulate wisdom in your own words</div></div>
 
           <div class="pillar"><div class="pi">🎓</div><div class="pt"><strong>Recognition</strong>Digital certificates for all participants</div></div>
-          <div class="pillar"><div class="pi">🏆</div><div class="pt"><strong>5 Amazing Prizes</strong>Gold medal · VIP Darshan · Patron Memberships</div></div>
+          <div class="pillar"><div class="pi">🏆</div><div class="pt"><strong>40 Amazing Prizes</strong>Gold medal · Tirumala Darshan · Patron Memberships</div></div>
         </div>
       </div>
       <div class="about-cta reveal" style="transition-delay:.15s">
@@ -687,7 +743,7 @@
       <p>A spiritual essay writing movement inspiring thousands to read, reflect and express Vedic wisdom.</p>
       <address>Hare Krishna Land, Hare Krishna Road,<br>Vinayaka Nagar, Tirupati – 517501<br>Andhra Pradesh, India</address>
       <div class="contact-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><a href="tel:+919493805059">+91-9493805059</a></div>
-      <div class="contact-row" style="margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><a href="mailto:iskcon.tirupati.contest@gmail.com">iskcon.tirupati.contest@gmail.com</a></div>
+      <div class="contact-row" style="margin-top:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><span class="__cf_email__">support@iskconcontest.org</span></a></div>
     </div>
     <div class="footer-col">
       <h4>Contests</h4>
@@ -731,45 +787,10 @@
 
 <script>
 (function(){
-  /* ── Slideshow ── */
-  const track = document.getElementById('slidesTrack');
-  const dotNav = document.getElementById('dotNav');
-  const slideEls = track.querySelectorAll('.slide');
-  const n = slideEls.length;
-  let cur = 0, autoTimer;
-
-  for(let i = 0; i < n; i++){
-    const d = document.createElement('button');
-    d.className = 'slide-dot' + (i === 0 ? ' active' : '');
-    d.setAttribute('aria-label','Slide '+(i+1));
-    d.addEventListener('click', () => goTo(i, true));
-    dotNav.appendChild(d);
-  }
-
-  function goTo(idx, stopAuto){
-    // scroll current slide back to top when leaving
-    slideEls[cur].scrollTop = 0;
-    cur = ((idx % n) + n) % n;
-    track.style.transform = `translateX(-${cur * 100}%)`;
-    dotNav.querySelectorAll('.slide-dot').forEach((d,i) => d.classList.toggle('active', i === cur));
-    if(stopAuto){ clearInterval(autoTimer); autoTimer = setInterval(() => goTo(cur+1, false), 7000); }
-  }
-
-  document.getElementById('prevBtn').addEventListener('click', () => goTo(cur-1, true));
-  document.getElementById('nextBtn').addEventListener('click', () => goTo(cur+1, true));
-
-  /* touch swipe */
-  let tx = 0;
-  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
-  track.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if(Math.abs(dx) > 40) goTo(cur + (dx < 0 ? 1 : -1), true); }, {passive:true});
-
-  /* slower auto-advance — 7 seconds */
-  autoTimer = setInterval(() => goTo(cur+1, false), 7000);
-
   /* ── Scroll reveal ── */
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
-  }, {threshold: .1});
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 })();
 </script>

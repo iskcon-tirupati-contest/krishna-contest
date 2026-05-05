@@ -514,11 +514,15 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     SELECT
       sh.id AS shipment_id,
       sh.payment_id,
+      sh.delivery_mode,
       sh.tracking_id,
       sh.status,
       sh.courier_mode,
       sh.updated_at,
-      STRING_AGG(DISTINCT COALESCE(si.book_title, c.title), ', ' ORDER BY COALESCE(si.book_title, c.title)) AS title
+      STRING_AGG(
+        DISTINCT COALESCE(si.book_title, c.title),
+        ', ' ORDER BY COALESCE(si.book_title, c.title)
+      ) AS title
     FROM shipments sh
     JOIN shipment_items si ON si.shipment_id = sh.id
     JOIN orders o ON o.id = si.order_id
@@ -526,7 +530,14 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
     WHERE o.user_id = $1
       AND o.payment_status = 'paid'
       AND o.book_option = 'book'
-    GROUP BY sh.id, sh.payment_id, sh.tracking_id, sh.status, sh.courier_mode, sh.updated_at
+    GROUP BY
+      sh.id,
+      sh.payment_id,
+      sh.delivery_mode,
+      sh.tracking_id,
+      sh.status,
+      sh.courier_mode,
+      sh.updated_at
     ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     `,
     [userId]

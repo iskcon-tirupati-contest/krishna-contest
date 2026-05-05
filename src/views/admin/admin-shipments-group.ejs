@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin • Group Shipments by Phone</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:#e4efe4;
+      color:#1a2e1a;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit;text-decoration:none}
+
+    .layout{display:flex;min-height:100vh}
+
+    /* Sidebar - matches admin-shipments.ejs */
+    .sidebar{
+      width:260px;background:#0a1022;
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:18px;flex-shrink:0;
+    }
+    .brand{font-weight:900;margin-bottom:18px;color:#fff;font-family:'Sora',sans-serif}
+    .nav a{
+      display:block;padding:10px 12px;border-radius:12px;
+      text-decoration:none;color:rgba(255,255,255,.72);margin-bottom:5px;
+      font-size:13px;transition:all .15s;
+    }
+    .nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+    .nav a.active{
+      background:rgba(26,60,255,.2);border:1px solid rgba(26,60,255,.4);
+      color:#fff;font-weight:700;
+    }
+
+    .content{flex:1;min-width:0}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px 22px}
+
+    .topbar{
+      display:flex;align-items:flex-start;justify-content:space-between;
+      gap:14px;margin-bottom:22px;flex-wrap:wrap;
+    }
+    .page-title{margin:0 0 4px 0;font-family:'Sora',sans-serif;font-weight:800;font-size:26px}
+    .subtitle{color:#4a6e4a;font-size:14px}
+    .summary{
+      background:#edf5ed;border:1px solid #b8d4b8;border-radius:12px;
+      padding:10px 14px;font-size:14px;color:#243d24;
+    }
+    .summary b{color:#1e8449}
+
+    .btn{
+      border:none;border-radius:10px;padding:9px 14px;font-weight:700;
+      cursor:pointer;font-family:inherit;font-size:13px;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn.ghost{background:#edf5ed;color:#1a2e1a;border:1px solid #b8d4b8}
+    .btn.ghost:hover{background:#d8e8d8}
+
+    /* Group cards */
+    .group{
+      background:#edf5ed;border:1px solid #b8d4b8;border-radius:14px;
+      margin-bottom:18px;overflow:hidden;
+      box-shadow:0 1px 3px rgba(0,60,0,.07);
+    }
+    .group-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 18px;background:#d5f5e3;border-bottom:1px solid #82e0aa;
+      flex-wrap:wrap;gap:10px;
+    }
+    .group-head .who{display:flex;flex-direction:column;gap:2px}
+    .group-head .name{font-weight:800;font-size:16px;color:#145214}
+    .group-head .phone{font-size:13px;color:#1e8449;font-family:'Sora',monospace}
+    .badge{
+      background:#1e8449;color:#fff;font-weight:800;font-size:12px;
+      padding:5px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px;
+    }
+    .badge.temple{background:#7d3c98}
+    .badge.count{background:#c0392b}
+
+    .ships{padding:8px 0}
+    .ship{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;padding:12px 18px;
+      border-top:1px dashed #b8d4b8;
+      align-items:start;
+    }
+    .ship:first-child{border-top:none}
+    .ship-num{
+      font-weight:900;font-size:18px;color:#7a9e7a;
+      font-family:'Sora',sans-serif;min-width:30px;
+    }
+    .ship-body{min-width:0}
+    .ship-id{
+      font-family:'Sora',monospace;font-size:11px;color:#4a6e4a;
+      margin-bottom:4px;word-break:break-all;
+    }
+    .ship-books{font-size:14px;color:#1a2e1a;margin-bottom:6px;font-weight:600}
+    .ship-contests{font-size:12px;color:#4a6e4a;margin-bottom:6px}
+    .ship-addr{font-size:12px;color:#243d24;line-height:1.5}
+    .ship-meta{
+      display:flex;flex-direction:column;gap:5px;align-items:flex-end;
+      font-size:11px;color:#4a6e4a;
+    }
+    .status-pill{
+      padding:3px 9px;border-radius:999px;font-weight:700;
+      font-size:10px;text-transform:uppercase;letter-spacing:.4px;
+    }
+    .status-pending{background:#fef9e7;color:#7d4e00;border:1px solid #f9d77e}
+    .status-under_packing{background:#e8f4fd;color:#1a3a6e;border:1px solid #93c9f0}
+    .status-packed{background:#eafaf1;color:#0e5447;border:1px solid #82e0aa}
+
+    /* Empty state */
+    .empty{
+      text-align:center;padding:60px 20px;background:#edf5ed;
+      border:1px dashed #b8d4b8;border-radius:14px;
+    }
+    .empty h2{margin:0 0 8px 0;color:#1e8449}
+    .empty p{color:#4a6e4a;margin:0}
+
+    /* Pagination */
+    .pager{
+      display:flex;justify-content:center;align-items:center;gap:8px;
+      margin-top:24px;flex-wrap:wrap;
+    }
+    .pager a, .pager span{
+      padding:8px 13px;border-radius:8px;font-size:13px;font-weight:600;
+      border:1px solid #b8d4b8;background:#edf5ed;color:#1a2e1a;
+      text-decoration:none;
+    }
+    .pager a:hover{background:#d8e8d8}
+    .pager .current{background:#1e8449;color:#fff;border-color:#1e8449}
+    .pager .disabled{opacity:.4;pointer-events:none}
+
+    @media (max-width:900px){
+      .sidebar{display:none}
+      .ship{grid-template-columns:auto 1fr}
+      .ship-meta{grid-column:1/-1;align-items:flex-start;flex-direction:row;flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Admin Panel</div>
+      <div class="nav">
+        <a href="/admin">Overview</a>
+        <a href="/admin/user360">View User</a>
+        <a href="/admin/users">All Users</a>
+        <a href="/admin/feedback">All Feedback</a>
+        <a href="/admin/shipment-stock">Current Book Stock</a>
+        <a href="/admin/shipments" class="active">Online Shipments</a>
+        <a href="/admin/orders">Online Orders</a>
+        <a href="/admin/submissions">Online Submissions</a>
+        <a href="/admin/contests">Online Contests</a>
+        <a href="/admin/offline-dashboard">Offline Overview</a>
+        <a href="/admin/offline-orders">Offline Orders</a>
+        <a href="/admin/agents">Offline Agents</a>
+        <a href="/admin/payments/reconcile-bulk">Razorpay Reconcile</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="wrap">
+        <div class="topbar">
+          <div>
+            <h1 class="page-title">👥 Shipments Grouped by Phone</h1>
+            <div class="subtitle">
+              Multiple undispatched shipments going to the same person — combine them into one parcel.
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a class="btn ghost" href="/admin/shipments">← Back to Shipments</a>
+            <button class="btn ghost" onclick="window.location.reload()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <% if (totalCount > 0) { %>
+          <div class="summary" style="margin-bottom:18px">
+            Found <b><%= totalCount %></b> phone group<%= totalCount === 1 ? '' : 's' %>
+            with 2 or more undispatched shipments.
+            Showing page <b><%= page %></b> of <b><%= totalPages %></b>.
+          </div>
+        <% } %>
+
+        <% if (!groups || groups.length === 0) { %>
+          <div class="empty">
+            <h2>🎉 Nothing to group right now</h2>
+            <p>No phone has 2+ undispatched shipments. Everything is already neatly per-person.</p>
+          </div>
+        <% } else { %>
+          <% groups.forEach(function(g) { %>
+            <div class="group">
+              <div class="group-head">
+                <div class="who">
+                  <div class="name"><%= g.user_name || '(Unknown name)' %></div>
+                  <div class="phone">📱 <%= g.phone %></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <span class="badge <%= g.delivery_mode === 'temple_pickup' ? 'temple' : '' %>">
+                    <%= g.delivery_mode === 'temple_pickup' ? '🛕 Temple' : '🚚 Home' %>
+                  </span>
+                  <span class="badge count">
+                    <%= g.shipment_count %> shipments
+                  </span>
+                </div>
+              </div>
+
+              <div class="ships">
+                <% g.shipments.forEach(function(s, idx) { %>
+                  <div class="ship">
+                    <div class="ship-num">#<%= idx + 1 %></div>
+                    <div class="ship-body">
+                      <div class="ship-id"><%= s.shipment_id %></div>
+                      <div class="ship-books">📚 <%= s.books_display || '(no books listed)' %></div>
+                      <% if (s.contest_titles) { %>
+                        <div class="ship-contests">🏆 <%= s.contest_titles %></div>
+                      <% } %>
+                      <div class="ship-addr">
+                        <% if (g.delivery_mode === 'home_delivery') { %>
+                          📍
+                          <%= s.address || '' %><% if (s.address && (s.city || s.state || s.pincode)) { %>, <% } %>
+                          <%= s.city || '' %><% if (s.city && (s.state || s.pincode)) { %>, <% } %>
+                          <%= s.state || '' %>
+                          <% if (s.pincode) { %> — <%= s.pincode %><% } %>
+                        <% } else { %>
+                          🛕 Temple pickup
+                        <% } %>
+                      </div>
+                    </div>
+                    <div class="ship-meta">
+                      <span class="status-pill status-<%= (s.status || 'pending').toLowerCase() %>">
+                        <%= s.status || 'pending' %>
+                      </span>
+                      <% if (s.tracking_id) { %>
+                        <span>Tracking: <%= s.tracking_id %></span>
+                      <% } else { %>
+                        <span style="color:#c0392b">No tracking yet</span>
+                      <% } %>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+          <% }); %>
+
+          <% if (totalPages > 1) { %>
+            <div class="pager">
+              <% if (page > 1) { %>
+                <a href="?page=<%= page - 1 %>">← Prev</a>
+              <% } else { %>
+                <span class="disabled">← Prev</span>
+              <% } %>
+
+              <%
+                // Show up to 7 page numbers around current
+                var startPg = Math.max(1, page - 3);
+                var endPg = Math.min(totalPages, startPg + 6);
+                if (endPg - startPg < 6) startPg = Math.max(1, endPg - 6);
+              %>
+              <% if (startPg > 1) { %>
+                <a href="?page=1">1</a>
+                <% if (startPg > 2) { %><span>…</span><% } %>
+              <% } %>
+
+              <% for (var p = startPg; p <= endPg; p++) { %>
+                <% if (p === page) { %>
+                  <span class="current"><%= p %></span>
+                <% } else { %>
+                  <a href="?page=<%= p %>"><%= p %></a>
+                <% } %>
+              <% } %>
+
+              <% if (endPg < totalPages) { %>
+                <% if (endPg < totalPages - 1) { %><span>…</span><% } %>
+                <a href="?page=<%= totalPages %>"><%= totalPages %></a>
+              <% } %>
+
+              <% if (page < totalPages) { %>
+                <a href="?page=<%= page + 1 %>">Next →</a>
+              <% } else { %>
+                <span class="disabled">Next →</span>
+              <% } %>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

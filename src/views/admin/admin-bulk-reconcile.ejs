@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin ? Bulk Reconcile V2</title>
+  <title>Admin - Bulk Reconcile V2</title>
   <style>
     :root{
       --bg:#0b1020;--card:#121933;--card2:#182245;--text:#eef2ff;--muted:#aab6d3;--line:rgba(255,255,255,.10);
@@ -146,9 +146,9 @@
       </div>
 
       <div class="grid">
-        <div class="stat"><div class="k">Global DB Paid Revenue</div><div class="v">?<%= Number(summary.currentDbRevenue || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Recoverable Revenue On This Page</div><div class="v">?<%= Number(summary.recoverableRevenue || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Projected Revenue If This Page Is Reconciled</div><div class="v">?<%= Number(summary.projectedRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Global DB Paid Revenue</div><div class="v"><%= Number(summary.currentDbRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Recoverable Revenue On This Page</div><div class="v"><%= Number(summary.recoverableRevenue || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Projected Revenue If This Page Is Reconciled</div><div class="v"><%= Number(summary.projectedRevenue || 0).toFixed(2) %></div></div>
         <div class="stat"><div class="k">Safe Sessions</div><div class="v"><%= summary.safeTotal || 0 %></div></div>
       </div>
 
@@ -160,8 +160,8 @@
       </div>
 
       <div class="grid">
-        <div class="stat"><div class="k">Gateway Extra Over Expected</div><div class="v">?<%= Number(summary.gatewayExtraOverExpected || 0).toFixed(2) %></div></div>
-        <div class="stat"><div class="k">Underpaid Gap</div><div class="v">?<%= Number(summary.underpaidGap || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Gateway Extra Over Expected</div><div class="v"><%= Number(summary.gatewayExtraOverExpected || 0).toFixed(2) %></div></div>
+        <div class="stat"><div class="k">Underpaid Gap</div><div class="v"><%= Number(summary.underpaidGap || 0).toFixed(2) %></div></div>
         <div class="stat"><div class="k">Safe Orders</div><div class="v"><%= summary.safeOrderCount || 0 %></div></div>
         <div class="stat"><div class="k">Scanned / Filtered</div><div class="v"><%= scannedCount || 0 %> / <%= filteredCount || 0 %></div></div>
       </div>
@@ -227,7 +227,7 @@
                   </td>
                   <td>
                     <div><span class="pill"><%= r.session_status || '-' %></span></div>
-                    <div class="muted small">Expected: ?<%= Number(r.session_amount || 0).toFixed(2) %></div>
+                    <div class="muted small">Expected: <%= Number(r.session_amount || 0).toFixed(2) %></div>
                     <div class="muted small"><%= r.order_statuses || '-' %></div>
                   </td>
                   <td>
@@ -240,11 +240,11 @@
                     <% } else { %>
                       <div><span class="pill"><%= r.selectedPayment.status || '-' %></span></div>
                       <div class="muted small mono" style="margin-top:6px"><%= r.selectedPayment.id || '-' %></div>
-                      <div class="muted small">Captured: ?<%= Number(r.capturedAmount || 0).toFixed(2) %></div>
+                      <div class="muted small">Captured: <%= Number(r.capturedAmount || 0).toFixed(2) %></div>
                       <div class="muted small">Method: <%= r.selectedPayment.method || '-' %></div>
                       <div class="muted small">At least expected: <%= r.amountAtLeastExpected ? 'yes' : 'no' %></div>
-                      <% if (r.isHigherAmount) { %><div class="muted small">Extra above expected: ?<%= Number(r.overCollectedAmount || 0).toFixed(2) %></div><% } %>
-                      <% if (r.underpaidAmount) { %><div class="muted small">Short by: ?<%= Number(r.underpaidAmount || 0).toFixed(2) %></div><% } %>
+                      <% if (r.isHigherAmount) { %><div class="muted small">Extra above expected: <%= Number(r.overCollectedAmount || 0).toFixed(2) %></div><% } %>
+                      <% if (r.underpaidAmount) { %><div class="muted small">Short by: <%= Number(r.underpaidAmount || 0).toFixed(2) %></div><% } %>
                     <% } %>
                   </td>
                   <td>

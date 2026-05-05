@@ -7,11 +7,11 @@ export async function authMiddleware(req: any, res: Response, next: NextFunction
     const token = req.cookies?.token;
 
     if (!token) {
-      console.warn("❌ No token", {
+      /*console.warn("❌ No token", {
         path: req.originalUrl,
         ua: req.headers["user-agent"],
         ip: req.ip,
-      });
+      });*/
       return res.redirect("/login");
     }
 

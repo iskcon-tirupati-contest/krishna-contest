@@ -285,7 +285,7 @@
 <script>
 (function(){
   const EXTRA_BENEFITS=[];
-  const EXTRA_RULES=['Essay must be between 1,000 and 2,000 words','Only PDF,DOCX,PNG,JPG file formats are accepted'];
+  const EXTRA_RULES=['Essay must be between 500 and 2,000 words','Only PDF,DOCX,PNG,JPG file formats are accepted'];
 
   const age025Btn=document.getElementById('age025Btn');
   const ageAboveBtn=document.getElementById('ageAboveBtn');
@@ -463,7 +463,7 @@
     document.getElementById('mReg').textContent='Reg: '+(card.dataset.registrationDeadline||'-');
     document.getElementById('mSub').textContent='Submit: '+(card.dataset.submissionDeadline||'-');
     document.getElementById('mWin').textContent='Winners: '+(card.dataset.winnerDate||'-');
-    document.getElementById('mPrize').textContent=card.dataset.prize||'Prize details coming soon.';
+    document.getElementById('mPrize').innerHTML = card.dataset.prize||'Prize details coming soon.';
     const img=document.getElementById('mImg');
     let src=card.dataset.img;
     if(!src&&isCombo)src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Lord_Krishna_with_Radha.jpg/640px-Lord_Krishna_with_Radha.jpg';

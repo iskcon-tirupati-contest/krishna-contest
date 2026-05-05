@@ -156,33 +156,6 @@
       .top-btn{padding:10px 14px;font-size:12px}
       .guide-banner{flex-direction:column;gap:10px}
     }
-
-    /* ── NEW-USER PASSWORD BANNER ── */
-    .pwd-banner{
-      padding:20px 28px;
-      background:linear-gradient(135deg,#4c1d95,#5b21b6,#7c3aed);
-      position:relative;overflow:hidden;
-    }
-    .pwd-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 90% 50%,rgba(167,139,250,.25) 0%,transparent 60%);pointer-events:none}
-    .pb-inner{position:relative;z-index:1;display:flex;align-items:flex-start;gap:14px}
-    .pb-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-    .pb-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#fff;margin-bottom:4px}
-    .pb-sub{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:14px}
-    .pb-countdown{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-    .ring-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
-    .ring-svg{width:52px;height:52px;transform:rotate(-90deg)}
-    .ring-bg{fill:none;stroke:rgba(255,255,255,.2);stroke-width:4}
-    .ring-bar{fill:none;stroke:#a78bfa;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
-    .ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#fff}
-    .pb-countdown-text{font-size:13px;color:rgba(255,255,255,.85);line-height:1.5}
-    .pb-countdown-text b{color:#fff;font-weight:700}
-    .pb-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:12px;padding:11px 18px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 4px 16px rgba(217,119,6,.4);transition:transform .14s,box-shadow .14s}
-    .pb-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(217,119,6,.55)}
-    .pb-btn svg{width:14px;height:14px;fill:currentColor}
-    @media(max-width:520px){
-      .pwd-banner{padding:18px}
-      .pb-inner{flex-direction:column;gap:10px}
-    }
   </style>
 </head>
 <body>
@@ -196,12 +169,11 @@
       </div>
     </div>
     <h1>Payment Successful! 🎉</h1>
-    <div class="top-sub"><%= isNewUser ? "You're officially registered! One last step — set up your account password." : "You're officially registered. Your essay contest journey begins now." %></div>
+    <div class="top-sub">You're officially registered. Your essay contest journey begins now.</div>
     <div class="id-row">
       <div class="id-chip"><span>Order ID</span><%= paymentId %></div>
       <div class="id-chip"><span>Session ID</span><%= payment_session_id %></div>
     </div>
-    <% if (!isNewUser) { %>
     <div class="top-actions">
       <a class="top-btn primary-action" href="/dashboard/my-contests">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6Zm-4 2h14v2H5v-2Z"/></svg>
@@ -212,38 +184,7 @@
         Dashboard
       </a>
     </div>
-    <% } %>
   </div>
-
-  <% if (isNewUser) { %>
-  <!-- ── NEW USER: PASSWORD SETUP BANNER ── -->
-  <div class="pwd-banner">
-    <div class="pb-inner">
-      <div class="pb-icon">🔑</div>
-      <div>
-        <div class="pb-title">Set Your Account Password</div>
-        <div class="pb-sub">A new account was created for you. Set a password to access your dashboard, upload your essay, and track your registration.</div>
-        <div class="pb-countdown">
-          <div class="ring-wrap">
-            <svg class="ring-svg" viewBox="0 0 52 52">
-              <circle class="ring-bg" cx="26" cy="26" r="22"/>
-              <circle class="ring-bar" id="ringBar" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="0"/>
-            </svg>
-            <div class="ring-num" id="ringNum">5</div>
-          </div>
-          <div class="pb-countdown-text">
-            Redirecting in <b id="secText">5</b> seconds.<br>
-            <span style="font-size:12px;opacity:.8">Or tap below to go now.</span>
-          </div>
-        </div>
-        <a class="pb-btn" href="/set-password">
-          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-          Set My Password Now →
-        </a>
-      </div>
-    </div>
-  </div>
-  <% } %>
 
   <div class="content">
 
@@ -253,7 +194,7 @@
       <div class="guide-body">
         <div class="guide-title">What to do next?</div>
         <div class="guide-steps">
-          <div class="guide-step"><span class="guide-step-num">1</span>Write your essay (500–2,000 words)</div>
+          <div class="guide-step"><span class="guide-step-num">1</span>Write your essay (1,000–2,000 words)</div>
           <div class="guide-step"><span class="guide-step-num">2</span>Save it as PDF or DOCX</div>
           <div class="guide-step"><span class="guide-step-num">3</span>Upload it in My Contests before the deadline</div>
         </div>
@@ -350,13 +291,6 @@
 
   <!-- ── BOTTOM BUTTONS ── -->
   <div class="btnRow">
-    <% if (isNewUser) { %>
-    <a class="btn primary" href="/set-password">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-      Set My Password
-    </a>
-    <a class="btn ghost" href="/dashboard">Skip for now</a>
-    <% } else { %>
     <a class="btn primary" href="/dashboard/my-contests">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Go to My Contests
@@ -365,7 +299,6 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Back to Dashboard
     </a>
-    <% } %>
   </div>
 
 </div>
@@ -376,27 +309,5 @@
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.852L.057 23.7a.5.5 0 0 0 .611.638l5.99-1.571A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.51-5.17-1.399l-.37-.22-3.558.933.95-3.47-.241-.38A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
 </a>
 
-<% if (isNewUser) { %>
-<script>
-(function(){
-  const TOTAL = 5;
-  const CIRC  = 2 * Math.PI * 22; // 138.2
-  const bar   = document.getElementById('ringBar');
-  const num   = document.getElementById('ringNum');
-  const sec   = document.getElementById('secText');
-  const url   = '/set-password';
-  let left    = TOTAL;
-  setTimeout(function(){
-    const iv = setInterval(function(){
-      left--;
-      if (left <= 0){ clearInterval(iv); window.location.href = url; return; }
-      bar.style.strokeDashoffset = CIRC * (1 - left / TOTAL);
-      num.textContent = left;
-      sec.textContent = left;
-    }, 1000);
-  }, 1000);
-})();
-</script>
-<% } %>
 </body>
 </html>

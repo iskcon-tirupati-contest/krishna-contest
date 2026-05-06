@@ -142,9 +142,7 @@ const ssrLanguages = availableBookLanguages["Science of Self Realization"] || []
         contest_id: row.contest_id,
         age_category: row.age_category,
         contest_title: row.contest_title,
-        amount: process.env.DIRECT_REG_TEST_PRICE
-          ? Number(process.env.DIRECT_REG_TEST_PRICE)
-          : Number(row.price || 0),
+        amount: Number(row.price || 0),
         default_book_title: fixedBook,
         saved_book_language: "",
         available_languages: allowedLanguages,
@@ -197,9 +195,7 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
 
 
   if (!cartQ.rows.length) {
-    // Cart empty on POST — user may have double-submitted or refreshed
-    // Redirect to GET which will check for pending orders and show resume page
-    return res.redirect("/checkout/review");
+    return res.status(400).send("Cart is empty");
   }
 
   const availableBookLanguages = await fetchAvailableBookLanguages();
@@ -218,9 +214,7 @@ for (const row of cartQ.rows) {
       contest_id: row.contest_id,
       age_category: row.age_category,
       contest_title: row.contest_title,
-      amount: process.env.DIRECT_REG_TEST_PRICE
-          ? Number(process.env.DIRECT_REG_TEST_PRICE)
-          : Number(row.price || 0),
+      amount: Number(row.price || 0),
       default_book_title: fixedBook,
       available_languages: allowedLanguages,
     });
@@ -398,8 +392,10 @@ for (const row of cartQ.rows) {
   if (existingQ.rows.length > 0) {
     const existingPaymentId = existingQ.rows[0].payment_id;
     await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
-    // Always go through payment/select — delivery mode gates COD visibility inside
-    return res.redirect(`/payment/select?paymentId=${encodeURIComponent(existingPaymentId)}`);
+    const dest = isDeliver
+      ? `/payment/select?paymentId=${encodeURIComponent(existingPaymentId)}`
+      : `/payment/embedded?paymentId=${encodeURIComponent(existingPaymentId)}`;
+    return res.redirect(dest);
   }
 
   const paymentId = "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
@@ -430,10 +426,6 @@ for (const row of cartQ.rows) {
       ).trim();
       const fixedBook = String(row.default_book_title || "").trim();
 
-      const rowAmount = process.env.DIRECT_REG_TEST_PRICE
-        ? Number(process.env.DIRECT_REG_TEST_PRICE)
-        : Number(row.amount || 0);
-
       const ins = await pool.query(
         `INSERT INTO orders
          (user_id, contest_id, amount, payment_status, payment_id, age_category, created_at, book_option, full_name, book_title)
@@ -442,7 +434,7 @@ for (const row of cartQ.rows) {
         [
           userId,
           row.contest_id,
-          rowAmount,
+          Number(row.amount || 0),
           paymentId,
           finalAge,
           isDonate ? "donation" : "book",
@@ -457,8 +449,7 @@ for (const row of cartQ.rows) {
     if (isDonate) {
       await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
       await pool.query("COMMIT");
-      // Donate → payment/select (Razorpay + Cashfree shown, COD hidden)
-      return res.redirect(`/payment/select?paymentId=${encodeURIComponent(paymentId)}`);
+      return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
     }
 
     const address = String(req.body.address || "").trim();
@@ -522,8 +513,11 @@ for (const row of cartQ.rows) {
 
     // Home delivery → payment-select (Razorpay / Cashfree / COD choice)
     // Temple pickup → payment-embedded (Razorpay only, no COD)
-    // All modes go through payment/select — COD is gated by delivery_mode inside that page
-    return res.redirect(`/payment/select?paymentId=${encodeURIComponent(paymentId)}`);
+    const redirectUrl = isDeliver
+      ? `/payment/select?paymentId=${encodeURIComponent(paymentId)}`
+      : `/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`;
+
+    return res.redirect(redirectUrl);
   } catch (e) {
     await pool.query("ROLLBACK");
     console.error("checkout/review save error:", e);
@@ -653,8 +647,9 @@ router.get("/checkout/resume", authMiddleware, async (req: any, res) => {
     (s: number, o: any) => s + Number(o.amount || 0), 0
   );
 
-  // All modes go through payment/select — COD hidden for non-home-delivery inside template
-  const paymentUrl = `/payment/select?paymentId=${encodeURIComponent(paymentId)}`;
+  const paymentUrl = isHomeDelivery
+    ? `/payment/select?paymentId=${encodeURIComponent(paymentId)}`
+    : `/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`;
 
   return res.render("checkout-resume", {
     paymentId,

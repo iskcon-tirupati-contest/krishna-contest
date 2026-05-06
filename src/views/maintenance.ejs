@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="refresh" content="60">
+  <title>Under Maintenance · ISKCON Essay Contest 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:linear-gradient(160deg,#0f0c2e 0%,#1a1150 40%,#2d1a6e 100%);
+      min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:24px 16px;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── TOPBAR STRIP ── */
+    .top-strip{
+      position:fixed;top:0;left:0;right:0;height:4px;
+      background:linear-gradient(90deg,#f5a623,#f97316,#f5a623,#ffd166,#f5a623);
+      background-size:300% 100%;animation:goldShimmer 2.5s linear infinite;
+    }
+    @keyframes goldShimmer{0%{background-position:0%}100%{background-position:300%}}
+
+    /* ── CARD ── */
+    .card{
+      background:#fff;border-radius:24px;
+      box-shadow:0 24px 64px rgba(0,0,0,.35);
+      overflow:hidden;max-width:480px;width:100%;
+      text-align:center;
+    }
+
+    /* ── CARD HEAD ── */
+    .card-head{
+      background:linear-gradient(135deg,#0f0c2e 0%,#1a1150 50%,#2d2080 100%);
+      padding:28px 24px 24px;position:relative;overflow:hidden;
+    }
+    .card-head::after{
+      content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,#f5a623,#ffd166,#f97316,#f5a623);
+      background-size:300% 100%;animation:goldShimmer 2.5s linear infinite;
+    }
+    .logo-box{
+      width:68px;height:68px;border-radius:18px;margin:0 auto 14px;
+      background:rgba(255,255,255,.12);border:2px solid rgba(245,166,35,.35);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .brand{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:3px}
+    .brand-sub{font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;gap:6px}
+    .brand-year{background:linear-gradient(135deg,#f5a623,#ffd166);color:#7c3000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px}
+
+    /* ── CARD BODY ── */
+    .card-body{padding:32px 28px 28px}
+
+    .gear-wrap{
+      width:80px;height:80px;border-radius:50%;
+      background:linear-gradient(135deg,#eff6ff,#e0e7ff);
+      border:2px solid #c7d2fe;
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 20px;font-size:42px;
+      animation:gearSpin 4s linear infinite;
+    }
+    @keyframes gearSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+    .title-en{
+      font-family:'Sora',sans-serif;font-size:22px;font-weight:800;
+      color:#1e1b4b;margin-bottom:6px;
+    }
+    .title-te{
+      font-family:'Noto Sans Telugu','DM Sans',sans-serif;
+      font-size:16px;font-weight:700;color:#4338ca;margin-bottom:18px;line-height:1.5;
+    }
+
+    .divider{height:1px;background:#e2e8f0;margin:18px 0}
+
+    .msg-box{
+      background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
+      border:1.5px solid #bae6fd;border-radius:14px;
+      padding:16px;margin-bottom:18px;
+    }
+    .msg-en{font-size:14px;color:#0369a1;font-weight:600;line-height:1.6;margin-bottom:8px}
+    .msg-te{
+      font-family:'Noto Sans Telugu','DM Sans',sans-serif;
+      font-size:12.5px;color:#0284c7;line-height:1.7;
+    }
+
+    /* auto-refresh note */
+    .refresh-note{
+      font-size:11px;color:#94a3b8;margin-top:14px;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .refresh-dot{
+      width:7px;height:7px;border-radius:50%;background:#94a3b8;
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* contact */
+    .contact{
+      margin-top:16px;font-size:12px;color:#64748b;
+    }
+    .contact a{color:#4338ca;font-weight:700;text-decoration:none}
+    .contact a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="top-strip"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="logo-box">
+        <img src="/images/logo_new.png" alt="ISKCON"
+             onerror="this.style.display='none';this.parentElement.innerHTML='🪷'">
+      </div>
+      <div class="brand">ISKCON Tirupati</div>
+      <div class="brand-sub">
+        Essay Writing Contest &nbsp;<span class="brand-year">2026</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="gear-wrap">⚙️</div>
+
+      <div class="title-en">Under Maintenance</div>
+      <div class="title-te">నిర్వహణ పనులు జరుగుతున్నాయి</div>
+
+      <div class="msg-box">
+        <div class="msg-en">
+          We are upgrading our systems to serve you better.
+          The website will be back online in few hours.
+          Thank you for your patience! 🙏
+        </div>
+        <div class="msg-te">
+          మేము మీకు మెరుగైన సేవలు అందించడానికి మా సిస్టమ్‌లను అప్‌గ్రేడ్ చేస్తున్నాము.
+          వెబ్‌సైట్ కొద్ది నిమిషాలలో తిరిగి అందుబాటులోకి వస్తుంది.
+          మీ సహనానికి ధన్యవాదాలు! 🙏
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="refresh-note">
+        <div class="refresh-dot"></div>
+        Page auto-refreshes every 60 seconds · పేజీ 60 సెకన్లకు స్వయంచాలకంగా రిఫ్రెష్ అవుతుంది
+      </div>
+
+      <div class="contact">
+        Urgent? Call or WhatsApp:
+        <a href="tel:+919493805059">+91 94938 05059</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

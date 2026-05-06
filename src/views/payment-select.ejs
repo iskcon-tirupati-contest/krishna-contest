@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Payment · ISKCON Essay Contest 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#1a1150;--navy2:#2d2080;--navy3:#4338ca;--navy4:#6d5ef5;
+      --gold:#f5a623;--gold2:#ffd166;
+      --saffron:#f97316;
+      --green:#059669;--green2:#10b981;
+      --blue:#2563eb;--blue2:#3b82f6;
+      --amber:#d97706;--amber2:#f59e0b;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:linear-gradient(160deg,#0f0c2e 0%,#1a1150 40%,#2d1a6e 100%);
+      min-height:100vh;padding-bottom:60px;color:#1e1b4b;
+    }
+
+    /* ── TOPBAR — matches direct-registration ── */
+    .topbar{background:linear-gradient(135deg,#0f0c2e 0%,#1a1150 50%,#2d2080 100%);padding:0 16px;position:relative;overflow:hidden}
+    .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f5a623,#f97316,#f5a623,#ffd166,#f5a623);background-size:300% 100%;animation:goldShimmer 2.5s linear infinite}
+    @keyframes goldShimmer{0%{background-position:0%}100%{background-position:300%}}
+    .topbar-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:18px 0 22px;position:relative;z-index:1}
+    .logo-box{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(245,166,35,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px}
+    .brand-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:#fff;line-height:1.25;margin-bottom:2px}
+    .brand-sub{font-size:11px;color:rgba(255,255,255,.6)}
+
+    .page{max-width:600px;margin:0 auto;padding:16px 14px 0}
+
+    /* ── STEP BAR — matches registration steps ── */
+    .steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:16px}
+    .step{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px}
+    .step.done{color:rgba(255,255,255,.5)}
+    .step.done .sn{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:11px}
+    .step.active{color:#f5a623}
+    .step.active .sn{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f5a623,#ffd166);color:#7c3000;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+    .step-line{width:32px;height:2px;background:rgba(255,255,255,.12);flex-shrink:0}
+
+    /* ── WHITE FORM CARD — exact match to registration form-card ── */
+    .form-card{background:#fff;border-radius:22px;box-shadow:0 16px 48px rgba(0,0,0,.25);overflow:hidden;margin-bottom:16px}
+    .form-head{background:linear-gradient(135deg,#1a1150 0%,#2d2080 60%,#4338ca 100%);padding:18px 20px 16px;position:relative;overflow:hidden}
+    .form-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f5a623,#ffd166,#f97316,#f5a623);background-size:300% 100%;animation:goldShimmer 2.5s linear infinite}
+    .form-head-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:4px}
+    .form-head-sub{font-size:12px;color:rgba(255,255,255,.65)}
+    .form-body{padding:18px 18px 20px}
+
+    /* ── ORDER SUMMARY ── */
+    .summary-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+    .contest-rows{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+    .contest-row{display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px}
+    .cr-name{font-size:13px;font-weight:600;color:#1e1b4b}
+    .cr-price{font-size:13px;font-weight:800;color:#1a1150}
+    .summary-total{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1.5px solid rgba(67,56,202,.2);border-radius:14px;margin-bottom:18px}
+    .st-label{font-size:13px;font-weight:600;color:#4b5563}
+    .st-amount{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#1a1150}
+
+    /* ── DIVIDER ── */
+    .or-divider{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .or-line{flex:1;height:1px;background:#e2e8f0}
+    .or-text{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+
+    /* ── PAYMENT CARDS ── */
+    .pay-cards{display:flex;flex-direction:column;gap:10px}
+    .pay-card{
+      border-radius:16px;overflow:hidden;border:2px solid #e2e8f0;
+      background:#fff;transition:border-color .15s,box-shadow .15s,transform .12s;
+      cursor:pointer;
+    }
+    .pay-card:hover{transform:translateY(-2px)}
+    .pay-card.rzp{--c:#2563eb;--clight:#eff6ff;--cglow:rgba(37,99,235,.15)}
+    .pay-card.cf {--c:#059669;--clight:#ecfdf5;--cglow:rgba(5,150,105,.15)}
+    .pay-card.cod{--c:#d97706;--clight:#fffbeb;--cglow:rgba(217,119,6,.15)}
+    .pay-card.rzp:hover{border-color:#2563eb;box-shadow:0 8px 24px rgba(37,99,235,.18);background:linear-gradient(135deg,#eff6ff,#fff)}
+    .pay-card.cf:hover{border-color:#059669;box-shadow:0 8px 24px rgba(5,150,105,.18);background:linear-gradient(135deg,#ecfdf5,#fff)}
+    .pay-card.cod:hover{border-color:#d97706;box-shadow:0 8px 24px rgba(217,119,6,.18);background:linear-gradient(135deg,#fffbeb,#fff)}
+
+    /* left accent strip */
+    .pay-card::before{content:'';display:block;height:4px;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,transparent))}
+
+    .pay-card-inner{display:flex;align-items:center;gap:14px;padding:16px 18px}
+    .pay-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--clight);border:1.5px solid color-mix(in srgb,var(--c) 20%,transparent)}
+    .pay-info{flex:1;min-width:0}
+    .pay-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#1e1b4b;margin-bottom:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+    .pay-desc{font-size:12px;color:#64748b;line-height:1.5;margin-bottom:6px}
+    .pay-chips{display:flex;flex-wrap:wrap;gap:5px}
+    .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+    .pay-arrow{font-size:22px;color:#cbd5e1;flex-shrink:0;transition:color .15s,transform .15s}
+    .pay-card:hover .pay-arrow{color:var(--c);transform:translateX(3px)}
+
+    /* badge */
+    .pay-badge{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+    .badge-blue{background:rgba(37,99,235,.1);color:#1d4ed8;border:1px solid rgba(37,99,235,.25)}
+    .badge-green{background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.25)}
+    .badge-amber{background:rgba(217,119,6,.1);color:#92400e;border:1px solid rgba(217,119,6,.25)}
+
+    /* COD total footer */
+    .cod-footer{background:#fffbeb;border-top:1.5px dashed #f59e0b;padding:10px 18px;display:flex;justify-content:space-between;align-items:center}
+    .cod-footer-label{font-size:11px;color:#92400e;font-weight:700}
+    .cod-footer-amount{font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:#d97706}
+
+    /* disabled card */
+    .pay-card-disabled{border-radius:16px;overflow:hidden;border:2px solid #f1f5f9;background:#fafafa;opacity:.55;cursor:not-allowed}
+    .pay-card-disabled::before{content:'';display:block;height:4px;background:#e2e8f0}
+    .pay-card-disabled .pay-card-inner{padding:16px 18px;display:flex;align-items:center;gap:14px}
+    .pay-card-disabled .pay-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:#f1f5f9;border:1.5px solid #e2e8f0;filter:grayscale(1)}
+    .pay-card-disabled .pay-info{flex:1}
+    .pay-card-disabled .pay-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#94a3b8;margin-bottom:3px;display:flex;align-items:center;gap:7px}
+    .pay-card-disabled .pay-desc{font-size:12px;color:#cbd5e1;line-height:1.5}
+    .not-avail-badge{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+
+    /* loading overlay */
+    .loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,30,.8);backdrop-filter:blur(6px);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .loading-overlay.active{display:flex}
+    .spinner{width:48px;height:48px;border-radius:50%;border:3px solid rgba(245,166,35,.2);border-top-color:#f5a623;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:#fff}
+    .loading-sub{font-size:12px;color:rgba(255,255,255,.5)}
+
+    /* secure note */
+    .secure-note{text-align:center;font-size:11px;color:rgba(255,255,255,.4);margin-top:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Preparing payment…</div>
+  <div class="loading-sub">Please wait, do not press back</div>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">🪷</div>
+    <div>
+      <div class="brand-title">ISKCON Tirupati Essay Contest</div>
+      <div class="brand-sub">Step 2 of 3 — Choose payment method</div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step done"><div class="sn">✓</div><span>Registration</span></div>
+    <div class="step-line"></div>
+    <div class="step active"><div class="sn">2</div><span>Payment</span></div>
+    <div class="step-line"></div>
+    <div class="step done" style="opacity:.35"><div class="sn">3</div><span>Confirm</span></div>
+  </div>
+
+  <!-- Main card -->
+  <div class="form-card">
+    <div class="form-head">
+      <div class="form-head-title">💳 Choose Payment Method</div>
+      <div class="form-head-sub">Your registration details are saved — just complete the payment</div>
+    </div>
+
+    <div class="form-body">
+
+      <!-- Order Summary -->
+      <div class="summary-label">📋 Your Order</div>
+      <div class="contest-rows">
+        <% (orders || []).forEach(function(o){ %>
+          <div class="contest-row">
+            <div class="cr-name"><%= o.contest_title %></div>
+            <div class="cr-price">₹<%= Number(o.amount || 0) %></div>
+          </div>
+        <% }) %>
+      </div>
+      <div class="summary-total">
+        <div class="st-label">Total to pay</div>
+        <div class="st-amount">₹<%= baseAmount %></div>
+      </div>
+
+      <!-- Resume banner — shown when reusing an existing pending order -->
+      <% if (typeof isResumed !== 'undefined' && isResumed) { %>
+      <div style="
+        display:flex;align-items:flex-start;gap:10px;
+        background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;
+        padding:11px 14px;margin-bottom:14px;
+      ">
+        <div style="font-size:18px;flex-shrink:0;margin-top:1px">🔄</div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#1d4ed8;margin-bottom:2px">Resuming your pending order</div>
+          <div style="font-size:11px;color:#3b82f6;line-height:1.55">
+            You already started this registration. Complete the payment below to confirm your spot — no need to fill the form again.
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="or-divider">
+        <div class="or-line"></div>
+        <div class="or-text">Select payment method</div>
+        <div class="or-line"></div>
+      </div>
+
+      <!-- Payment Cards -->
+      <div class="pay-cards">
+
+        <!-- Razorpay -->
+        <form method="POST" action="/payment/select" class="pay-form"
+              data-loading="Opening payment gateway…" data-sub="You'll be redirected securely">
+          <input type="hidden" name="paymentId"     value="<%= paymentId %>">
+          <input type="hidden" name="payment_mode"  value="razorpay">
+          <button type="submit" class="pay-card rzp" style="width:100%;text-align:left;font-family:inherit;background:transparent;padding:0;border:2px solid #e2e8f0">
+            <div class="pay-card-inner">
+              <div class="pay-icon">🏦</div>
+              <div class="pay-info">
+                <div class="pay-name">
+                  Razorpay
+                  <span class="pay-badge badge-blue">Recommended</span>
+                </div>
+                <div class="pay-desc">Cards, net banking, UPI & wallets — secure checkout</div>
+                <div class="pay-chips">
+                  <span class="chip">💳 Debit / Credit</span>
+                  <span class="chip">🏛 Net Banking</span>
+                  <span class="chip">📱 UPI</span>
+                </div>
+              </div>
+              <div class="pay-arrow">›</div>
+            </div>
+          </button>
+        </form>
+
+        <!-- Cashfree — env toggle -->
+        <% if (typeof cashfreeEnabled !== 'undefined' && cashfreeEnabled) { %>
+        <form method="POST" action="/payment/select" class="pay-form"
+              data-loading="Opening Cashfree…" data-sub="You'll be redirected to complete the payment">
+          <input type="hidden" name="paymentId"    value="<%= paymentId %>">
+          <input type="hidden" name="payment_mode" value="cashfree">
+          <button type="submit" class="pay-card cf" style="width:100%;text-align:left;font-family:inherit;background:transparent;padding:0;border:2px solid #e2e8f0">
+            <div class="pay-card-inner">
+              <div class="pay-icon">📱</div>
+              <div class="pay-info">
+                <div class="pay-name">Cashfree</div>
+                <div class="pay-desc">PhonePe, Google Pay, Paytm & all UPI apps</div>
+                <div class="pay-chips">
+                  <span class="chip">🟣 PhonePe</span>
+                  <span class="chip">🔵 GPay</span>
+                  <span class="chip">🔵 Paytm</span>
+                  <span class="chip">📱 Any UPI</span>
+                </div>
+              </div>
+              <div class="pay-arrow">›</div>
+            </div>
+          </button>
+        </form>
+        <% } %>
+
+        <!-- COD — env + donation guard -->
+        <% if (typeof codEnabled !== 'undefined' && codEnabled && typeof isHomeDelivery !== 'undefined' && isHomeDelivery) { %>
+          <% if (typeof isDonation !== 'undefined' && isDonation) { %>
+            <!-- Disabled for donations -->
+            <div class="pay-card-disabled">
+              <div class="pay-card-inner">
+                <div class="pay-icon">💵</div>
+                <div class="pay-info">
+                  <div class="pay-name">
+                    Cash on Delivery
+                    <span class="not-avail-badge">Not available for donations</span>
+                  </div>
+                  <div class="pay-desc">COD requires a physical book delivery address</div>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+          <form method="POST" action="/payment/select" class="pay-form"
+                data-loading="Placing your order…" data-sub="Setting up Cash on Delivery">
+            <input type="hidden" name="paymentId"    value="<%= paymentId %>">
+            <input type="hidden" name="payment_mode" value="cod">
+            <button type="submit" class="pay-card cod" style="width:100%;text-align:left;font-family:inherit;background:transparent;padding:0;border:2px solid #e2e8f0">
+              <div class="pay-card-inner">
+                <div class="pay-icon">💵</div>
+                <div class="pay-info">
+                  <div class="pay-name">
+                    Cash on Delivery
+                    <span class="pay-badge badge-amber">+₹<%= codSurcharge %> handling</span>
+                  </div>
+                  <div class="pay-desc">Pay cash when your book arrives at your door</div>
+                  <div class="pay-chips">
+                    <span class="chip">🏠 Home delivery only</span>
+                    <span class="chip">₹<%= codSurcharge %> extra</span>
+                  </div>
+                </div>
+                <div class="pay-arrow">›</div>
+              </div>
+              <div class="cod-footer">
+                <div class="cod-footer-label">Total with COD charge</div>
+                <div class="cod-footer-amount">₹<%= baseAmount + codSurcharge %></div>
+              </div>
+            </button>
+          </form>
+          <% } %>
+        <% } %>
+
+      </div><!-- /pay-cards -->
+    </div><!-- /form-body -->
+  </div><!-- /form-card -->
+
+  <div class="secure-note">
+    🔒 256-bit SSL &nbsp;·&nbsp; Powered by RBI-authorised gateways &nbsp;·&nbsp; No card data stored
+  </div>
+
+</div>
+
+<script>
+  // Replace POST in history so back from gateway returns here
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, document.title, window.location.href);
+  }
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) document.getElementById('loadingOverlay').classList.remove('active');
+  });
+
+  document.querySelectorAll('.pay-form').forEach(function(form) {
+    form.addEventListener('submit', function() {
+      var overlay  = document.getElementById('loadingOverlay');
+      var loadText = document.getElementById('loadingText');
+      loadText.textContent = form.dataset.loading || 'Processing…';
+      overlay.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

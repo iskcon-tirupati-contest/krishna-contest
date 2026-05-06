@@ -139,17 +139,24 @@
   <h2 style="margin:0 0 10px 0;font-size:22px">📅 Today's Stats</h2>
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <div class="stat">
-      <div class="muted">Orders Today</div>
+      <div class="muted">Contests Attempted Today</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayOrdersAll %></div>
     </div>
     <div class="stat">
       <div class="muted">Paid Today</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayPaidOrders %></div>
     </div>
+
     <div class="stat">
-      <div class="muted">Pending/Failed Today</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.todayPendingOrders %></div>
-    </div>
+  <div class="muted">Failed Today</div>
+  <div style="font-size:28px;font-weight:900"><%= stats.todayFailedOrders %></div>
+  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Payment attempted & failed</div>
+</div>
+<div class="stat">
+  <div class="muted">Added to Cart Today</div>
+  <div style="font-size:28px;font-weight:900"><%= stats.todayAddedToCart %></div>
+  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Reached checkout, dropped off</div>
+</div>
 
     <div class="stat">
       <div class="muted">Gift Book Today</div>
@@ -168,17 +175,23 @@
   <h2 style="margin:0 0 10px 0;font-size:22px">📊 Total Stats</h2>
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
     <div class="stat">
-      <div class="muted">Total Orders</div>
+      <div class="muted">Total Contests Attempted</div>
       <div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div>
     </div>
     <div class="stat">
-      <div class="muted">Paid Orders</div>
+      <div class="muted">Paid Contests</div>
       <div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div>
     </div>
     <div class="stat">
-      <div class="muted">Pending/Failed</div>
-      <div style="font-size:28px;font-weight:900"><%= stats.pendingOrders %></div>
-    </div>
+  <div class="muted">Failed Contests</div>
+  <div style="font-size:28px;font-weight:900"><%= stats.failedOrders %></div>
+  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Payment attempted & failed</div>
+</div>
+<div class="stat">
+  <div class="muted">Contests-Added to Cart</div>
+  <div style="font-size:28px;font-weight:900"><%= stats.addedToCart %></div>
+  <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:6px">Reached checkout, dropped off</div>
+</div>
 
     <div class="stat">
       <div class="muted">Gift Book (paid)</div>
@@ -229,6 +242,61 @@
           <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
           <canvas id="salesChart" height="90"></canvas>
         </div>
+
+        <!-- COD Overview Card -->
+        <% if (stats.codPending > 0 || stats.codDeliveredUnpaid > 0) { %>
+        <div class="card" style="border:1.5px solid rgba(217,119,6,.35);background:linear-gradient(135deg,rgba(217,119,6,.08),rgba(0,0,0,0))">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+            <div>
+              <h2 style="margin:0 0 4px 0">💵 Cash on Delivery</h2>
+              <div class="muted">Pending cash collection from customers</div>
+            </div>
+            <a href="/admin/orders?tab=cod" style="
+              display:inline-flex;align-items:center;gap:6px;
+              font-size:12px;font-weight:800;padding:6px 14px;border-radius:8px;
+              background:rgba(217,119,6,.15);color:#fcd34d;
+              border:1px solid rgba(217,119,6,.4);text-decoration:none;
+            ">View COD Orders →</a>
+          </div>
+          <div style="height:1px;background:rgba(245,158,11,.2);margin-bottom:14px"></div>
+          <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="stat" style="border:1px solid rgba(245,158,11,.2)">
+              <div class="muted">Pending COD Orders</div>
+              <div style="font-size:28px;font-weight:900;color:#fbbf24"><%= stats.codPending %></div>
+              <div style="font-size:10px;color:#92400e;margin-top:4px">Awaiting delivery + payment</div>
+            </div>
+            <div class="stat" style="border:1px solid rgba(22,163,74,.2);background:rgba(22,163,74,.05)">
+              <div class="muted">Delivered — Unpaid</div>
+              <div style="font-size:28px;font-weight:900;color:#4ade80"><%= stats.codDeliveredUnpaid %></div>
+              <div style="font-size:10px;color:#15803d;margin-top:4px">
+                <% if (stats.codDeliveredUnpaid > 0) { %>
+                  <a href="/admin/orders?tab=cod" style="color:#4ade80;text-decoration:underline">Ready to mark paid →</a>
+                <% } else { %>All collected ✓<% } %>
+              </div>
+            </div>
+            <div class="stat" style="border:1px solid rgba(139,92,246,.2)">
+              <div class="muted">Pending COD Revenue</div>
+              <div style="font-size:28px;font-weight:900;color:#c4b5fd">₹<%= stats.codRevenuePending %></div>
+              <div style="font-size:10px;color:#6d28d9;margin-top:4px">Expected collection</div>
+            </div>
+          </div>
+          <% if (stats.codDeliveredUnpaid > 0) { %>
+          <div style="margin-top:14px;padding:12px 14px;background:rgba(22,163,74,.1);border-radius:10px;border:1px solid rgba(22,163,74,.25);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div style="font-size:12px;color:#4ade80;font-weight:700">
+              ✅ <%= stats.codDeliveredUnpaid %> delivered shipment<%= stats.codDeliveredUnpaid > 1 ? 's' : '' %> ready for bulk mark-paid
+            </div>
+            <form method="POST" action="/admin/orders/cod-bulk-mark-paid"
+                  onsubmit="return confirm('Mark ALL <%= stats.codDeliveredUnpaid %> delivered COD orders as PAID?\n\nOnly proceed after confirming cash collection.')">
+              <button type="submit" style="
+                padding:7px 16px;border:0;border-radius:8px;
+                font-size:12px;font-weight:800;cursor:pointer;
+                background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;
+              ">✅ Bulk Mark Paid</button>
+            </form>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
 
         <div class="card">
           <h2 style="margin:0 0 6px 0">Shipments Progress</h2>

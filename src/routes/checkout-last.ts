@@ -108,6 +108,22 @@ router.get("/checkout/review", authMiddleware, async (req: any, res) => {
   );
 
   if (!cartQ.rows.length) {
+    // Cart empty — check for a recent pending order (user came back from gateway)
+    const resumeQ = await pool.query(
+      `SELECT o.payment_id
+       FROM orders o
+       WHERE o.user_id = $1
+         AND o.payment_status = 'pending'
+         AND o.created_at > NOW() - INTERVAL '30 minutes'
+       ORDER BY o.created_at DESC
+       LIMIT 1`,
+      [userId]
+    );
+    if (resumeQ.rows.length > 0) {
+      return res.redirect(
+        `/checkout/resume?paymentId=${encodeURIComponent(resumeQ.rows[0].payment_id)}`
+      );
+    }
     return res.redirect("/cart-review");
   }
 
@@ -179,7 +195,9 @@ router.post("/checkout/review", authMiddleware, async (req: any, res) => {
 
 
   if (!cartQ.rows.length) {
-    return res.status(400).send("Cart is empty");
+    // Cart empty on POST — user may have double-submitted or refreshed
+    // Redirect to GET which will check for pending orders and show resume page
+    return res.redirect("/checkout/review");
   }
 
   const availableBookLanguages = await fetchAvailableBookLanguages();
@@ -343,6 +361,45 @@ for (const row of cartQ.rows) {
   }
 }
 
+  // ── Idempotency: prevent duplicate orders on back-button resubmit ──────────
+  // Exact match: same contests + same delivery mode + pending + within 30 min
+  const cartContestIds = expandedRows.map((r: any) => r.contest_id);
+  const normDelivery   = isDeliver ? "home_delivery" : isTemplePickup ? "temple_pickup" : "donate";
+
+  const existingQ = await pool.query(
+    `SELECT o.payment_id
+     FROM orders o
+     LEFT JOIN shipments sh ON sh.payment_id = o.payment_id
+     WHERE o.user_id = $1
+       AND o.contest_id = ANY($2::uuid[])
+       AND o.payment_status = 'pending'
+       AND o.created_at > NOW() - INTERVAL '30 minutes'
+       AND (
+         ($4 = 'donate'         AND sh.id IS NULL)
+         OR COALESCE(LOWER(sh.delivery_mode), '') = LOWER($4)
+       )
+     GROUP BY o.payment_id
+     HAVING
+       COUNT(*) = $3
+       AND (
+         SELECT COUNT(*) FROM orders o2
+         WHERE o2.payment_id = o.payment_id
+           AND o2.user_id   = $1
+       ) = $3
+     ORDER BY MAX(o.created_at) DESC
+     LIMIT 1`,
+    [userId, cartContestIds, cartContestIds.length, normDelivery]
+  );
+
+  if (existingQ.rows.length > 0) {
+    const existingPaymentId = existingQ.rows[0].payment_id;
+    await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
+    const dest = isDeliver
+      ? `/payment/select?paymentId=${encodeURIComponent(existingPaymentId)}`
+      : `/payment/embedded?paymentId=${encodeURIComponent(existingPaymentId)}`;
+    return res.redirect(dest);
+  }
+
   const paymentId = "KNC" + Math.random().toString(36).slice(2, 10).toUpperCase();
 
   await pool.query("BEGIN");
@@ -371,6 +428,10 @@ for (const row of cartQ.rows) {
       ).trim();
       const fixedBook = String(row.default_book_title || "").trim();
 
+      const rowAmount = process.env.DIRECT_REG_TEST_PRICE
+        ? Number(process.env.DIRECT_REG_TEST_PRICE)
+        : Number(row.amount || 0);
+
       const ins = await pool.query(
         `INSERT INTO orders
          (user_id, contest_id, amount, payment_status, payment_id, age_category, created_at, book_option, full_name, book_title)
@@ -379,7 +440,7 @@ for (const row of cartQ.rows) {
         [
           userId,
           row.contest_id,
-          Number(row.amount || 0),
+          rowAmount,
           paymentId,
           finalAge,
           isDonate ? "donation" : "book",
@@ -394,7 +455,8 @@ for (const row of cartQ.rows) {
     if (isDonate) {
       await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
       await pool.query("COMMIT");
-      return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
+      // Donate → payment/select (Razorpay + Cashfree shown, COD hidden)
+      return res.redirect(`/payment/select?paymentId=${encodeURIComponent(paymentId)}`);
     }
 
     const address = String(req.body.address || "").trim();
@@ -455,7 +517,11 @@ for (const row of cartQ.rows) {
     await pool.query(`DELETE FROM cart_items WHERE user_id=$1`, [userId]);
 
     await pool.query("COMMIT");
-    return res.redirect(`/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`);
+
+    // Home delivery → payment-select (Razorpay / Cashfree / COD choice)
+    // Temple pickup → payment-embedded (Razorpay only, no COD)
+    // All modes go through payment/select — COD is gated by delivery_mode inside that page
+    return res.redirect(`/payment/select?paymentId=${encodeURIComponent(paymentId)}`);
   } catch (e) {
     await pool.query("ROLLBACK");
     console.error("checkout/review save error:", e);
@@ -509,7 +575,7 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
   );
 
   const userQ = await pool.query(
-    `SELECT name, phone
+    `SELECT name, phone, password_hash
      FROM users
      WHERE id=$1
      LIMIT 1`,
@@ -548,7 +614,84 @@ router.get("/checkout/bulk", authMiddleware, async (req: any, res) => {
     bonusItems: bonusItemsQ.rows,
     user: userQ.rows[0] || null,
     payment_session_id: ordersQ.rows[0].payment_session_id,
+    isNewUser: paid && userQ.rows[0] ? !userQ.rows[0].password_hash : false,
   });
 });
+
+// ── PENDING ORDER RESUME PAGE ─────────────────────────────────────────────────
+router.get("/checkout/resume", authMiddleware, async (req: any, res) => {
+  const userId    = req.userId;
+  const paymentId = String(req.query.paymentId || "").trim();
+  if (!paymentId) return res.redirect("/cart-review");
+
+  const ordersQ = await pool.query(
+    `SELECT o.id, o.amount, o.payment_status, o.book_option,
+            c.title AS contest_title
+     FROM orders o
+     JOIN contests c ON c.id = o.contest_id
+     WHERE o.user_id=$1 AND o.payment_id=$2
+     ORDER BY o.created_at ASC`,
+    [userId, paymentId]
+  );
+
+  if (ordersQ.rows.length === 0) return res.redirect("/cart-review");
+
+  if (ordersQ.rows.every((o: any) => String(o.payment_status) === "paid")) {
+    return res.redirect(`/checkout/bulk?paymentId=${encodeURIComponent(paymentId)}`);
+  }
+
+  const shipQ = await pool.query(
+    `SELECT delivery_mode FROM shipments WHERE payment_id=$1 LIMIT 1`,
+    [paymentId]
+  );
+  const deliveryMode   = String(shipQ.rows[0]?.delivery_mode || "donate");
+  const isHomeDelivery = deliveryMode === "home_delivery";
+
+  const totalAmount = ordersQ.rows.reduce(
+    (s: number, o: any) => s + Number(o.amount || 0), 0
+  );
+
+  const paymentUrl = isHomeDelivery
+    ? `/payment/select?paymentId=${encodeURIComponent(paymentId)}`
+    : `/payment/embedded?paymentId=${encodeURIComponent(paymentId)}`;
+
+  return res.render("checkout-resume", {
+    paymentId,
+    orders: ordersQ.rows,
+    totalAmount,
+    deliveryMode,
+    paymentUrl,
+  });
+});
+
+// ── ABANDON PENDING ORDER + START FRESH ──────────────────────────────────────
+router.post("/checkout/resume/abandon", authMiddleware, async (req: any, res) => {
+  const userId    = req.userId;
+  const paymentId = String(req.body.paymentId || "").trim();
+  if (!paymentId) return res.redirect("/cart-review");
+
+  try {
+    await pool.query(
+      `UPDATE orders SET payment_status='failed'
+       WHERE user_id=$1 AND payment_id=$2 AND payment_status='pending'`,
+      [userId, paymentId]
+    );
+    await pool.query(
+      `UPDATE payment_sessions SET status='cancelled'
+       WHERE payment_id=$1 AND status='pending'`,
+      [paymentId]
+    );
+    await pool.query(
+      `UPDATE payment_sessions SET status='cancelled'
+       WHERE payment_id='COD_' || $1 AND status='cod_pending'`,
+      [paymentId]
+    );
+  } catch (e) {
+    console.error("abandon order error:", e);
+  }
+
+  return res.redirect("/dashboard");
+});
+
 
 export default router;

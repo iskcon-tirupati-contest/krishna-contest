@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Placed · ISKCON Essay Contest 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:linear-gradient(160deg,#0f0c2e 0%,#1a1150 40%,#2d1a6e 100%);min-height:100vh;padding-bottom:60px;-webkit-font-smoothing:antialiased}
+
+    /* TOPBAR — dark navy, matches all other pages */
+    .topbar{background:linear-gradient(135deg,#0f0c2e 0%,#1a1150 50%,#2d2080 100%);padding:0 16px;position:relative;overflow:hidden}
+    .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f5a623,#f97316,#f5a623,#ffd166,#f5a623);background-size:300% 100%;animation:goldShimmer 2.5s linear infinite}
+    @keyframes goldShimmer{0%{background-position:0%}100%{background-position:300%}}
+    .topbar-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:18px 0 22px;position:relative;z-index:1}
+    .logo-box{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(245,166,35,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .brand-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:#fff;line-height:1.25;margin-bottom:2px}
+    .brand-sub{font-family:'Noto Sans Telugu',sans-serif;font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+
+    .page{max-width:600px;margin:0 auto;padding:16px 14px 0}
+    @keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+    /* ── HERO — light card on dark bg ── */
+    .hero{text-align:center;margin-bottom:16px;animation:slideUp .45s .05s both}
+    .check-ring{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:88px;height:88px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.05));
+      border:2.5px solid rgba(34,197,94,.4);
+      position:relative;margin-bottom:14px;
+      animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .check-ring::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:1.5px dashed rgba(34,197,94,.2);animation:rotateSlow 8s linear infinite}
+    @keyframes rotateSlow{to{transform:rotate(360deg)}}
+    .check-icon{font-size:44px;line-height:1}
+
+    .hero-title-en{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:5px}
+    .hero-title-te{font-family:'Noto Sans Telugu',sans-serif;font-size:16px;font-weight:700;color:#86efac;margin-bottom:14px;line-height:1.5}
+
+    /* Book delivery promise — light card */
+    .delivery-promise{
+      display:inline-flex;align-items:center;gap:10px;
+      background:#fff;border:1.5px solid #bbf7d0;border-radius:14px;
+      padding:11px 16px;font-size:13px;color:#374151;line-height:1.5;text-align:left;
+      box-shadow:0 4px 16px rgba(0,0,0,.12);margin-bottom:8px;
+    }
+    .dp-icon{font-size:22px;flex-shrink:0}
+    .dp-text b{color:#059669}
+    .dp-text-te{font-family:'Noto Sans Telugu',sans-serif;font-size:11.5px;color:#047857;margin-top:3px;line-height:1.6;display:block}
+
+    /* ── WHITE CARD (wraps what-to-expect + order summary) ── */
+    .white-card{background:#fff;border-radius:22px;box-shadow:0 16px 48px rgba(0,0,0,.25);overflow:hidden;margin-bottom:14px}
+    .wc-head{background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:16px 20px;position:relative;overflow:hidden}
+    .wc-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f5a623,#ffd166,#f97316,#f5a623);background-size:300% 100%;animation:goldShimmer 2.5s linear infinite}
+    .wc-head-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px}
+    .wc-body{padding:18px 18px 20px}
+
+    /* ── WHAT TO EXPECT ── */
+    .expect-card{margin-bottom:0;animation:slideUp .45s .15s both}
+    .ec-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+    .expect-steps{display:flex;flex-direction:column;gap:14px}
+    .es{display:flex;align-items:flex-start;gap:13px}
+    .es-icon{
+      width:40px;height:40px;border-radius:12px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:20px;
+      background:#f0fdf4;border:1.5px solid #bbf7d0;
+    }
+    .es-body{flex:1}
+    .es-en{font-size:13px;color:#374151;line-height:1.6}
+    .es-en b{color:#1e1b4b}
+    .es-te{font-family:'Noto Sans Telugu',sans-serif;font-size:11.5px;color:#64748b;margin-top:4px;line-height:1.65;display:block}
+    .es-divider{height:1px;background:#f1f5f9;margin-left:53px}
+
+    /* ── ORDER SUMMARY CARD ── */
+    .card{background:#fff;border-radius:22px;box-shadow:0 16px 48px rgba(0,0,0,.25);overflow:hidden;margin-bottom:14px;animation:slideUp .45s .25s both}
+    .card-head{padding:13px 18px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:#f8fafc}
+    .card-head-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px}
+    .ref-pill{font-size:11px;font-weight:800;color:#1a1150;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:4px 12px;font-family:monospace}
+    .card-body{padding:16px 18px}
+
+    /* contest rows */
+    .contest-item{
+      display:flex;justify-content:space-between;align-items:flex-start;
+      background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;
+      margin-bottom:8px;gap:10px;
+    }
+    .contest-item:last-child{margin-bottom:0}
+    .ci-left{}
+    .ci-name{font-size:13px;font-weight:700;color:#1e1b4b;margin-bottom:3px}
+    .ci-book{font-size:11px;color:#64748b;line-height:1.4}
+    .ci-price{font-size:14px;font-weight:800;color:#1a1150;flex-shrink:0;margin-top:2px}
+
+    .divider{height:1px;background:#e2e8f0;margin:12px 0}
+
+    .amount-rows{display:flex;flex-direction:column;gap:7px}
+    .ar{display:flex;justify-content:space-between;align-items:center}
+    .ar .lbl{font-size:12px;color:#64748b}
+    .ar .val{font-size:13px;font-weight:700;color:#374151}
+    .ar.total .lbl{font-size:14px;font-weight:700;color:#1e1b4b}
+    .ar.total .val{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:#d97706}
+
+    /* address section */
+    .addr-section{margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0}
+    .addr-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+    .addr-rows{display:flex;flex-direction:column;gap:1px}
+    .addr-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f1f5f9;gap:14px}
+    .addr-row:last-child{border-bottom:none}
+    .addr-lbl{font-size:11px;color:#94a3b8;font-weight:600;flex-shrink:0;min-width:70px}
+    .addr-val{font-size:12px;color:#1e1b4b;font-weight:600;text-align:right}
+
+    /* ── ACTIONS ── */
+    .actions{animation:slideUp .45s .35s both}
+    .btn{display:block;width:100%;text-align:center;border:0;border-radius:16px;padding:15px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:10px;transition:opacity .15s,transform .12s}
+    .btn:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,#1a1150,#4338ca);color:#fff;box-shadow:0 8px 24px rgba(26,17,80,.25)}
+    .btn-ghost{background:#f8fafc;border:1.5px solid #e2e8f0;color:#475569}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">
+      <img src="/images/logo_new.png" alt="ISKCON"
+           onerror="this.style.display='none';this.parentElement.innerHTML='🪷'">
+    </div>
+    <div>
+      <div class="brand-title">ISKCON Tirupati Essay Contest 2026</div>
+      <div class="brand-sub">నమోదు విజయవంతంగా జరిగింది</div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="check-ring"><div class="check-icon">✅</div></div>
+    <div class="hero-title-en">Order Placed Successfully!</div>
+    <div class="hero-title-te">ఆర్డర్ విజయవంతంగా నమోదైంది!</div>
+
+    <!-- Amazon-style delivery promise per book -->
+    <% (orders || []).forEach(function(o){ if(o.book_title && o.book_language){ %>
+      <div class="delivery-promise" style="margin-bottom:8px">
+        <div class="dp-icon">📦</div>
+        <div>
+          <div class="dp-text">
+            <b><%= o.book_title %></b> in <b><%= o.book_language %></b> —
+            arrives in <b>5–15 working days</b>
+          </div>
+          <span class="dp-text-te">
+            <b><%= o.book_title %></b> (<%= o.book_language %>) — <b>5–15 పని దినాలలో</b> మీకు అందుతుంది
+          </span>
+        </div>
+      </div>
+    <% }} ) %>
+  </div>
+
+  <!-- ── WHAT TO EXPECT + ORDER SUMMARY in white card ── -->
+  <div class="white-card animate d2">
+    <div class="wc-head">
+      <div class="wc-head-label">📋 What to expect · తర్వాత ఏమి జరుగుతుంది</div>
+    </div>
+    <div class="wc-body">
+  <div class="expect-card">
+    <div class="expect-steps">
+
+      <!-- Step 1: Dispatch & Tracking -->
+      <div class="es">
+        <div class="es-icon">🚚</div>
+        <div class="es-body">
+          <div class="es-en">
+            Your book will be dispatched via <b>India Post</b> within <b>1–2 working days</b>.
+            A tracking ID will be shared with you on <b>WhatsApp / SMS</b>.
+            Payment can be made in <b>cash or online</b> at the time of delivery.
+          </div>
+          <span class="es-te">
+            మీ పుస్తకం <b>1–2 పని దినాలలో India Post</b> ద్వారా పంపబడుతుంది.
+            ట్రాకింగ్ ID మీకు <b>WhatsApp / SMS</b> లో పంపబడుతుంది.
+            డెలివరీ సమయంలో <b>నగదు లేదా ఆన్‌లైన్</b> లో చెల్లించవచ్చు.
+          </span>
+        </div>
+      </div>
+
+      <div class="es-divider"></div>
+
+      <!-- Step 2: Registration Confirmation -->
+      <div class="es">
+        <div class="es-icon">✅</div>
+        <div class="es-body">
+          <div class="es-en">
+            Your <b>contest registration will be officially confirmed</b> once our team
+            receives and verifies the payment. You'll get a confirmation on <b>WhatsApp</b>.
+          </div>
+          <span class="es-te">
+            మా బృందం చెల్లింపును స్వీకరించి ధృవీకరించిన తర్వాత మీ <b>పోటీ నమోదు అధికారికంగా ధృవీకరించబడుతుంది</b>.
+            మీకు <b>WhatsApp</b>లో నిర్ధారణ వస్తుంది.
+          </span>
+        </div>
+      </div>
+
+      <div class="es-divider"></div>
+
+      <!-- Step 3: Contact -->
+      <div class="es">
+        <div class="es-icon">📞</div>
+        <div class="es-body">
+          <div class="es-en">
+            Any doubts? Call or WhatsApp us at <b>+91 94938 05059</b> — we're happy to help!
+          </div>
+          <span class="es-te">
+            ఏమైనా సందేహాలు ఉంటే <b>+91 94938 05059</b> కి కాల్ చేయండి లేదా WhatsApp చేయండి.
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div><!-- /wc-body -->
+  </div><!-- /white-card -->
+
+  <!-- ── ORDER SUMMARY ── -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-label">🧾 Order Summary · ఆర్డర్ వివరాలు</div>
+      <div class="ref-pill"><%= paymentId %></div>
+    </div>
+    <div class="card-body">
+
+      <% (orders || []).forEach(function(o){ %>
+        <div class="contest-item">
+          <div class="ci-left">
+            <div class="ci-name"><%= o.contest_title %></div>
+            <% if(o.book_title){ %>
+              <div class="ci-book">📖 <%= o.book_title %><% if(o.book_language){ %> · <%= o.book_language %><% } %></div>
+            <% } %>
+          </div>
+          <div class="ci-price">₹<%= Number(o.amount || 0) %></div>
+        </div>
+      <% }) %>
+
+      <div class="divider"></div>
+
+      <div class="amount-rows">
+        <div class="ar">
+          <div class="lbl">Registration amount · నమోదు మొత్తం</div>
+          <div class="val">₹<%= baseAmount %></div>
+        </div>
+        <div class="ar">
+          <div class="lbl">COD handling charge · నగదు చార్జి</div>
+          <div class="val">₹<%= codSurcharge %></div>
+        </div>
+        <div class="ar total">
+          <div class="lbl">Total to pay · చెల్లించవలసిన మొత్తం</div>
+          <div class="val">₹<%= codTotal %></div>
+        </div>
+      </div>
+
+      <!-- Delivery Address -->
+      <% if (shipment) { %>
+        <div class="addr-section">
+          <div class="addr-title">🏠 Delivery Address · డెలివరీ చిరునామా</div>
+          <div class="addr-rows">
+            <% var addrRows = [
+              ['Name',    shipment.recipient_name],
+              ['Phone',   shipment.recipient_phone],
+              ['Address', shipment.address],
+              ['City',    shipment.city],
+              ['State',   shipment.state],
+              ['Pincode', shipment.pincode],
+            ]; %>
+            <% addrRows.forEach(function(r){ if(r[1]){ %>
+              <div class="addr-row">
+                <div class="addr-lbl"><%= r[0] %></div>
+                <div class="addr-val"><%= r[1] %></div>
+              </div>
+            <% }} ) %>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+
+  <!-- ── ACTIONS ── -->
+  <div class="actions">
+    <a href="/dashboard" class="btn btn-primary">Go to My Dashboard →</a>
+  </div>
+
+</div>
+</body>
+</html>

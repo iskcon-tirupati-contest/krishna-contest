@@ -143,8 +143,13 @@
       <div style="font-size:28px;font-weight:900"><%= stats.todayOrdersAll %></div>
     </div>
     <div class="stat">
-      <div class="muted">Paid Today</div>
+      <div class="muted">Online Paid Today</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayPaidOrders %></div>
+    </div>
+    <div class="stat" style="border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06)">
+      <div class="muted">COD Today</div>
+      <div style="font-size:28px;font-weight:900;color:#fbbf24"><%= stats.todayCod %></div>
+      <div style="font-size:11px;margin-top:6px"><a href="/admin/orders?tab=cod" style="color:#f59e0b;text-decoration:underline">View →</a></div>
     </div>
 
     <div class="stat">
@@ -159,7 +164,7 @@
 </div>
 
     <div class="stat">
-      <div class="muted">Gift Book Today</div>
+      <div class="muted">Gift Book Today (Online)</div>
       <div style="font-size:28px;font-weight:900"><%= stats.todayGift %></div>
     </div>
     <div class="stat">
@@ -167,8 +172,12 @@
       <div style="font-size:28px;font-weight:900"><%= stats.todayDonate %></div>
     </div>
     <div class="stat">
-      <div class="muted">Today's Revenue</div>
+      <div class="muted">Today's Online Revenue</div>
       <div style="font-size:28px;font-weight:900">₹<%= stats.todayRevenue %></div>
+    </div>
+    <div class="stat" style="border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06)">
+      <div class="muted">Today's COD Revenue</div>
+      <div style="font-size:28px;font-weight:900;color:#fbbf24">₹<%= stats.todayCodRevenue %></div>
     </div>
   </div>
 
@@ -179,8 +188,13 @@
       <div style="font-size:28px;font-weight:900"><%= stats.ordersAll %></div>
     </div>
     <div class="stat">
-      <div class="muted">Paid Contests</div>
+      <div class="muted">Online Paid Contests</div>
       <div style="font-size:28px;font-weight:900"><%= stats.paidOrders %></div>
+    </div>
+    <div class="stat" style="border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06)">
+      <div class="muted">COD Total</div>
+      <div style="font-size:28px;font-weight:900;color:#fbbf24"><%= stats.codTotal %></div>
+      <div style="font-size:11px;margin-top:6px"><a href="/admin/orders?tab=cod" style="color:#f59e0b;text-decoration:underline">View COD orders →</a></div>
     </div>
     <div class="stat">
   <div class="muted">Failed Contests</div>
@@ -194,7 +208,7 @@
 </div>
 
     <div class="stat">
-      <div class="muted">Gift Book (paid)</div>
+      <div class="muted">Gift Book (Online)</div>
       <div style="font-size:28px;font-weight:900"><%= stats.gift %></div>
     </div>
     <div class="stat">
@@ -202,8 +216,12 @@
       <div style="font-size:28px;font-weight:900"><%= stats.donate %></div>
     </div>
     <div class="stat">
-      <div class="muted">Total Revenue</div>
+      <div class="muted">Total Online Revenue</div>
       <div style="font-size:28px;font-weight:900">₹<%= stats.revenue %></div>
+    </div>
+    <div class="stat" style="border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06)">
+      <div class="muted">COD Revenue (Total)</div>
+      <div style="font-size:28px;font-weight:900;color:#fbbf24">₹<%= stats.codTotalRevenue %></div>
     </div>
   </div>
 
@@ -242,6 +260,8 @@
           <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0"></div>
           <canvas id="salesChart" height="90"></canvas>
         </div>
+
+
 
         <div class="card">
           <h2 style="margin:0 0 6px 0">Shipments Progress</h2>

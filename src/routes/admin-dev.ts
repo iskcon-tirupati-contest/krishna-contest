@@ -60,6 +60,7 @@ function onlinePaymentSessionsWhere(alias = "ps") {
   return `
     COALESCE(${alias}.payment_id, '') NOT LIKE 'OFFLINE_%'
     AND COALESCE(${alias}.payment_id, '') NOT LIKE 'DEV_%'
+    AND COALESCE(${alias}.payment_id, '') NOT LIKE 'COD_%'
   `;
 }
 
@@ -169,7 +170,7 @@ async function fetchShipmentStatsByMode(
 ) {
   const params: any[] = [];
   const where: string[] = [
-    `o.payment_status = 'paid'`,
+    `o.payment_status IN ('paid', 'cod_pending')`,
     `o.book_option = 'book'`,
     shipmentsVisibleOrdersWhere("o"),
   ];
@@ -1977,6 +1978,31 @@ const salesMonthlyQ = await pool.query(`
 
 
 
+  // ── COD stats ────────────────────────────────────────────────────────────
+  const codPendingQ = await pool.query(`
+    SELECT COUNT(DISTINCT o.payment_id)::int AS c
+    FROM orders o
+    WHERE o.payment_status = 'cod_pending'
+      AND ${onlineOrdersWhere("o")}
+  `);
+
+  const codDeliveredUnpaidQ = await pool.query(`
+    SELECT COUNT(DISTINCT o.payment_id)::int AS c
+    FROM orders o
+    JOIN payment_sessions ps ON ps.id = o.payment_session_id
+    JOIN shipments sh ON sh.payment_id = REPLACE(ps.payment_id, 'COD_', '')
+    WHERE o.payment_status = 'cod_pending'
+      AND COALESCE(LOWER(sh.status), '') = 'delivered'
+      AND ${onlineOrdersWhere("o")}
+  `);
+
+  const codRevenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ps.amount), 0)::int AS total
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status = 'cod_pending'
+  `);
+
   return res.render("admin/admin-dashboard", {
     activeTab: "overview",
     stats: {
@@ -2142,9 +2168,30 @@ function buildOrdersFilter(req: any) {
   const dateFrom = norm(req.query.date_from || "");
   const dateTo = norm(req.query.date_to || "");
   const onDate = norm(req.query.on_date || "");
+  const tab = norm(req.query.tab || "online"); // "online" | "cod"
 
   const where: string[] = [onlineOrdersWhere("o"), `COALESCE(o.payment_id, '') LIKE 'KNC%'`];
   const params: any[] = [];
+
+  // Tab-level filter: split COD vs online payment orders
+  if (tab === "cod") {
+    // COD sessions have payment_id starting with COD_
+    where.push(`EXISTS (
+      SELECT 1 FROM payment_sessions ps
+      WHERE ps.id = o.payment_session_id
+        AND ps.payment_id LIKE 'COD_%'
+    )`);
+  } else {
+    // Online tab: exclude COD sessions (and include orders with no session yet = abandoned online)
+    where.push(`(
+      o.payment_session_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id NOT LIKE 'COD_%'
+      )
+    )`);
+  }
 
   if (status !== "all") {
     where.push(`o.payment_status=$${params.length + 1}`);
@@ -2193,7 +2240,7 @@ function buildOrdersFilter(req: any) {
   return {
     whereSql,
     params,
-    filters: { status, bookOption, contestId, userName, phone, orderId, dateFrom, dateTo, onDate }
+    filters: { status, bookOption, contestId, userName, phone, orderId, dateFrom, dateTo, onDate, tab }
   };
 }
 
@@ -2418,6 +2465,10 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
     group.our_status = String(preview?.local?.session_status || group.payment_statuses || '').trim() || '-';
 
     const razorpayDisplayStatus = (() => {
+      // COD sessions — never touch Razorpay
+      const gatewayOrderId = String(preview?.local?.gateway_order_id || '').trim();
+      if (gatewayOrderId.startsWith('COD_')) return 'cod';
+
       const liveStatus = String(preview?.selectedPayment?.status || '').trim().toLowerCase();
       if (liveStatus) return liveStatus;
 
@@ -2425,14 +2476,14 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
       if (apiError) return 'unavailable';
 
       if (!group.payment_session_id) return 'no_payment_session';
-
-      const gatewayOrderId = String(preview?.local?.gateway_order_id || '').trim();
       if (!gatewayOrderId) return 'no_payment_id';
 
       return 'unavailable';
     })();
 
     group.razorpay_status = razorpayDisplayStatus;
+    // Expose gateway_order_id directly so EJS can detect COD orders (starts with COD_)
+    group.gateway_order_id = String(preview?.local?.gateway_order_id || '').trim();
     group.can_mark_failed =
       String(preview?.local?.session_status || '').toLowerCase() === 'pending' &&
       isFailedLikePaymentStatus(preview?.selectedPayment?.status);
@@ -2455,8 +2506,16 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
     reconcileMap,
     ok: norm(req.query.ok || ''),
     err: norm(req.query.err || ''),
+    bulk_paid_count: Number(req.query.bulk_paid_count || 0),
+    bulk_paid_ids:   norm(req.query.bulk_paid_ids   || ''),
     qs: qsOf(req),
     bulkReconcileBaseQs: qsOf({ query: { ...req.query, page: '' } } as any),
+    codPendingCount: await pool.query(
+      `SELECT COUNT(DISTINCT o.payment_id)::int AS c
+       FROM orders o
+       WHERE o.payment_status = 'cod_pending'
+         AND ${shipmentsVisibleOrdersWhere('o')}`
+    ).then(r => Number(r.rows[0]?.c || 0)),
   });
 });
 
@@ -2574,6 +2633,173 @@ router.post('/admin/orders/reconcile-failed-page', authMiddleware, adminMiddlewa
     console.error('admin orders failed reconcile error:', e);
     const returnQs = qsOf({ query: { ...req.body, ...req.query } } as any);
     return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(e?.message || 'Failed to reconcile current page')}`);
+  }
+});
+
+
+// ── COD: Mark order group as paid (admin confirms cash received) ──────────────
+router.post("/admin/orders/cod-mark-paid", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const paymentId    = String(req.body.payment_id   || "").trim(); // internal KNCxxxx
+  const returnQs     = String(req.body.return_qs    || "").trim();
+  const adminUserId  = req.userId;
+
+  if (!paymentId) {
+    return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Missing payment_id")}`);
+  }
+
+  try {
+    // Find the COD payment session
+    const psQ = await pool.query(
+      `SELECT id, status FROM payment_sessions
+       WHERE payment_id = $1
+       LIMIT 1`,
+      [`COD_${paymentId}`]
+    );
+
+    if (psQ.rows.length === 0) {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("COD session not found for " + paymentId)}`);
+    }
+
+    const sessionId     = psQ.rows[0].id;
+    const currentStatus = String(psQ.rows[0].status || "");
+
+    if (currentStatus === "paid") {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Already marked paid")}`);
+    }
+
+    if (currentStatus !== "cod_pending") {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Session status is not cod_pending: " + currentStatus)}`);
+    }
+
+    // Check shipment delivery status — warn if not yet delivered
+    // (allow marking paid anyway — admin may have collected cash advance)
+    const shipDeliveryQ = await pool.query(
+      `SELECT sh.status AS ship_status
+       FROM shipments sh
+       WHERE sh.payment_id = $1
+       LIMIT 1`,
+      [paymentId]
+    );
+    const shipStatus = String(shipDeliveryQ.rows[0]?.ship_status || "").toLowerCase();
+    const isDelivered = shipStatus === "delivered";
+
+    // HARD BLOCK: only allow marking paid if shipment is delivered
+    // Admin must first mark the shipment as delivered in the shipments page
+    if (!isDelivered) {
+      const blockMsg = shipStatus
+        ? `Cannot mark as paid — shipment is currently "${shipStatus}". Please mark it as Delivered first.`
+        : `Cannot mark as paid — no shipment record found for this order.`;
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(blockMsg)}`);
+    }
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status='cod_pending'`,
+      [sessionId]
+    );
+
+    await pool.query(
+      `UPDATE orders SET payment_status='paid'
+       WHERE payment_session_id=$1 AND payment_status='cod_pending'`,
+      [sessionId]
+    );
+
+    // Audit log
+    await pool.query(
+      `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
+       VALUES ($1,'cod_admin_mark_paid',$2::jsonb)`,
+      [
+        sessionId,
+        JSON.stringify({
+          at:            new Date().toISOString(),
+          paymentId,
+          markedBy:      adminUserId,
+          previousStatus: currentStatus,
+          shipStatus,
+        }),
+      ]
+    );
+
+    await pool.query("COMMIT");
+
+    return res.redirect(`/admin/orders?${returnQs}&ok=${encodeURIComponent("COD order " + paymentId + " marked as paid — shipment was delivered ✅")}`);
+  } catch (e: any) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("COD mark-paid error:", e);
+    return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(e?.message || "Failed to mark COD as paid")}`);
+  }
+});
+
+
+// ── COD BULK MARK PAID: all delivered shipments ──────────────────────────────
+router.post("/admin/orders/cod-bulk-mark-paid", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const adminUserId = req.userId;
+  try {
+    // Find all cod_pending orders where shipment is delivered
+    const eligibleQ = await pool.query(`
+      SELECT DISTINCT o.payment_id AS internal_payment_id,
+                      ps.id        AS session_id,
+                      ps.payment_id AS cod_session_id
+      FROM orders o
+      JOIN payment_sessions ps ON ps.id = o.payment_session_id
+      JOIN shipments sh ON sh.payment_id = REPLACE(ps.payment_id, 'COD_', '')
+      WHERE o.payment_status = 'cod_pending'
+        AND ps.status = 'cod_pending'
+        AND COALESCE(LOWER(sh.status), '') = 'delivered'
+    `);
+
+    if (eligibleQ.rows.length === 0) {
+      return res.redirect(
+        `/admin/orders?tab=cod&ok=${encodeURIComponent("No delivered COD orders found to mark as paid.")}`
+      );
+    }
+
+    const sessionIds          = eligibleQ.rows.map((r: any) => r.session_id);
+    const internalPaymentIds  = eligibleQ.rows.map((r: any) => r.internal_payment_id);
+    const count               = sessionIds.length;
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions SET status='paid'
+       WHERE id = ANY($1::uuid[]) AND status = 'cod_pending'`,
+      [sessionIds]
+    );
+
+    await pool.query(
+      `UPDATE orders SET payment_status='paid'
+       WHERE payment_session_id = ANY($1::uuid[]) AND payment_status = 'cod_pending'`,
+      [sessionIds]
+    );
+
+    // Audit log each session
+    for (const row of eligibleQ.rows) {
+      await pool.query(
+        `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
+         VALUES ($1,'cod_bulk_mark_paid',$2::jsonb)`,
+        [
+          row.session_id,
+          JSON.stringify({
+            at:         new Date().toISOString(),
+            markedBy:   adminUserId,
+            bulkAction: true,
+          }),
+        ]
+      );
+    }
+
+    await pool.query("COMMIT");
+
+    return res.redirect(
+      `/admin/orders?tab=cod&bulk_paid_count=${count}&bulk_paid_ids=${encodeURIComponent(internalPaymentIds.join(","))}`
+    );
+  } catch (e: any) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("COD bulk mark-paid error:", e);
+    return res.redirect(
+      `/admin/orders?tab=cod&err=${encodeURIComponent(e?.message || "Bulk mark-paid failed")}`
+    );
   }
 });
 
@@ -3016,7 +3242,7 @@ function buildShipmentsFilter(req: any) {
   //const where: string[] = [`o.payment_status='paid'`, `o.book_option='book'`];
 
   const where: string[] = [
-  `o.payment_status='paid'`,
+  `o.payment_status IN ('paid', 'cod_pending')`,
   `o.book_option='book'`,
   shipmentsVisibleOrdersWhere("o")
 ];
@@ -7572,7 +7798,7 @@ if (dateFrom && dateTo && dateFrom > dateTo) {
 router.get("/admin/shipments/download-status", authMiddleware, adminMiddleware, async (req: any, res) => {
   try {
     const status = norm(req.query.status || "").toLowerCase();
-    const allowed = new Set(["under_packing", "dispatched","delivered" ,"returned"]);
+    const allowed = new Set(["under_packing","dispatched","delivered","returned"]);
 
     if (!allowed.has(status)) {
       return res.redirect(
@@ -7596,7 +7822,6 @@ router.get("/admin/shipments/download-status", authMiddleware, adminMiddleware, 
       status === "under_packing" ? "PACKED_OR_NOT" :
       status === "dispatched" ? "DELIVERED_OR_NOT" :
       status === "delivered"     ? "" :
-
       status === "returned" ? "START_AGAIN" :
       "";
 
@@ -8704,6 +8929,189 @@ router.post(
       console.error("update-books error:", e);
       return res.status(500).json({ error: "Failed to update books." });
     }
+  }
+);
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── GROUP UNDISPATCHED SHIPMENTS BY PHONE ──────────────────────────────────
+// Helps admin merge multiple shipments going to the same person into one
+// physical parcel. Grouped by (phone, delivery_mode) — can't combine
+// home_delivery and temple_pickup into the same parcel.
+//
+// Filters:
+//   - Status: pending / under_packing / packed (anything before dispatch)
+//   - Paid book orders only, exclude DEV_ test orders
+//   - Skip junk phones: NULL, TEMP_*, non-10-digit
+//   - Only show groups of 2+ shipments (singletons don't benefit from grouping)
+async function fetchUndispatchedPhoneGroups(req: any) {
+  const page = Math.max(1, Number(req.query.page || 1));
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+
+  const baseWhere = `
+    LOWER(COALESCE(sh.status, 'pending')) IN ('pending', 'under_packing', 'packed')
+    AND o.payment_status = 'paid'
+    AND o.book_option = 'book'
+    AND ${shipmentsVisibleOrdersWhere("o")}
+    AND u.phone IS NOT NULL
+    AND TRIM(u.phone) NOT LIKE 'TEMP_%'
+    AND LENGTH(TRIM(u.phone)) = 10
+  `;
+
+  // Count groups (for pagination)
+  const countQ = await pool.query(`
+    SELECT COUNT(*)::int AS total_count
+    FROM (
+      SELECT u.phone, sh.delivery_mode
+      FROM shipments sh
+      JOIN shipment_items si ON si.shipment_id = sh.id
+      JOIN orders o ON o.id = si.order_id
+      JOIN users u ON u.id = o.user_id
+      WHERE ${baseWhere}
+      GROUP BY u.phone, sh.delivery_mode
+      HAVING COUNT(DISTINCT sh.id) >= 2
+    ) g
+  `);
+
+  // Get groups for current page (most shipments first, then phone)
+  const groupsQ = await pool.query(
+    `
+    SELECT
+      u.phone,
+      sh.delivery_mode,
+      COUNT(DISTINCT sh.id)::int AS shipment_count,
+      MAX(u.name) AS user_name
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    WHERE ${baseWhere}
+    GROUP BY u.phone, sh.delivery_mode
+    HAVING COUNT(DISTINCT sh.id) >= 2
+    ORDER BY shipment_count DESC, u.phone ASC
+    LIMIT $1 OFFSET $2
+    `,
+    [pageSize, offset]
+  );
+
+  if (!groupsQ.rows.length) {
+    const totalCount = Number(countQ.rows[0]?.total_count || 0);
+    return {
+      groups: [],
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+    };
+  }
+
+  // Get all shipments belonging to those groups in one query
+  const phoneList = groupsQ.rows.map((g: any) => String(g.phone));
+  const modeList = groupsQ.rows.map((g: any) => String(g.delivery_mode || ""));
+
+  const shipmentsQ = await pool.query(
+    `
+    SELECT
+      sh.id AS shipment_id,
+      sh.payment_id,
+      u.phone,
+      u.name AS user_name,
+      u.email,
+      sh.address,
+      sh.city,
+      sh.state,
+      sh.pincode,
+      sh.delivery_mode,
+      sh.status,
+      sh.tracking_id,
+      sh.updated_at,
+      STRING_AGG(
+        (COALESCE(c.title, '')),
+        ', ' ORDER BY COALESCE(c.title, ''), si.id
+      ) AS contest_titles,
+      STRING_AGG(
+        (COALESCE(si.book_title, '') || ' - ' || COALESCE(si.book_language, '')),
+        ', ' ORDER BY COALESCE(c.title, ''), COALESCE(si.book_title, ''), COALESCE(si.book_language, ''), si.id
+      ) AS regular_books_with_language,
+      bonus.bonus_books_with_language
+    FROM shipments sh
+    JOIN shipment_items si ON si.shipment_id = sh.id
+    JOIN orders o ON o.id = si.order_id
+    JOIN users u ON u.id = o.user_id
+    JOIN contests c ON c.id = o.contest_id
+    LEFT JOIN LATERAL (
+      SELECT STRING_AGG(
+        (COALESCE(sbi.book_title, '') || ' - ' || COALESCE(sbi.book_language, '')),
+        ', ' ORDER BY COALESCE(sbi.book_title, ''), COALESCE(sbi.book_language, ''), sbi.id
+      ) AS bonus_books_with_language
+      FROM shipment_bonus_items sbi
+      WHERE sbi.shipment_id = sh.id
+    ) bonus ON TRUE
+    WHERE ${baseWhere}
+      AND u.phone = ANY($1::text[])
+      AND COALESCE(sh.delivery_mode, '') = ANY($2::text[])
+    GROUP BY
+      sh.id, sh.payment_id, u.phone, u.name, u.email,
+      sh.address, sh.city, sh.state, sh.pincode,
+      sh.delivery_mode, sh.status, sh.tracking_id, sh.updated_at,
+      bonus.bonus_books_with_language
+    ORDER BY u.phone, sh.updated_at DESC NULLS LAST, sh.id
+    `,
+    [phoneList, modeList]
+  );
+
+  // Bucket shipments under their group key "phone||delivery_mode"
+  const bucket: Record<string, any[]> = {};
+  for (const s of shipmentsQ.rows) {
+    const key = `${s.phone}||${String(s.delivery_mode || "")}`;
+    if (!bucket[key]) bucket[key] = [];
+    bucket[key].push({
+      ...s,
+      books_display: buildShipmentBooksLabel(
+        s.regular_books_with_language,
+        s.bonus_books_with_language
+      ),
+    });
+  }
+
+  // Only keep group rows whose mode actually matches what we asked for
+  // (defensive — guard against ANY() matching the wrong combo)
+  const groups = groupsQ.rows
+    .map((g: any) => {
+      const key = `${g.phone}||${String(g.delivery_mode || "")}`;
+      return {
+        phone: g.phone,
+        delivery_mode: g.delivery_mode,
+        user_name: g.user_name,
+        shipment_count: g.shipment_count,
+        shipments: (bucket[key] || []).filter(
+          (s: any) =>
+            String(s.delivery_mode || "") === String(g.delivery_mode || "")
+        ),
+      };
+    })
+    .filter((g) => g.shipments.length >= 2);
+
+  const totalCount = Number(countQ.rows[0]?.total_count || 0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  return { groups, page, pageSize, totalCount, totalPages };
+}
+
+router.get(
+  "/admin/shipments/group-by-phone",
+  authMiddleware,
+  adminMiddleware,
+  async (req: any, res) => {
+    const result = await fetchUndispatchedPhoneGroups(req);
+    res.render("admin/admin-shipments-group", {
+      activeTab: "shipments",
+      groups: result.groups,
+      page: result.page,
+      pageSize: result.pageSize,
+      totalCount: result.totalCount,
+      totalPages: result.totalPages,
+    });
   }
 );
 // ─────────────────────────────────────────────────────────────────────────────

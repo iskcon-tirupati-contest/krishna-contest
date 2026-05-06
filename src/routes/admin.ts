@@ -60,6 +60,7 @@ function onlinePaymentSessionsWhere(alias = "ps") {
   return `
     COALESCE(${alias}.payment_id, '') NOT LIKE 'OFFLINE_%'
     AND COALESCE(${alias}.payment_id, '') NOT LIKE 'DEV_%'
+    AND COALESCE(${alias}.payment_id, '') NOT LIKE 'COD_%'
   `;
 }
 
@@ -169,7 +170,7 @@ async function fetchShipmentStatsByMode(
 ) {
   const params: any[] = [];
   const where: string[] = [
-    `o.payment_status = 'paid'`,
+    `o.payment_status IN ('paid', 'cod_pending')`,
     `o.book_option = 'book'`,
     shipmentsVisibleOrdersWhere("o"),
   ];
@@ -1758,7 +1759,11 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
     SELECT COUNT(*)::int AS c
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+      AND o.payment_status='paid'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // REPLACE WITH:
@@ -1779,7 +1784,11 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND o.book_option='book'
+      AND o.book_option='book'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const donateQ = await pool.query(`
@@ -1794,7 +1803,11 @@ const addedToCartQ = await pool.query(`
     SELECT COALESCE(SUM(o.amount),0)::int AS total
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+      AND o.payment_status='paid'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // today stats with SAME old business logic, just IST-scoped
@@ -1802,7 +1815,7 @@ const addedToCartQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
 
@@ -1811,7 +1824,11 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const todayPendingOrdersQ = await pool.query(`
@@ -1819,7 +1836,7 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='pending'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
 
@@ -1827,13 +1844,13 @@ const addedToCartQ = await pool.query(`
   SELECT COUNT(*)::int AS c FROM orders o
   WHERE ${onlineOrdersWhere("o")}
     AND LOWER(COALESCE(o.payment_status,'')) IN ('failed','failure','cancelled','canceled','error')
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    AND o.created_at::date = ${IST_TODAY}
 `);
 const todayAddedToCartQ = await pool.query(`
   SELECT COUNT(*)::int AS c FROM orders o
   WHERE ${onlineOrdersWhere("o")}
     AND LOWER(COALESCE(o.payment_status,'pending')) = 'pending'
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    AND o.created_at::date = ${IST_TODAY}
 `);
 
 
@@ -1843,7 +1860,11 @@ const todayAddedToCartQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='book'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const todayDonateQ = await pool.query(`
@@ -1852,7 +1873,7 @@ const todayAddedToCartQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='donation'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
   const todayRevenueQ = await pool.query(`
@@ -1860,7 +1881,11 @@ const todayAddedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // sales chart - keep old intent, fix IST grouping
@@ -1977,12 +2002,45 @@ const salesMonthlyQ = await pool.query(`
 
 
 
+  // ── COD stats ─────────────────────────────────────────────────────────────
+  const codTotalQ = await pool.query(`
+    SELECT COUNT(DISTINCT ps.payment_id)::int AS c
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+  `);
+
+  const todayCodQ = await pool.query(`
+    SELECT COUNT(DISTINCT ps.payment_id)::int AS c
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+      AND (ps.created_at AT TIME ZONE 'Asia/Kolkata')::date = ${IST_TODAY}
+  `);
+
+  const codTotalRevenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ps.amount), 0)::int AS total
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+  `);
+
+  const todayCodRevenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ps.amount), 0)::int AS total
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+      AND (ps.created_at AT TIME ZONE 'Asia/Kolkata')::date = ${IST_TODAY}
+  `);
+
   return res.render("admin/admin-dashboard", {
     activeTab: "overview",
     stats: {
       users: usersQ.rows[0].c,
       ordersAll: ordersAllQ.rows[0].c,
       paidOrders: paidOrdersQ.rows[0].c,
+      codTotal:        codTotalQ.rows[0].c,
+      codTotalRevenue: codTotalRevenueQ.rows[0].total,
 
       gift: giftQ.rows[0].c,
       donate: donateQ.rows[0].c,
@@ -1991,6 +2049,8 @@ const salesMonthlyQ = await pool.query(`
 
       todayOrdersAll: todayOrdersAllQ.rows[0].c,
       todayPaidOrders: todayPaidOrdersQ.rows[0].c,
+      todayCod:        todayCodQ.rows[0].c,
+      todayCodRevenue: todayCodRevenueQ.rows[0].total,
 
       failedOrders: failedOrdersQ.rows[0].c,
       addedToCart: addedToCartQ.rows[0].c,
@@ -2142,9 +2202,30 @@ function buildOrdersFilter(req: any) {
   const dateFrom = norm(req.query.date_from || "");
   const dateTo = norm(req.query.date_to || "");
   const onDate = norm(req.query.on_date || "");
+  const tab = norm(req.query.tab || "online"); // "online" | "cod"
 
   const where: string[] = [onlineOrdersWhere("o"), `COALESCE(o.payment_id, '') LIKE 'KNC%'`];
   const params: any[] = [];
+
+  // Tab-level filter: split COD vs online payment orders
+  if (tab === "cod") {
+    // COD sessions have payment_id starting with COD_
+    where.push(`EXISTS (
+      SELECT 1 FROM payment_sessions ps
+      WHERE ps.id = o.payment_session_id
+        AND ps.payment_id LIKE 'COD_%'
+    )`);
+  } else {
+    // Online tab: exclude COD sessions (and include orders with no session yet = abandoned online)
+    where.push(`(
+      o.payment_session_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id NOT LIKE 'COD_%'
+      )
+    )`);
+  }
 
   if (status !== "all") {
     where.push(`o.payment_status=$${params.length + 1}`);
@@ -2193,7 +2274,7 @@ function buildOrdersFilter(req: any) {
   return {
     whereSql,
     params,
-    filters: { status, bookOption, contestId, userName, phone, orderId, dateFrom, dateTo, onDate }
+    filters: { status, bookOption, contestId, userName, phone, orderId, dateFrom, dateTo, onDate, tab }
   };
 }
 
@@ -2415,9 +2496,23 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
   for (const group of orders as any[]) {
     const preview = group.payment_session_id ? reconcileMap[String(group.payment_session_id)] : null;
     group.reconcile = preview || null;
-    group.our_status = String(preview?.local?.session_status || group.payment_statuses || '').trim() || '-';
+    const sessionStatus = String(preview?.local?.session_status || '').trim().toLowerCase();
+    const orderStatuses = String(group.payment_statuses || '').trim().toLowerCase();
+    const terminalSessionStatuses = ['paid', 'failed', 'cod_pending', 'cancelled'];
+    const terminalOrderStatuses   = ['paid', 'failed', 'cod_pending'];
+    if (sessionStatus && terminalSessionStatuses.includes(sessionStatus)) {
+      group.our_status = sessionStatus;
+    } else if (orderStatuses && terminalOrderStatuses.some(s => orderStatuses.includes(s))) {
+      group.our_status = orderStatuses;
+    } else {
+      group.our_status = sessionStatus || orderStatuses || '-';
+    }
 
     const razorpayDisplayStatus = (() => {
+      // COD sessions — never touch Razorpay
+      const gatewayOrderId = String(preview?.local?.gateway_order_id || '').trim();
+      if (gatewayOrderId.startsWith('COD_')) return 'cod';
+
       const liveStatus = String(preview?.selectedPayment?.status || '').trim().toLowerCase();
       if (liveStatus) return liveStatus;
 
@@ -2425,14 +2520,14 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
       if (apiError) return 'unavailable';
 
       if (!group.payment_session_id) return 'no_payment_session';
-
-      const gatewayOrderId = String(preview?.local?.gateway_order_id || '').trim();
       if (!gatewayOrderId) return 'no_payment_id';
 
       return 'unavailable';
     })();
 
     group.razorpay_status = razorpayDisplayStatus;
+    // Expose gateway_order_id directly so EJS can detect COD orders (starts with COD_)
+    group.gateway_order_id = String(preview?.local?.gateway_order_id || '').trim();
     group.can_mark_failed =
       String(preview?.local?.session_status || '').toLowerCase() === 'pending' &&
       isFailedLikePaymentStatus(preview?.selectedPayment?.status);
@@ -2455,8 +2550,16 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
     reconcileMap,
     ok: norm(req.query.ok || ''),
     err: norm(req.query.err || ''),
+    bulk_paid_count: Number(req.query.bulk_paid_count || 0),
+    bulk_paid_ids:   norm(req.query.bulk_paid_ids   || ''),
     qs: qsOf(req),
     bulkReconcileBaseQs: qsOf({ query: { ...req.query, page: '' } } as any),
+    codPendingCount: await pool.query(
+      `SELECT COUNT(DISTINCT o.payment_id)::int AS c
+       FROM orders o
+       WHERE o.payment_status = 'cod_pending'
+         AND ${shipmentsVisibleOrdersWhere('o')}`
+    ).then(r => Number(r.rows[0]?.c || 0)),
   });
 });
 
@@ -2574,6 +2677,173 @@ router.post('/admin/orders/reconcile-failed-page', authMiddleware, adminMiddlewa
     console.error('admin orders failed reconcile error:', e);
     const returnQs = qsOf({ query: { ...req.body, ...req.query } } as any);
     return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(e?.message || 'Failed to reconcile current page')}`);
+  }
+});
+
+
+// ── COD: Mark order group as paid (admin confirms cash received) ──────────────
+router.post("/admin/orders/cod-mark-paid", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const paymentId    = String(req.body.payment_id   || "").trim(); // internal KNCxxxx
+  const returnQs     = String(req.body.return_qs    || "").trim();
+  const adminUserId  = req.userId;
+
+  if (!paymentId) {
+    return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Missing payment_id")}`);
+  }
+
+  try {
+    // Find the COD payment session
+    const psQ = await pool.query(
+      `SELECT id, status FROM payment_sessions
+       WHERE payment_id = $1
+       LIMIT 1`,
+      [`COD_${paymentId}`]
+    );
+
+    if (psQ.rows.length === 0) {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("COD session not found for " + paymentId)}`);
+    }
+
+    const sessionId     = psQ.rows[0].id;
+    const currentStatus = String(psQ.rows[0].status || "");
+
+    if (currentStatus === "paid") {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Already marked paid")}`);
+    }
+
+    if (currentStatus !== "cod_pending") {
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent("Session status is not cod_pending: " + currentStatus)}`);
+    }
+
+    // Check shipment delivery status — warn if not yet delivered
+    // (allow marking paid anyway — admin may have collected cash advance)
+    const shipDeliveryQ = await pool.query(
+      `SELECT sh.status AS ship_status
+       FROM shipments sh
+       WHERE sh.payment_id = $1
+       LIMIT 1`,
+      [paymentId]
+    );
+    const shipStatus = String(shipDeliveryQ.rows[0]?.ship_status || "").toLowerCase();
+    const isDelivered = shipStatus === "delivered";
+
+    // HARD BLOCK: only allow marking paid if shipment is delivered
+    // Admin must first mark the shipment as delivered in the shipments page
+    if (!isDelivered) {
+      const blockMsg = shipStatus
+        ? `Cannot mark as paid — shipment is currently "${shipStatus}". Please mark it as Delivered first.`
+        : `Cannot mark as paid — no shipment record found for this order.`;
+      return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(blockMsg)}`);
+    }
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions SET status='paid' WHERE id=$1 AND status='cod_pending'`,
+      [sessionId]
+    );
+
+    await pool.query(
+      `UPDATE orders SET payment_status='paid'
+       WHERE payment_session_id=$1 AND payment_status='cod_pending'`,
+      [sessionId]
+    );
+
+    // Audit log
+    await pool.query(
+      `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
+       VALUES ($1,'cod_admin_mark_paid',$2::jsonb)`,
+      [
+        sessionId,
+        JSON.stringify({
+          at:            new Date().toISOString(),
+          paymentId,
+          markedBy:      adminUserId,
+          previousStatus: currentStatus,
+          shipStatus,
+        }),
+      ]
+    );
+
+    await pool.query("COMMIT");
+
+    return res.redirect(`/admin/orders?${returnQs}&ok=${encodeURIComponent("COD order " + paymentId + " marked as paid — shipment was delivered ✅")}`);
+  } catch (e: any) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("COD mark-paid error:", e);
+    return res.redirect(`/admin/orders?${returnQs}&err=${encodeURIComponent(e?.message || "Failed to mark COD as paid")}`);
+  }
+});
+
+
+// ── COD BULK MARK PAID: all delivered shipments ──────────────────────────────
+router.post("/admin/orders/cod-bulk-mark-paid", authMiddleware, adminMiddleware, async (req: any, res) => {
+  const adminUserId = req.userId;
+  try {
+    // Find all cod_pending orders where shipment is delivered
+    const eligibleQ = await pool.query(`
+      SELECT DISTINCT o.payment_id AS internal_payment_id,
+                      ps.id        AS session_id,
+                      ps.payment_id AS cod_session_id
+      FROM orders o
+      JOIN payment_sessions ps ON ps.id = o.payment_session_id
+      JOIN shipments sh ON sh.payment_id = REPLACE(ps.payment_id, 'COD_', '')
+      WHERE o.payment_status = 'cod_pending'
+        AND ps.status = 'cod_pending'
+        AND COALESCE(LOWER(sh.status), '') = 'delivered'
+    `);
+
+    if (eligibleQ.rows.length === 0) {
+      return res.redirect(
+        `/admin/orders?tab=cod&ok=${encodeURIComponent("No delivered COD orders found to mark as paid.")}`
+      );
+    }
+
+    const sessionIds          = eligibleQ.rows.map((r: any) => r.session_id);
+    const internalPaymentIds  = eligibleQ.rows.map((r: any) => r.internal_payment_id);
+    const count               = sessionIds.length;
+
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `UPDATE payment_sessions SET status='paid'
+       WHERE id = ANY($1::uuid[]) AND status = 'cod_pending'`,
+      [sessionIds]
+    );
+
+    await pool.query(
+      `UPDATE orders SET payment_status='paid'
+       WHERE payment_session_id = ANY($1::uuid[]) AND payment_status = 'cod_pending'`,
+      [sessionIds]
+    );
+
+    // Audit log each session
+    for (const row of eligibleQ.rows) {
+      await pool.query(
+        `INSERT INTO payment_gateway_logs (payment_session_id, event, payload)
+         VALUES ($1,'cod_bulk_mark_paid',$2::jsonb)`,
+        [
+          row.session_id,
+          JSON.stringify({
+            at:         new Date().toISOString(),
+            markedBy:   adminUserId,
+            bulkAction: true,
+          }),
+        ]
+      );
+    }
+
+    await pool.query("COMMIT");
+
+    return res.redirect(
+      `/admin/orders?tab=cod&bulk_paid_count=${count}&bulk_paid_ids=${encodeURIComponent(internalPaymentIds.join(","))}`
+    );
+  } catch (e: any) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("COD bulk mark-paid error:", e);
+    return res.redirect(
+      `/admin/orders?tab=cod&err=${encodeURIComponent(e?.message || "Bulk mark-paid failed")}`
+    );
   }
 });
 
@@ -3016,7 +3286,7 @@ function buildShipmentsFilter(req: any) {
   //const where: string[] = [`o.payment_status='paid'`, `o.book_option='book'`];
 
   const where: string[] = [
-  `o.payment_status='paid'`,
+  `o.payment_status IN ('paid', 'cod_pending')`,
   `o.book_option='book'`,
   shipmentsVisibleOrdersWhere("o")
 ];
@@ -7572,7 +7842,7 @@ if (dateFrom && dateTo && dateFrom > dateTo) {
 router.get("/admin/shipments/download-status", authMiddleware, adminMiddleware, async (req: any, res) => {
   try {
     const status = norm(req.query.status || "").toLowerCase();
-    const allowed = new Set(["under_packing", "dispatched","delivered" ,"returned"]);
+    const allowed = new Set(["under_packing","dispatched","delivered","returned"]);
 
     if (!allowed.has(status)) {
       return res.redirect(
@@ -7596,7 +7866,6 @@ router.get("/admin/shipments/download-status", authMiddleware, adminMiddleware, 
       status === "under_packing" ? "PACKED_OR_NOT" :
       status === "dispatched" ? "DELIVERED_OR_NOT" :
       status === "delivered"     ? "" :
-
       status === "returned" ? "START_AGAIN" :
       "";
 

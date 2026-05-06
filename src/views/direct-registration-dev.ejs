@@ -586,10 +586,10 @@
               <label class="rcard rc-t">
                 <input type="radio" name="delivery_mode" value="temple_pickup"
                   <%= (old?.delivery_mode||'') === 'temple_pickup' ? 'checked' : '' %>>
-                <div class="rci">&#128301;</div>
+                <div class="rci">🛕</div>
                 <div>
                   <div class="rct">Temple Pickup</div>
-                  <div class="rcs">Collect books directly from the nearest ISKCON temple.</div>
+                  <div class="rcs">Collect books directly from ISKCON Tirupati temple.</div>
                 </div>
               </label>
               <label class="rcard rc-n">
@@ -900,6 +900,12 @@
     sel.addEventListener('change',function(){});
   });
 
+  /* ── Re-enable submit on page load (browser may restore disabled state on back) ── */
+  window.addEventListener('pageshow', function() {
+    var btn = document.getElementById('submitBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Continue to Payment →'; }
+  });
+
   /* ── SUBMIT GATE (mirrors route validation exactly) ── */
   document.getElementById('regForm').addEventListener('submit',function(e){
     var ok=true;
@@ -955,7 +961,7 @@
 
     if(!ok){e.preventDefault();return;}
     var btn=document.getElementById('submitBtn');
-    btn.textContent='\u23F3 Redirecting to payment\u2026';
+    btn.textContent='⏳ Saving your details…';
     btn.disabled=true;
   });
 </script>

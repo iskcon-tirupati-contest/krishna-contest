@@ -686,6 +686,13 @@
           </div>
         </div>
 
+        <!-- SECTION 4: BOOKS (deliver + temple_pickup)
+             bookTitle[]    → norm each → orders.book_title (one per contest index)
+             bookLanguage[] → norm each → shipment_items.book_language (one per contest index)
+             Route validates: both required per index; language must exist in availableBookLanguages[book]
+             selectableBooks excludes 'Science of Self Realization' (server-side)
+             ssrLanguage (combo only): bonus SSR book language
+        -->
         <div class="section sp hidden" id="sec4">
           <div class="sec-hdr">
             <div class="sec-ico">&#128218;</div>
@@ -893,6 +900,12 @@
     sel.addEventListener('change',function(){});
   });
 
+  /* ── Re-enable submit on page load (browser may restore disabled state on back) ── */
+  window.addEventListener('pageshow', function() {
+    var btn = document.getElementById('submitBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Continue to Payment →'; }
+  });
+
   /* ── SUBMIT GATE (mirrors route validation exactly) ── */
   document.getElementById('regForm').addEventListener('submit',function(e){
     var ok=true;
@@ -937,19 +950,19 @@
       });
     }
 
-    /* ── SSR language validation — combo only ── */
+    /* ── SSR language validation — combo only, skip if donate ── */
     var ssrEl=document.getElementById('ssrLanguage');
-    if(ssrEl&&!ssrEl.value){
+    var sec4=document.getElementById('sec4');
+    var sec4Hidden=sec4&&sec4.classList.contains('hidden');
+    if(ssrEl&&!ssrEl.value&&!sec4Hidden){
       iv(ssrEl,'vi-ssr','Please select a language for the bonus book');
       focusFirst(ssrEl);
     }
 
     if(!ok){e.preventDefault();return;}
-    /* Simple double-click prevention — 3 second window only */
-    if(window._submitting) { e.preventDefault(); return; }
-    window._submitting = true;
-    /* Auto reset after 5 seconds — handles back button on all browsers */
-    setTimeout(function() { window._submitting = false; }, 5000);
+    var btn=document.getElementById('submitBtn');
+    btn.textContent='⏳ Saving your details…';
+    btn.disabled=true;
   });
 </script>
 </body>

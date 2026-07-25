@@ -242,6 +242,18 @@
           <div class="ci-price">₹<%= Number(o.amount || 0) %></div>
         </div>
       <% }) %>
+      <!-- Bonus books (Science of Self Realization for combo orders) -->
+      <% if (bonusBooks && bonusBooks.length > 0) { %>
+        <% bonusBooks.forEach(function(b){ %>
+        <div class="contest-item" style="background:#f0fdf4;border-color:#bbf7d0">
+          <div class="ci-left">
+            <div class="ci-name" style="color:#059669;font-size:12px;font-weight:700">🎁 Bonus Book Included</div>
+            <div class="ci-book">📖 <%= b.book_title %> · <%= b.book_language %></div>
+          </div>
+          <div class="ci-price" style="color:#059669;font-size:11px;font-weight:800">FREE</div>
+        </div>
+        <% }) %>
+      <% } %>
 
       <div class="divider"></div>
 

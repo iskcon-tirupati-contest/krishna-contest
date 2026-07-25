@@ -72,12 +72,18 @@ async function generateUniqueInternalPaymentId(): Promise<string> {
   throw new Error("paymentId collision");
 }
 
+// ─── POST /join/:category ─────────────────────────────────────────────────────
 router.post("/join/:category", async (req: any, res) => {
   const category = String(req.params.category || "").trim() as keyof typeof CONTEST_MAP;
   const contestTitles = CONTEST_MAP[category];
 
   if (!contestTitles) {
     return res.status(400).send("Invalid category");
+  }
+
+  // Guard: bots / wrong Content-Type leave req.body undefined
+  if (!req.body || typeof req.body !== "object") {
+    return res.status(400).send("Invalid request");
   }
 
   const name         = norm(req.body.name);
@@ -89,12 +95,14 @@ router.post("/join/:category", async (req: any, res) => {
   const ageCategory  = norm(req.body.age_category);
   const ssrLanguage  = norm(req.body.ssrLanguage);
   const deliveryMode = normalizeDeliveryMode(req.body.delivery_mode);
-  const bookTitles    = ([] as any[]).concat(req.body.bookTitle || []).map((x) => String(x || "").trim());
+
+  const bookTitles    = ([] as any[]).concat(req.body.bookTitle    || []).map((x) => String(x || "").trim());
   const bookLanguages = ([] as any[]).concat(req.body.bookLanguage || []).map((x) => String(x || "").trim());
 
-  if (!name || name.length < 2) return res.send("Invalid name");
-  if (!/^[6-9]\d{9}$/.test(phone)) return res.send("Invalid phone");
-  if (!["0-25", "above-25"].includes(ageCategory)) return res.send("Invalid age category");
+  // ── Validation ──
+  if (!name || name.length < 2)              return res.send("Invalid name");
+  if (!/^[6-9]\d{9}$/.test(phone))          return res.send("Invalid phone");
+  if (!["0-25", "above-25"].includes(ageCategory))         return res.send("Invalid age category");
   if (!["home_delivery", "temple_pickup", "donate"].includes(deliveryMode)) return res.send("Invalid delivery mode");
 
   if (deliveryMode === "home_delivery") {
@@ -218,7 +226,7 @@ router.post("/join/:category", async (req: any, res) => {
         [
           user.id,
           c.id,
-          process.env.DIRECT_REG_TEST_PRICE ? Number(process.env.DIRECT_REG_TEST_PRICE) : rowAmount,
+          rowAmount,
           paymentId,
           ageCategory,
           deliveryMode === "donate" ? "donation" : "book",
@@ -258,7 +266,7 @@ router.post("/join/:category", async (req: any, res) => {
         );
       }
 
-      // combo bonus SSR
+      // Combo bonus SSR book
       if (category === "combo" && ssrLanguage) {
         await pool.query(
           `INSERT INTO shipment_bonus_items (shipment_id, book_title, book_language, quantity)

@@ -450,6 +450,38 @@
           </a>
         </div>
 
+        <!-- REVENUE STATS STRIP -->
+        <% if (typeof revenueStats !== 'undefined') { %>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px">
+          <% if ((filters.tab||'online') !== 'cod') { %>
+          <!--
+          <div style="background:var(--surface2);border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:12px 16px">
+            <div style="font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Online Revenue</div>
+            <div style="font-size:22px;font-weight:900;color:#fff">₹<%= Number(revenueStats.online).toLocaleString('en-IN') %></div>
+          </div>
+          -->
+          <% } %>
+          <div style="background:var(--surface2);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:12px 16px">
+          <div style="font-size:10px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">COD Collected</div>
+            <div style="font-size:22px;font-weight:900;color:#fff">₹<%= Number(revenueStats.codCollected).toLocaleString('en-IN') %></div>
+            <div style="font-size:10px;color:#a16207;margin-top:2px">incl. ₹<%= Number(revenueStats.codSurchargeCollected).toLocaleString('en-IN') %> handling</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:12px 16px">
+            <div style="font-size:10px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">COD Pending</div>
+            <div style="font-size:22px;font-weight:900;color:#fff">₹<%= Number(revenueStats.codPending).toLocaleString('en-IN') %></div>
+            <div style="font-size:10px;color:#b91c1c;margin-top:2px">incl. ₹<%= Number(revenueStats.codSurchargePending).toLocaleString('en-IN') %> handling</div>
+          </div>
+          <% if ((filters.tab||'online') !== 'cod') { %>
+          <!--
+          <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 16px">
+            <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total Revenue</div>
+            <div style="font-size:22px;font-weight:900;color:#fff">₹<%= Number(revenueStats.online + revenueStats.codCollected).toLocaleString('en-IN') %></div>
+          </div>
+         -->
+          <% } %>
+        </div>
+        <% } %>
+
         <!-- FILTERS -->
         <% if ((filters.tab||'online') === 'cod') { %>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(135deg,rgba(22,163,74,.1),rgba(22,163,74,.04));border:1.5px solid rgba(22,163,74,.3);border-radius:14px;padding:13px 18px;margin-bottom:14px;flex-wrap:wrap;">
@@ -534,6 +566,7 @@
             return p.toString();
           };
           const f = {
+            tab:         filters.tab || 'online',
             status:      filters.status !== 'all' ? filters.status : '',
             book_option: filters.bookOption !== 'all' ? filters.bookOption : '',
             contest_id:  filters.contestId || '',
@@ -665,6 +698,11 @@
                     <div class="meta-block">
                       <div class="meta-label">Total amount</div>
                       <div class="meta-value large">&#8377;<%= group.total_amount %></div>
+                      <% if (group.cod_surcharge) { %>
+                        <div style="font-size:10px;color:var(--muted);margin-top:3px">
+                          incl. <span style="color:#fbbf24;font-weight:700">&#8377;<%= group.cod_surcharge %> COD charge</span>
+                        </div>
+                      <% } %>
                     </div>
                     <div class="meta-block">
                       <div class="meta-label">Book option</div>
@@ -734,20 +772,29 @@
                         <% } %>
                       </div>
                     </div>
-                    <% if (codDelivered) { %>
-                      <button type="button" class="btn-cod-paid"
-                        onclick="showCodConfirm('<%= group.order_group_id %>', '<%= (group.user_name || '').replace(/'/g,'') %>', '<%= typeof qs !== 'undefined' ? qs : '' %>')">
-                        ✅ Mark as Paid
-                      </button>
-                    <% } else { %>
-                      <a href="/admin/shipments" style="
-                        display:inline-flex;align-items:center;gap:6px;
-                        padding:9px 16px;border-radius:10px;text-decoration:none;
-                        font-size:12px;font-weight:800;
-                        background:rgba(245,158,11,.15);color:#fcd34d;
-                        border:1px solid rgba(245,158,11,.35);
-                      ">📦 Go to Shipments →</a>
-                    <% } %>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                      <% if (codDelivered) { %>
+                        <button type="button" class="btn-cod-paid"
+                          onclick="showCodConfirm('<%= group.order_group_id %>', '<%= (group.user_name || '').replace(/'/g,'') %>', '<%= typeof qs !== 'undefined' ? qs : '' %>')">
+                          ✅ Mark as Paid
+                        </button>
+                      <% } else { %>
+                        <a href="/admin/shipments" style="
+                          display:inline-flex;align-items:center;gap:6px;
+                          padding:9px 16px;border-radius:10px;text-decoration:none;
+                          font-size:12px;font-weight:800;
+                          background:rgba(245,158,11,.15);color:#fcd34d;
+                          border:1px solid rgba(245,158,11,.35);
+                        ">📦 Go to Shipments →</a>
+                      <% } %>
+                      <% if ((group.our_status || '').toLowerCase() === 'cod_pending') { %>
+                        <button type="button"
+                          onclick="showCodCancel('<%= group.order_group_id %>', '<%= (group.user_name || '').replace(/'/g,'') %>', '<%= typeof qs !== 'undefined' ? qs : '' %>')"
+                          style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:1px solid rgba(239,68,68,.3);border-radius:10px;background:rgba(239,68,68,.1);color:#ef4444;font-size:12px;font-weight:800;cursor:pointer;">
+                          🗑️ Cancel Order
+                        </button>
+                      <% } %>
+                    </div>
                   </div>
                 <% } %>
 
@@ -895,6 +942,42 @@
   <input type="hidden" id="cod-form-qs"         name="return_qs"  value="">
 </form>
 
+<!-- Hidden form for COD cancel -->
+<form id="cod-cancel-form" method="POST" action="/admin/orders/cod-cancel" style="display:none">
+  <input type="hidden" id="cod-cancel-payment-id" name="payment_id" value="">
+  <input type="hidden" id="cod-cancel-qs"         name="return_qs"  value="">
+  <input type="hidden" name="reason"              value="Cancelled by admin">
+</form>
+
+<!-- COD Cancel confirmation toast -->
+<div id="cod-cancel-toast" style="
+  display:none;position:fixed;top:24px;right:24px;z-index:9999;
+  max-width:380px;min-width:280px;
+  background:#1e2438;border:1.5px solid rgba(239,68,68,.4);
+  border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.7);padding:20px;
+">
+  <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">
+    <div style="font-size:22px;flex-shrink:0">🗑️</div>
+    <div style="flex:1">
+      <div style="font-family:Sora,sans-serif;font-size:14px;font-weight:800;color:#fff;margin-bottom:5px"
+           id="cancel-toast-title">Cancel COD Order?</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6"
+           id="cancel-toast-msg">Orders will be marked failed. Shipment record is kept but will not be processed.</div>
+    </div>
+    <button onclick="closeCodCancelToast()" style="width:26px;height:26px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:14px;flex-shrink:0">✕</button>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button onclick="closeCodCancelToast()"
+      style="flex:1;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(255,255,255,.07);color:#fff;font-size:13px;font-weight:700;cursor:pointer">
+      Keep Order
+    </button>
+    <button onclick="submitCodCancel()" id="cod-cancel-confirm-btn"
+      style="flex:1;padding:10px;border:0;border-radius:10px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(220,38,38,.35)">
+      🗑️ Yes, Cancel
+    </button>
+  </div>
+</div>
+
 <script>
   var _codFormPaymentId = '';
   var _codFormQs = '';
@@ -925,8 +1008,36 @@
     if (e.target === this) closeCodToast();
   });
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeCodToast();
+    if (e.key === 'Escape') { closeCodToast(); closeCodCancelToast(); }
   });
+
+  // ── COD Cancel — must be in global scope for onclick to work ──────────────
+  var _cancelPaymentId = '', _cancelQs = '';
+
+  function showCodCancel(paymentId, userName, qs) {
+    _cancelPaymentId = paymentId;
+    _cancelQs = qs;
+    document.getElementById('cancel-toast-title').textContent =
+      'Cancel COD Order ' + paymentId + '?';
+    document.getElementById('cancel-toast-msg').textContent =
+      'Customer: ' + (userName || 'Unknown') +
+      ' — Orders will be marked failed. Shipment is kept but will not be processed. Cannot be undone.';
+    document.getElementById('cod-cancel-confirm-btn').textContent = '🗑️ Yes, Cancel';
+    document.getElementById('cod-cancel-confirm-btn').disabled = false;
+    document.getElementById('cod-cancel-toast').style.display = 'block';
+  }
+
+  function closeCodCancelToast() {
+    document.getElementById('cod-cancel-toast').style.display = 'none';
+  }
+
+  function submitCodCancel() {
+    document.getElementById('cod-cancel-payment-id').value = _cancelPaymentId;
+    document.getElementById('cod-cancel-qs').value = _cancelQs;
+    document.getElementById('cod-cancel-confirm-btn').textContent = 'Cancelling…';
+    document.getElementById('cod-cancel-confirm-btn').disabled = true;
+    document.getElementById('cod-cancel-form').submit();
+  }
 </script>
 
 <!-- Page loader -->

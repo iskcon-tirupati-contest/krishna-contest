@@ -16,7 +16,19 @@ import { pool } from "../config/db";
 
 const router = express.Router();
 
-const COD_SURCHARGE = 46; // ₹46 handling charge for Cash on Delivery
+// COD Tariff Matrix (India Post rates, May 2026)
+// Columns: [1 book, 2 books, 3 books, 4 books+SSR]
+const COD_TARIFFS: Record<string, number[]> = {
+  "andhra pradesh": [101, 107, 138, 144],
+  "default":        [125, 131, 168, 174],
+};
+
+function getCodSurcharge(state: string, bookCount: number): number {
+  const s = (state || "").trim().toLowerCase();
+  const rates = COD_TARIFFS[s] || COD_TARIFFS["default"];
+  const idx = Math.min(Math.max(bookCount, 1), 4) - 1;
+  return rates[idx];
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ──  CASHFREE ROUTES
@@ -527,43 +539,39 @@ router.get("/payment/select", authMiddleware, async (req: any, res) => {
     // Fetch delivery mode from shipment
     // Donation orders have no shipment row — treat missing shipment as "donate" (online pay only)
     const shipQ = await pool.query(
-      `SELECT delivery_mode FROM shipments WHERE payment_id=$1 LIMIT 1`,
+      `SELECT delivery_mode, state FROM shipments WHERE payment_id=$1 LIMIT 1`,
       [paymentId]
     );
-    const deliveryMode = String(shipQ.rows[0]?.delivery_mode || "donate").trim();
+    const deliveryMode  = String(shipQ.rows[0]?.delivery_mode || "donate").trim();
+    const shipmentState = String(shipQ.rows[0]?.state || "").trim();
 
     // All delivery modes now come through payment-select
     // COD is shown only for home_delivery — template hides it for others
     const isHomeDelivery = deliveryMode === "home_delivery";
 
-    const baseAmount = ordersQ.rows.reduce(
-      (s: number, r: any) => s + Number(r.amount || 0), 0
-    );
+    const baseAmount   = ordersQ.rows.reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+    const bookCount    = ordersQ.rows.filter((r: any) => String(r.book_option || '') === 'book').length || 1;
+    const codSurcharge = getCodSurcharge(shipmentState, bookCount);
 
-    // Donation orders (donate delivery mode) — COD not applicable
-    const isDonation = ordersQ.rows.every((r: any) => String(r.book_option || '') === 'donation');
-
-    // Cashfree visibility — set CASHFREE_ENABLED=false to hide
+    const isDonation      = ordersQ.rows.every((r: any) => String(r.book_option || '') === 'donation');
     const cashfreeEnabled = (process.env.CASHFREE_ENABLED || 'true').toLowerCase() !== 'false';
+    const codEnabled      = (process.env.COD_ENABLED || 'false').toLowerCase() !== 'false';
 
-    // COD visibility — set COD_ENABLED=false to hide (default: false for now)
-    const codEnabled = (process.env.COD_ENABLED || 'false').toLowerCase() !== 'false';
-
-    // Detect if this is a resumed order (created more than 2 min ago)
     const oldestOrder = ordersQ.rows[0];
-    const isResumed = oldestOrder &&
+    const isResumed   = oldestOrder &&
       (Date.now() - new Date((oldestOrder as any).created_at || 0).getTime()) > 2 * 60 * 1000;
 
     return res.render("payment-select", {
       paymentId,
       orders:         ordersQ.rows,
       baseAmount,
-      codSurcharge:   COD_SURCHARGE,
+      codSurcharge,
       isDonation,
       cashfreeEnabled,
       codEnabled,
       isResumed:      Boolean(isResumed),
-      isHomeDelivery, // COD only shown for home_delivery
+      isHomeDelivery,
+      shipmentState,
     });
   } catch (e) {
     console.error("GET /payment/select error:", e);
@@ -588,7 +596,7 @@ router.post("/payment/select", authMiddleware, async (req: any, res) => {
 
     // Load orders + user info
     const ordersQ = await pool.query(
-      `SELECT o.id, o.amount, o.payment_status, o.payment_session_id, c.title AS contest_title
+      `SELECT o.id, o.amount, o.payment_status, o.payment_session_id, o.book_option, c.title AS contest_title
        FROM orders o
        JOIN contests c ON c.id = o.contest_id
        WHERE o.user_id=$1 AND o.payment_id=$2
@@ -719,8 +727,15 @@ router.post("/payment/select", authMiddleware, async (req: any, res) => {
 
     // ── COD ───────────────────────────────────────────────────────────────────
     if (paymentMode === "cod") {
-      const codTotal   = baseAmount + COD_SURCHARGE;
-      const codLinkId  = `COD_${paymentId}`;
+      const codShipQ = await pool.query(
+        `SELECT state FROM shipments WHERE payment_id=$1 LIMIT 1`,
+        [paymentId]
+      );
+      const codState     = String(codShipQ.rows[0]?.state || "").trim();
+      const codBookCount = ordersQ.rows.filter((r: any) => String(r.book_option || '') === 'book').length || 1;
+      const codSurcharge = getCodSurcharge(codState, codBookCount);
+      const codTotal     = baseAmount + codSurcharge;
+      const codLinkId    = `COD_${paymentId}`;
 
       // Idempotent: if COD session already exists (user pressed back + reselected), reuse it
       const existing = await pool.query(
@@ -735,12 +750,12 @@ router.post("/payment/select", authMiddleware, async (req: any, res) => {
 
       await pool.query("BEGIN");
 
-      // COD: create session as 'cod_pending' — admin dispatches book, marks paid after cash collected
+      // COD: create session — store cod_surcharge separately for reconciliation
       const ps = await pool.query(
-        `INSERT INTO payment_sessions (user_id, payment_id, amount, status)
-         VALUES ($1,$2,$3,'cod_pending')
+        `INSERT INTO payment_sessions (user_id, payment_id, amount, status, cod_surcharge)
+         VALUES ($1,$2,$3,'cod_pending',$4)
          RETURNING id`,
-        [userId, codLinkId, codTotal]
+        [userId, codLinkId, codTotal, codSurcharge]
       );
 
       await pool.query(
@@ -795,13 +810,29 @@ router.get("/payment/cod-confirm", authMiddleware, async (req: any, res) => {
       (s: number, r: any) => s + Number(r.amount || 0), 0
     );
 
+    const confirmState     = String(shipQ.rows[0]?.state || "").trim();
+    const confirmBookCount = ordersQ.rows.filter((r: any) => r.book_title).length || 1;
+    const confirmSurcharge = getCodSurcharge(confirmState, confirmBookCount);
+
+    // Fetch bonus books (e.g. Science of Self Realization for combo orders)
+    const bonusQ = await pool.query(
+      `SELECT book_title, book_language, quantity
+       FROM shipment_bonus_items
+       WHERE shipment_id = (
+         SELECT id FROM shipments WHERE payment_id=$1 LIMIT 1
+       )
+       ORDER BY book_title`,
+      [paymentId]
+    );
+
     return res.render("payment-cod-confirm", {
       paymentId,
       orders:       ordersQ.rows,
       shipment:     shipQ.rows[0] || null,
       baseAmount,
-      codSurcharge: COD_SURCHARGE,
-      codTotal:     baseAmount + COD_SURCHARGE,
+      codSurcharge: confirmSurcharge,
+      codTotal:     baseAmount + confirmSurcharge,
+      bonusBooks:   bonusQ.rows,
     });
   } catch (e) {
     console.error("GET /payment/cod-confirm error:", e);

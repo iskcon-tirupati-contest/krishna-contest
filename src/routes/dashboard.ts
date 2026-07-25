@@ -3,15 +3,25 @@ import { authMiddleware } from "../middleware/auth";
 import { pool } from "../config/db";
 
 import { v4 as uuidv4 } from "uuid";
-import { startMultipart, presignPart, completeMultipart, abortMultipart } from "../utils/s3Multipart";
 import { presignGet } from "../utils/s3Get";
+import { createPresignedPutUrl } from "../utils/s3";
 import { body, validationResult } from "express-validator";
+
+import multer from "multer";
+
+import {
+  S3Client,
+  PutObjectCommand
+} from "@aws-sdk/client-s3";
 
 const router = express.Router();
 
 /**
  * Upload allowlist
  */
+
+const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 5);
+const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
 const ALLOWED_EXT = new Set([
   "pdf",
@@ -36,6 +46,18 @@ const ALLOWED_MIME = new Set([
 ]);
 
 const MAX_ATTEMPTS = 3;
+
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_BYTES
+  }
+});
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || "ap-south-1",
+});
 
 async function getAttemptsUsed(userId: string, orderId: string) {
   const r = await pool.query(
@@ -109,7 +131,6 @@ function getExt(fileName: string) {
 function isAllowed(contentType: string, fileName: string) {
   const ct = (contentType || "").toLowerCase().trim();
   const ext = getExt(fileName);
-  // accept broad mime groups + allowlisted extensions (fallback when mime is empty/wrong)
   if (isAllowedMime(ct)) return true;
   if (ALLOWED_EXT.has(ext)) return true;
   return false;
@@ -120,11 +141,10 @@ function isAllowedMime(mime: string) {
   return ALLOWED_MIME.has(mime);
 }
 
-const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 5);
-const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
+
 /**
  * IST deadline enforcement (server-side, mandatory)
- * We treat contests.submission_deadline as IST time.
  */
 async function assertSubmissionOpen(orderId: string, userId: string) {
   const q = await pool.query(
@@ -158,7 +178,7 @@ function keyBelongsToUserOrder(key: string, userId: string, orderId: string) {
 }
 
 /**
- * Upload failure logs (for support + debugging at scale)
+ * Upload failure logs
  */
 router.post("/dashboard/upload/log", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
@@ -180,41 +200,67 @@ router.post("/dashboard/upload/log", authMiddleware, async (req: any, res) => {
 });
 
 /**
- * Multipart Upload Routes
+ * Upload Routes — customer files go Browser → Express → S3 (same-origin).
+ * Direct browser→S3 PUT is unreliable on many mobile networks in India.
  */
+
+async function writeUploadLog(
+  userId: string | null,
+  orderId: string | null,
+  stage: string,
+  message: string,
+  meta?: Record<string, unknown>
+) {
+  try {
+    await pool.query(
+      `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [
+        userId,
+        orderId,
+        stage,
+        message,
+        meta ? JSON.stringify(meta) : null
+      ]
+    );
+  } catch (e) {
+    console.error("upload_logs write failed:", e);
+  }
+}
+
+// Step 1: Validate + generate S3 key (no browser→S3 URL required)
 router.post("/dashboard/upload/start", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
   const { orderId, fileName, contentType, fileSize } = req.body;
 
-  if (!orderId || !fileName || !contentType || !fileSize) {
+  if (!orderId || !fileName || !fileSize) {
     return res.status(400).json({ error: "Missing fields" });
   }
+
+  const normalizedContentType =
+    String(contentType || "").trim() || "application/octet-stream";
 
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
+  const size = Number(fileSize);
+  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+    return res.status(400).json({
+      error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+    });
+  }
 
+  if (!isAllowed(normalizedContentType, String(fileName))) {
+    return res.status(400).json({
+      error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+    });
+  }
 
-const size = Number(fileSize);
-if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-  return res.status(400).json({
-    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
-  });
-}
-
-  if (!isAllowed(String(contentType), String(fileName))) {
-  return res.status(400).json({
-    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
-  });
-}
-
-  // verify paid order belongs to this user
   const orderRes = await pool.query(
     `SELECT id FROM orders WHERE id=$1 AND user_id=$2 AND payment_status='paid'`,
     [orderId, userId]
   );
   if (orderRes.rows.length === 0) return res.status(403).json({ error: "Invalid order" });
-
 
   const attemptsUsed = await getAttemptsUsed(userId, orderId);
   if (attemptsUsed >= MAX_ATTEMPTS) {
@@ -225,85 +271,197 @@ if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
   const safeExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
   const key = `submissions/2026/user-${userId}/order-${orderId}/${uuidv4()}.${safeExt}`;
 
-  const { uploadId } = await startMultipart(key, String(contentType));
-  res.json({ key, uploadId });
-});
-
-router.post("/dashboard/upload/presign-parts", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const { orderId, key, uploadId, partNumbers } = req.body;
-
-  if (!orderId || !key || !uploadId || !Array.isArray(partNumbers) || partNumbers.length === 0) {
-    return res.status(400).json({ error: "Missing fields" });
+  // Keep uploadUrl for older clients; primary path no longer uses it.
+  let uploadUrl: string | undefined;
+  try {
+    uploadUrl = await createPresignedPutUrl(key, normalizedContentType);
+  } catch (e) {
+    console.warn("presigned URL generation skipped/failed:", e);
   }
 
-  const gate = await assertSubmissionOpen(String(orderId), String(userId));
-  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
-
-  if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
-    return res.status(403).json({ error: "Invalid upload key." });
-  }
-
-  const urls = await Promise.all(
-    partNumbers.map(async (pn: number) => ({
-      partNumber: pn,
-      url: await presignPart(String(key), String(uploadId), Number(pn))
-    }))
-  );
-
-  res.json({ urls });
+  res.json({ key, uploadUrl });
 });
 
+function parseMultipartUpload(req: any, res: Response, next: any) {
+  upload.single("file")(req, res, async (err: any) => {
+    if (!err) return next();
+
+    const orderId = req.body?.orderId || null;
+    const msg =
+      err.code === "LIMIT_FILE_SIZE"
+        ? `Maximum upload size is ${MAX_UPLOAD_MB} MB.`
+        : err.message || "Upload rejected.";
+
+    console.error("========== SERVER UPLOAD MULTER ERROR ==========");
+    console.error(err);
+
+    await writeUploadLog(
+      req.userId || null,
+      orderId,
+      "server_upload_multer",
+      msg,
+      { code: err.code || null }
+    );
+
+    return res.status(400).json({ error: msg });
+  });
+}
+
+// Step 2: Receive file from browser, upload to S3 from EC2 (IAM role)
+router.post(
+  "/dashboard/upload/fallback",
+  authMiddleware,
+  parseMultipartUpload,
+  async (req: any, res) => {
+    console.log("========== SERVER UPLOAD ==========");
+
+    const userId = req.userId;
+    const { orderId, key, contentType, originalName } = req.body || {};
+
+    try {
+      await writeUploadLog(userId, orderId || null, "server_upload_hit", "request received", {
+        hasFile: !!req.file,
+        key: key || null,
+        originalName: originalName || null
+      });
+
+      console.log("User:", userId);
+      console.log("Order:", orderId);
+      console.log("Key:", key);
+      console.log("Has File:", !!req.file);
+
+      if (!req.file) {
+        await writeUploadLog(userId, orderId || null, "server_upload_reject", "No file uploaded");
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      if (!orderId || !key) {
+        await writeUploadLog(userId, orderId || null, "server_upload_reject", "Missing fields");
+        return res.status(400).json({ error: "Missing fields" });
+      }
+
+      const gate = await assertSubmissionOpen(String(orderId), String(userId));
+      if (!gate.ok) {
+        await writeUploadLog(userId, orderId, "server_upload_reject", String(gate.msg));
+        return res.status(gate.code!).json({ error: gate.msg });
+      }
+
+      if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
+        await writeUploadLog(userId, orderId, "server_upload_reject", "Invalid upload key.");
+        return res.status(403).json({ error: "Invalid upload key." });
+      }
+
+      if (
+        !isAllowed(
+          contentType || req.file.mimetype,
+          originalName || req.file.originalname
+        )
+      ) {
+        await writeUploadLog(userId, orderId, "server_upload_reject", "Invalid file type.");
+        return res.status(400).json({ error: "Invalid file type." });
+      }
+
+      if (req.file.size > MAX_BYTES) {
+        const msg = `Maximum upload size is ${MAX_UPLOAD_MB} MB.`;
+        await writeUploadLog(userId, orderId, "server_upload_reject", msg);
+        return res.status(400).json({ error: msg });
+      }
+
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET!,
+            Key: key,
+            Body: req.file.buffer,
+            ContentType:
+              contentType ||
+              req.file.mimetype ||
+              "application/octet-stream"
+          })
+        );
+      } catch (err) {
+        console.error("S3 PutObject failed:", err);
+        await writeUploadLog(userId, orderId, "server_upload_failed", String(err));
+        // keep old stage name for continuity
+        await writeUploadLog(userId, orderId, "fallback_failed", String(err));
+        return res.status(500).json({ error: "S3 upload failed." });
+      }
+
+      await writeUploadLog(userId, orderId, "server_upload_ok", "Backend upload successful");
+      await writeUploadLog(userId, orderId, "fallback_ok", "Backend upload successful");
+
+      console.log("===================================");
+      return res.json({ ok: true });
+    } catch (err) {
+      console.error("Server upload route crashed:", err);
+      await writeUploadLog(
+        req.userId || null,
+        req.body?.orderId || null,
+        "server_upload_exception",
+        String(err)
+      );
+      await writeUploadLog(
+        req.userId || null,
+        req.body?.orderId || null,
+        "fallback_exception",
+        String(err)
+      );
+      return res.status(500).json({ error: "Upload failed." });
+    }
+  }
+);
+
+
+// Step 2: Save submission to DB after browser completes the S3 PUT
 router.post("/dashboard/upload/complete", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
-  const { orderId, key, uploadId, parts, contentType, originalName, fileSize } = req.body;
+  const { orderId, key, contentType, originalName, fileSize } = req.body;
 
-  if (!orderId || !key || !uploadId || !Array.isArray(parts) || parts.length === 0) {
+  const normalizedContentType =
+    String(contentType || "").trim() || "application/octet-stream";
+
+  if (!orderId || !key) {
     return res.status(400).json({ error: "Missing fields" });
   }
 
   const gate = await assertSubmissionOpen(String(orderId), String(userId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
 
-  // attempts limit (server-side enforcement)
   const attemptsUsed = await getAttemptsUsed(String(userId), String(orderId));
   if (attemptsUsed >= MAX_ATTEMPTS) {
     return res.status(400).json({ error: "Max 3 submissions allowed for this contest." });
   }
 
-  // basic validation
- const size = Number(fileSize);
-if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
-  return res.status(400).json({
-    error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
-  });
-}
+  const size = Number(fileSize);
+  if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
+    return res.status(400).json({
+      error: `File is too large. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`
+    });
+  }
 
   if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
     return res.status(403).json({ error: "Invalid upload key." });
   }
 
-  if (!isAllowed(String(contentType || ""), String(originalName || ""))) {
-  return res.status(400).json({
-    error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
-  });
-}
+  if (!isAllowed(normalizedContentType, String(originalName || ""))) {
+    return res.status(400).json({
+      error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed."
+    });
+  }
 
-  // verify paid order belongs to this user
   const orderRes = await pool.query(
     `SELECT id FROM orders WHERE id=$1 AND user_id=$2 AND payment_status='paid'`,
     [orderId, userId]
   );
   if (orderRes.rows.length === 0) return res.status(403).json({ error: "Invalid order" });
 
-  // check submission locked
-  const existing = await pool.query(`SELECT id, is_locked FROM submissions WHERE order_id=$1`, [orderId]);
+  const existing = await pool.query(
+    `SELECT id, is_locked FROM submissions WHERE order_id=$1`,
+    [orderId]
+  );
   if (existing.rows.length > 0 && existing.rows[0].is_locked) {
     return res.status(403).json({ error: "Submission locked" });
   }
-
-  // complete multipart in S3
-  await completeMultipart(String(key), String(uploadId), parts);
 
   const publicUrl = `${process.env.S3_PUBLIC_BASE}/${key}`;
 
@@ -311,7 +469,7 @@ if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
     await pool.query(
       `INSERT INTO submissions (order_id, file_url, file_size, s3_key, content_type, original_name, uploaded_at, last_updated_at)
        VALUES ($1,$2,$3,$4,$5,$6,(NOW() AT TIME ZONE 'Asia/Kolkata'), (NOW() AT TIME ZONE 'Asia/Kolkata'))`,
-      [orderId, publicUrl, size, key, contentType || null, originalName || null]
+      [orderId, publicUrl, size, key, normalizedContentType, originalName || null]
     );
   } else {
     await pool.query(
@@ -324,40 +482,21 @@ if (!Number.isFinite(size) || size <= 0 || size > MAX_BYTES) {
            uploaded_at=(NOW() AT TIME ZONE 'Asia/Kolkata'),
            last_updated_at=(NOW() AT TIME ZONE 'Asia/Kolkata')
        WHERE order_id=$6`,
-      [publicUrl, size, key, contentType || null, originalName || null, orderId]
+      [publicUrl, size, key, normalizedContentType, originalName || null, orderId]
     );
   }
 
-  // record successful attempt
   await pool.query(
     `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
      VALUES ($1,$2,'complete_ok','submission saved',$3::jsonb)`,
     [
       userId,
       String(orderId),
-      JSON.stringify({ originalName: originalName || null, fileSize: size, contentType: contentType || null })
+      JSON.stringify({ originalName: originalName || null, fileSize: size, contentType: normalizedContentType })
     ]
   );
 
   res.json({ ok: true, attemptsUsed: attemptsUsed + 1, attemptsMax: MAX_ATTEMPTS });
-});
-
-
-router.post("/dashboard/upload/abort", authMiddleware, async (req: any, res) => {
-  const userId = req.userId;
-  const { orderId, key, uploadId } = req.body;
-
-  if (!orderId || !key || !uploadId) return res.status(400).json({ error: "Missing fields" });
-
-  const gate = await assertSubmissionOpen(String(orderId), String(userId));
-  if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
-
-  if (!keyBelongsToUserOrder(String(key), String(userId), String(orderId))) {
-    return res.status(403).json({ error: "Invalid upload key." });
-  }
-
-  await abortMultipart(String(key), String(uploadId));
-  res.json({ ok: true });
 });
 
 /**
@@ -385,8 +524,6 @@ router.get("/dashboard/submission/download", authMiddleware, async (req: any, re
  * Dashboard Home
  */
 
-
-
 router.get("/dashboard", authMiddleware, async (req: any, res) => {
   const userId = req.userId;
 
@@ -395,23 +532,21 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
     [userId]
   );
 
-
-
- const activeContests = await pool.query(
-  `SELECT
-      id,
-      title,
-      description,
-      price,
-      registration_deadline,
-      submission_deadline,
-      winner_declaration_date,
-      image_url,
-      prize_details,
-      rules,
-      age_categories,
-      participant_benefits,
-      is_active
+  const activeContests = await pool.query(
+    `SELECT
+        id,
+        title,
+        description,
+        price,
+        registration_deadline,
+        submission_deadline,
+        winner_declaration_date,
+        image_url,
+        prize_details,
+        rules,
+        age_categories,
+        participant_benefits,
+        is_active
    FROM contests
    WHERE is_active = true
    ORDER BY
@@ -424,7 +559,7 @@ router.get("/dashboard", authMiddleware, async (req: any, res) => {
        ELSE 999
      END,
      title ASC`
-);
+  );
   return res.render("dashboard-home", {
     user: userRes.rows[0] || null,
     pending: activeContests.rows,
@@ -519,16 +654,32 @@ router.get("/dashboard/delivery", authMiddleware, async (req: any, res) => {
       sh.status,
       sh.courier_mode,
       sh.updated_at,
+      MAX(o.payment_status) AS payment_status,
+      CASE
+        WHEN sh.payment_id LIKE 'COD_%' THEN 'COD'
+        ELSE 'Online'
+      END AS payment_mode,
       STRING_AGG(
-        DISTINCT COALESCE(si.book_title, c.title),
-        ', ' ORDER BY COALESCE(si.book_title, c.title)
-      ) AS title
+        COALESCE(si.book_title, c.title) ||
+          CASE WHEN si.book_language IS NOT NULL AND si.book_language <> ''
+               THEN ' (' || si.book_language || ')'
+               ELSE '' END,
+        ', ' ORDER BY COALESCE(si.book_title, c.title), si.book_language
+      ) AS title,
+      (
+        SELECT STRING_AGG(
+          sbi.book_title || ' (' || sbi.book_language || ')',
+          ', '
+        )
+        FROM shipment_bonus_items sbi
+        WHERE sbi.shipment_id = sh.id
+      ) AS bonus_books
     FROM shipments sh
     JOIN shipment_items si ON si.shipment_id = sh.id
     JOIN orders o ON o.id = si.order_id
     JOIN contests c ON c.id = o.contest_id
     WHERE o.user_id = $1
-      AND o.payment_status = 'paid'
+      AND o.payment_status IN ('paid', 'cod_pending')
       AND o.book_option = 'book'
     GROUP BY
       sh.id,
@@ -722,7 +873,6 @@ router.get("/dashboard/help", authMiddleware, async (req: any, res) => {
   });
 });
 
-// optional alias so old FAQ links still work
 router.get("/dashboard/faqs", authMiddleware, (_req: any, res) => {
   return res.redirect("/dashboard/help");
 });
@@ -815,7 +965,6 @@ router.post("/api/cart/age", authMiddleware, async (req: any, res) => {
 
   const row = q.rows[0];
 
-  // If same contest already exists in target age bucket, merge quantities.
   const clash = await pool.query(
     `SELECT id, quantity
      FROM cart_items
@@ -952,4 +1101,5 @@ router.post(
     }
   }
 );
+
 export default router;

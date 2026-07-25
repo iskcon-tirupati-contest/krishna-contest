@@ -254,13 +254,26 @@ STRING_AGG(
       sh.courier_mode,
       sh.delivery_mode,
       sh.status,
-      sh.updated_at
+      sh.updated_at,
+      MIN(o.created_at) AS shipment_placed_at,
+      CASE
+        WHEN sh.payment_id LIKE 'COD_%' THEN 'COD'
+        WHEN EXISTS (
+          SELECT 1 FROM payment_sessions ps
+          WHERE ps.id = o.payment_session_id
+            AND ps.payment_id LIKE 'COD_%'
+        ) THEN 'COD'
+        ELSE 'Online'
+      END AS payment_mode,
+      COALESCE(SUM(o.amount), 0)::int AS contest_cost,
+      COALESCE(MAX(ps_cod.cod_surcharge), 0)::int AS cod_charge
 
     FROM shipments sh
     JOIN shipment_items si ON si.shipment_id = sh.id
     JOIN orders o ON o.id = si.order_id
     JOIN users u ON u.id = o.user_id
     JOIN contests c ON c.id = o.contest_id
+    LEFT JOIN payment_sessions ps_cod ON ps_cod.id = o.payment_session_id
 
     LEFT JOIN LATERAL (
       SELECT
@@ -278,7 +291,8 @@ STRING_AGG(
       sh.id, sh.payment_id, u.id, u.name, u.email, u.phone,
       sh.address, sh.city, sh.state, sh.pincode,
       sh.tracking_id, sh.courier_mode, sh.status, sh.updated_at,
-      bonus.bonus_books_with_language
+      sh.delivery_mode, bonus.bonus_books_with_language,
+      o.payment_session_id
 
     ORDER BY sh.updated_at DESC NULLS LAST, sh.id DESC
     `,
@@ -1759,7 +1773,11 @@ router.get("/admin", authMiddleware, adminMiddleware, async (_req: any, res) => 
     SELECT COUNT(*)::int AS c
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+      AND o.payment_status='paid'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // REPLACE WITH:
@@ -1780,7 +1798,11 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND o.book_option='book'
+      AND o.book_option='book'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const donateQ = await pool.query(`
@@ -1795,7 +1817,11 @@ const addedToCartQ = await pool.query(`
     SELECT COALESCE(SUM(o.amount),0)::int AS total
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND o.payment_status='paid'
+      AND o.payment_status='paid'      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // today stats with SAME old business logic, just IST-scoped
@@ -1803,7 +1829,7 @@ const addedToCartQ = await pool.query(`
     SELECT COUNT(*)::int AS c
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
 
@@ -1812,7 +1838,11 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const todayPendingOrdersQ = await pool.query(`
@@ -1820,7 +1850,7 @@ const addedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='pending'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
 
@@ -1828,13 +1858,13 @@ const addedToCartQ = await pool.query(`
   SELECT COUNT(*)::int AS c FROM orders o
   WHERE ${onlineOrdersWhere("o")}
     AND LOWER(COALESCE(o.payment_status,'')) IN ('failed','failure','cancelled','canceled','error')
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    AND o.created_at::date = ${IST_TODAY}
 `);
 const todayAddedToCartQ = await pool.query(`
   SELECT COUNT(*)::int AS c FROM orders o
   WHERE ${onlineOrdersWhere("o")}
     AND LOWER(COALESCE(o.payment_status,'pending')) = 'pending'
-    AND ${ORDER_IST_DATE} = ${IST_TODAY}
+    AND o.created_at::date = ${IST_TODAY}
 `);
 
 
@@ -1844,7 +1874,11 @@ const todayAddedToCartQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='book'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   const todayDonateQ = await pool.query(`
@@ -1853,7 +1887,7 @@ const todayAddedToCartQ = await pool.query(`
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
       AND o.book_option='donation'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}
   `);
 
   const todayRevenueQ = await pool.query(`
@@ -1861,7 +1895,11 @@ const todayAddedToCartQ = await pool.query(`
     FROM orders o
     WHERE ${onlineOrdersWhere("o")}
       AND o.payment_status='paid'
-      AND ${ORDER_IST_DATE} = ${IST_TODAY}
+      AND o.created_at::date = ${IST_TODAY}      AND NOT EXISTS (
+        SELECT 1 FROM payment_sessions ps
+        WHERE ps.id = o.payment_session_id
+          AND ps.payment_id LIKE 'COD_%'
+      )
   `);
 
   // sales chart - keep old intent, fix IST grouping
@@ -1978,29 +2016,35 @@ const salesMonthlyQ = await pool.query(`
 
 
 
-  // ── COD stats ────────────────────────────────────────────────────────────
-  const codPendingQ = await pool.query(`
-    SELECT COUNT(DISTINCT o.payment_id)::int AS c
-    FROM orders o
-    WHERE o.payment_status = 'cod_pending'
-      AND ${onlineOrdersWhere("o")}
+  // ── COD stats ─────────────────────────────────────────────────────────────
+  const codTotalQ = await pool.query(`
+    SELECT COUNT(DISTINCT ps.payment_id)::int AS c
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
   `);
 
-  const codDeliveredUnpaidQ = await pool.query(`
-    SELECT COUNT(DISTINCT o.payment_id)::int AS c
-    FROM orders o
-    JOIN payment_sessions ps ON ps.id = o.payment_session_id
-    JOIN shipments sh ON sh.payment_id = REPLACE(ps.payment_id, 'COD_', '')
-    WHERE o.payment_status = 'cod_pending'
-      AND COALESCE(LOWER(sh.status), '') = 'delivered'
-      AND ${onlineOrdersWhere("o")}
+  const todayCodQ = await pool.query(`
+    SELECT COUNT(DISTINCT ps.payment_id)::int AS c
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+      AND (ps.created_at AT TIME ZONE 'Asia/Kolkata')::date = ${IST_TODAY}
   `);
 
-  const codRevenueQ = await pool.query(`
+  const codTotalRevenueQ = await pool.query(`
     SELECT COALESCE(SUM(ps.amount), 0)::int AS total
     FROM payment_sessions ps
     WHERE ps.payment_id LIKE 'COD_%'
-      AND ps.status = 'cod_pending'
+      AND ps.status IN ('cod_pending', 'paid')
+  `);
+
+  const todayCodRevenueQ = await pool.query(`
+    SELECT COALESCE(SUM(ps.amount), 0)::int AS total
+    FROM payment_sessions ps
+    WHERE ps.payment_id LIKE 'COD_%'
+      AND ps.status IN ('cod_pending', 'paid')
+      AND (ps.created_at AT TIME ZONE 'Asia/Kolkata')::date = ${IST_TODAY}
   `);
 
   return res.render("admin/admin-dashboard", {
@@ -2009,6 +2053,8 @@ const salesMonthlyQ = await pool.query(`
       users: usersQ.rows[0].c,
       ordersAll: ordersAllQ.rows[0].c,
       paidOrders: paidOrdersQ.rows[0].c,
+      codTotal:        codTotalQ.rows[0].c,
+      codTotalRevenue: codTotalRevenueQ.rows[0].total,
 
       gift: giftQ.rows[0].c,
       donate: donateQ.rows[0].c,
@@ -2017,6 +2063,8 @@ const salesMonthlyQ = await pool.query(`
 
       todayOrdersAll: todayOrdersAllQ.rows[0].c,
       todayPaidOrders: todayPaidOrdersQ.rows[0].c,
+      todayCod:        todayCodQ.rows[0].c,
+      todayCodRevenue: todayCodRevenueQ.rows[0].total,
 
       failedOrders: failedOrdersQ.rows[0].c,
       addedToCart: addedToCartQ.rows[0].c,
@@ -2335,12 +2383,14 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
         sh.id AS shipment_id,
         sh.delivery_mode,
         sh.status AS shipment_status,
-        bonus.bonus_books
+        bonus.bonus_books,
+        ps_cod.cod_surcharge AS session_cod_surcharge
       FROM orders o
       JOIN users u ON u.id = o.user_id
       JOIN contests c ON c.id = o.contest_id
       LEFT JOIN shipment_items si ON si.order_id = o.id
       LEFT JOIN shipments sh ON sh.id = si.shipment_id
+      LEFT JOIN payment_sessions ps_cod ON ps_cod.id = o.payment_session_id
       LEFT JOIN LATERAL (
         SELECT STRING_AGG(
           CASE
@@ -2368,6 +2418,7 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
       MIN(fo.created_at) AS created_at,
       COUNT(*)::int AS item_count,
       COALESCE(SUM(fo.amount), 0)::int AS total_amount,
+      MAX(fo.session_cod_surcharge) AS cod_surcharge,
       STRING_AGG(DISTINCT fo.payment_status, ', ' ORDER BY fo.payment_status) AS payment_statuses,
       STRING_AGG(DISTINCT fo.book_option, ', ' ORDER BY fo.book_option) AS book_options,
       STRING_AGG(DISTINCT fo.contest_title, ', ' ORDER BY fo.contest_title) AS contest_titles,
@@ -2462,7 +2513,17 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
   for (const group of orders as any[]) {
     const preview = group.payment_session_id ? reconcileMap[String(group.payment_session_id)] : null;
     group.reconcile = preview || null;
-    group.our_status = String(preview?.local?.session_status || group.payment_statuses || '').trim() || '-';
+    const sessionStatus = String(preview?.local?.session_status || '').trim().toLowerCase();
+    const orderStatuses = String(group.payment_statuses || '').trim().toLowerCase();
+    const terminalSessionStatuses = ['paid', 'failed', 'cod_pending', 'cancelled'];
+    const terminalOrderStatuses   = ['paid', 'failed', 'cod_pending'];
+    if (sessionStatus && terminalSessionStatuses.includes(sessionStatus)) {
+      group.our_status = sessionStatus;
+    } else if (orderStatuses && terminalOrderStatuses.some(s => orderStatuses.includes(s))) {
+      group.our_status = orderStatuses;
+    } else {
+      group.our_status = sessionStatus || orderStatuses || '-';
+    }
 
     const razorpayDisplayStatus = (() => {
       // COD sessions — never touch Razorpay
@@ -2492,6 +2553,40 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
   const totalCount = Number(countQ.rows[0].c || 0);
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
+  // ── Revenue stats for orders page header ────────────────────────────────
+  const [onlineRevQ, codPaidRevQ, codPendingRevQ, codPendingCntQ] = await Promise.all([
+    // Online revenue (Razorpay/Cashfree paid, excluding COD)
+    pool.query(`
+      SELECT COALESCE(SUM(ps.amount), 0)::int AS total
+      FROM payment_sessions ps
+      WHERE ps.status = 'paid'
+        AND ps.payment_id NOT LIKE 'COD_%'
+    `),
+    // COD revenue collected (marked paid)
+    pool.query(`
+      SELECT COALESCE(SUM(ps.amount), 0)::int AS total,
+             COALESCE(SUM(ps.cod_surcharge), 0)::int AS surcharge
+      FROM payment_sessions ps
+      WHERE ps.payment_id LIKE 'COD_%'
+        AND ps.status = 'paid'
+    `),
+    // COD revenue pending (not yet collected)
+    pool.query(`
+      SELECT COALESCE(SUM(ps.amount), 0)::int AS total,
+             COALESCE(SUM(ps.cod_surcharge), 0)::int AS surcharge
+      FROM payment_sessions ps
+      WHERE ps.payment_id LIKE 'COD_%'
+        AND ps.status = 'cod_pending'
+    `),
+    // COD pending order count
+    pool.query(`
+      SELECT COUNT(DISTINCT o.payment_id)::int AS c
+      FROM orders o
+      WHERE o.payment_status = 'cod_pending'
+        AND ${shipmentsVisibleOrdersWhere('o')}
+    `),
+  ]);
+
   res.render('admin/admin-orders', {
     activeTab: 'orders',
     orders,
@@ -2510,12 +2605,14 @@ router.get("/admin/orders", authMiddleware, adminMiddleware, async (req: any, re
     bulk_paid_ids:   norm(req.query.bulk_paid_ids   || ''),
     qs: qsOf(req),
     bulkReconcileBaseQs: qsOf({ query: { ...req.query, page: '' } } as any),
-    codPendingCount: await pool.query(
-      `SELECT COUNT(DISTINCT o.payment_id)::int AS c
-       FROM orders o
-       WHERE o.payment_status = 'cod_pending'
-         AND ${shipmentsVisibleOrdersWhere('o')}`
-    ).then(r => Number(r.rows[0]?.c || 0)),
+    codPendingCount: Number(codPendingCntQ.rows[0]?.c || 0),
+    revenueStats: {
+      online:           Number(onlineRevQ.rows[0]?.total    || 0),
+      codCollected:     Number(codPaidRevQ.rows[0]?.total   || 0),
+      codSurchargeCollected: Number(codPaidRevQ.rows[0]?.surcharge || 0),
+      codPending:       Number(codPendingRevQ.rows[0]?.total || 0),
+      codSurchargePending:   Number(codPendingRevQ.rows[0]?.surcharge || 0),
+    },
   });
 });
 
@@ -3131,9 +3228,47 @@ function buildShipmentFileName(prefix: string, ext = "xlsx") {
 }
 
 
+
+// ── Number to words (Indian system) ──────────────────────────────────────────
+function numberToWords(n: number): string {
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+    "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+
+  if (n === 0) return "Zero";
+  if (n < 0)   return "Minus " + numberToWords(-n);
+
+  function belowThousand(num: number): string {
+    if (num < 20)  return ones[num];
+    if (num < 100) return tens[Math.floor(num/10)] + (num%10 ? " " + ones[num%10] : "");
+    return ones[Math.floor(num/100)] + " Hundred" + (num%100 ? " " + belowThousand(num%100) : "");
+  }
+
+  // Indian system: ones, thousands, lakhs, crores
+  const crore = Math.floor(n / 10000000); n %= 10000000;
+  const lakh  = Math.floor(n / 100000);   n %= 100000;
+  const thou  = Math.floor(n / 1000);     n %= 1000;
+  const rest  = n;
+
+  const parts: string[] = [];
+  if (crore) parts.push(belowThousand(crore) + " Crore");
+  if (lakh)  parts.push(belowThousand(lakh)  + " Lakh");
+  if (thou)  parts.push(belowThousand(thou)  + " Thousand");
+  if (rest)  parts.push(belowThousand(rest));
+
+  return parts.join(" ");
+}
+
+function amountInWords(amount: number): string {
+  const amt = Math.round(amount);
+  if (amt === 0) return "Zero Rupees Only";
+  return `${amt} - ${numberToWords(amt)} Rupees Only`;
+}
+
 function shipmentHeaderRow(extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = "") {
   const headers = [
     "SHIPMENT_ID",
+    "SHIPMENT_PLACED_DATE",
     "PAYMENT_ID",
     "USER_ID",
     "USER_NAME",
@@ -3150,6 +3285,11 @@ function shipmentHeaderRow(extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT"
     "TRACKING_ID",
     "COURIER_MODE",
     "DELIVERY_MODE",
+    "PAYMENT_MODE",
+    "CONTEST_COST",
+    "COD_CHARGE",
+    "TOTAL",
+    "TOTAL_IN_WORDS",
     "STATUS",
   ];
 
@@ -3163,8 +3303,14 @@ function shipmentExportRows(
   extraFlag: "" | "PACKED_OR_NOT" | "DISPATCHED_OR_NOT" | "DELIVERED_OR_NOT" | "START_AGAIN" = ""
 ) {
   return rows.map((r: any) => {
+    // Format shipment placed date as DD/MM/YYYY
+    const placedDate = r.shipment_placed_at
+      ? new Date(r.shipment_placed_at).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })
+      : "";
+
     const baseRow = [
       r.shipment_id || "",
+      placedDate,
       r.payment_id || "",
       r.user_id || "",
       r.user_name || "",
@@ -3181,6 +3327,11 @@ function shipmentExportRows(
       r.tracking_id || "",
       r.courier_mode || "",
       r.delivery_mode || "",
+      r.payment_mode || "Online",
+      Number(r.contest_cost || 0),
+      Number(r.cod_charge || 0),
+      Number(r.contest_cost || 0) + Number(r.cod_charge || 0),
+      amountInWords(Number(r.contest_cost || 0) + Number(r.cod_charge || 0)),
       statusOverride || r.status || "",
     ];
 
@@ -3196,12 +3347,27 @@ function shipmentWorkbookBuffer(
   sheetName = "Shipments"
 ) {
   const header = shipmentHeaderRow(extraFlag);
+
+  // Split rows into Online and COD
+  const onlineRows = rows.filter((r: any) => (r.payment_mode || "Online").toUpperCase() !== "COD");
+  const codRows    = rows.filter((r: any) => (r.payment_mode || "Online").toUpperCase() === "COD");
+
   const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.aoa_to_sheet([
+
+  // Sheet 1: Online payments
+  const wsOnline = XLSX.utils.aoa_to_sheet([
     header,
-    ...shipmentExportRows(rows, statusOverride, extraFlag),
+    ...shipmentExportRows(onlineRows, statusOverride, extraFlag),
   ]);
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.utils.book_append_sheet(workbook, wsOnline, `${sheetName}_Online`);
+
+  // Sheet 2: COD payments (always included, empty if none)
+  const wsCod = XLSX.utils.aoa_to_sheet([
+    header,
+    ...shipmentExportRows(codRows, statusOverride, extraFlag),
+  ]);
+  XLSX.utils.book_append_sheet(workbook, wsCod, `${sheetName}_COD`);
+
   return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 }
 
@@ -4044,6 +4210,7 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     [userId]
   );
 
+  /*
   const submissions = await pool.query(
     `
     SELECT s.*, o.contest_id, c.title AS contest_title
@@ -4055,7 +4222,44 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     LIMIT 200
     `,
     [userId]
-  );
+  ); */
+
+
+  // In /admin/user360/:userId route, replace only the submissions query with this:
+
+const submissions = await pool.query(
+  `
+  SELECT
+    o.id AS order_id,
+    o.contest_id,
+    c.title AS contest_title,
+
+    s.id AS id,
+    s.original_name,
+    s.content_type,
+    s.file_size,
+    s.uploaded_at,
+    s.last_updated_at,
+    COALESCE(s.is_locked, false) AS is_locked,
+    s.s3_key,
+    s.file_url,
+
+    (SELECT COUNT(*)::int
+     FROM upload_logs ul
+     WHERE ul.user_id = o.user_id
+       AND ul.order_id = o.id::text
+       AND ul.stage = 'complete_ok') AS attempts_used
+
+  FROM orders o
+  JOIN contests c ON c.id = o.contest_id
+  LEFT JOIN submissions s ON s.order_id = o.id
+  WHERE o.user_id = $1
+    AND o.payment_status = 'paid'
+  ORDER BY o.created_at DESC
+  LIMIT 200
+  `,
+  [userId]
+);
 
   const feedback = await pool.query(
     `
@@ -5117,7 +5321,7 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     `,
     [userId]
   );
-
+/*
   const submissions = await pool.query(
     `
     SELECT s.*, o.contest_id, c.title AS contest_title
@@ -5130,6 +5334,43 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     `,
     [userId]
   );
+  */
+
+  // In /admin/user360/:userId route, replace only the submissions query with this:
+
+const submissions = await pool.query(
+  `
+  SELECT
+    o.id AS order_id,
+    o.contest_id,
+    c.title AS contest_title,
+
+    s.id AS id,
+    s.original_name,
+    s.content_type,
+    s.file_size,
+    s.uploaded_at,
+    s.last_updated_at,
+    COALESCE(s.is_locked, false) AS is_locked,
+    s.s3_key,
+    s.file_url,
+
+    (SELECT COUNT(*)::int
+     FROM upload_logs ul
+     WHERE ul.user_id = o.user_id
+       AND ul.order_id = o.id::text
+       AND ul.stage = 'complete_ok') AS attempts_used
+
+  FROM orders o
+  JOIN contests c ON c.id = o.contest_id
+  LEFT JOIN submissions s ON s.order_id = o.id
+  WHERE o.user_id = $1
+    AND o.payment_status = 'paid'
+  ORDER BY o.created_at DESC
+  LIMIT 200
+  `,
+  [userId]
+);
 
   const feedback = await pool.query(
     `
@@ -9115,5 +9356,280 @@ router.get(
   }
 );
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+// --------------------
+// ADMIN UPLOAD ON BEHALF - SUBMISSIONS
+// --------------------
+
+//const ADMIN_ALLOWED_EXT = new Set(["pdf", "doc", "docx", "jpg", "jpeg", "png", "webp"]);
+
+/*
+const ADMIN_ALLOWED_MIME = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/octet-stream",
+]);
+*/
+
+//const ADMIN_MAX_BYTES = ADMIN_MAX_UPLOAD_MB * 1024 * 1024;
+
+const ADMIN_MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 5);
+function adminGetExt(fileName: string) {
+  const parts = String(fileName || "").toLowerCase().split(".");
+  return parts.length > 1 ? parts.pop()! : "";
+}
+
+function adminUploadAllowed(contentType: string, fileName: string) {
+  const ct = String(contentType || "").toLowerCase().trim();
+  const ext = adminGetExt(fileName);
+  return ADMIN_ALLOWED_MIME.has(ct) || ADMIN_ALLOWED_EXT.has(ext);
+}
+
+async function adminSubmissionGate(orderId: string) {
+  const q = await pool.query(
+    `
+    SELECT
+      o.id,
+      o.user_id,
+      c.submission_deadline,
+      CASE
+        WHEN c.submission_deadline IS NULL THEN false
+        WHEN (NOW() AT TIME ZONE 'Asia/Kolkata') > c.submission_deadline THEN true
+        ELSE false
+      END AS deadline_passed
+    FROM orders o
+    JOIN contests c ON c.id = o.contest_id
+    WHERE o.id = $1
+      AND o.payment_status = 'paid'
+    LIMIT 1
+    `,
+    [orderId]
+  );
+
+  if (!q.rows.length) {
+    return { ok: false, code: 403, msg: "Invalid / unpaid order." };
+  }
+
+  if (q.rows[0].deadline_passed) {
+    return { ok: false, code: 403, msg: "Submission deadline has passed." };
+  }
+
+  return { ok: true, userId: String(q.rows[0].user_id) };
+}
+
+function adminSubmissionKeyBelongs(orderId: string, userId: string, key: string) {
+  const prefix = `submissions/2026/user-${userId}/order-${orderId}/`;
+  return typeof key === "string" && key.startsWith(prefix);
+}
+
+router.post("/admin/submissions/upload/start", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const { orderId, fileName, contentType, fileSize } = req.body;
+
+    if (!orderId || !fileName || !contentType || !fileSize) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    const gate = await adminSubmissionGate(String(orderId));
+    if (!gate.ok) return res.status(gate.code || 403).json({ error: gate.msg });
+
+    const size = Number(fileSize);
+    if (!Number.isFinite(size) || size <= 0 || size > ADMIN_MAX_BYTES) {
+      return res.status(400).json({
+        error: `File is too large. Maximum allowed size is ${ADMIN_MAX_UPLOAD_MB} MB.`,
+      });
+    }
+
+    if (!adminUploadAllowed(String(contentType), String(fileName))) {
+      return res.status(400).json({
+        error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed.",
+      });
+    }
+
+    const existing = await pool.query(
+      `SELECT id, is_locked FROM submissions WHERE order_id = $1 LIMIT 1`,
+      [orderId]
+    );
+
+    if (existing.rows.length && existing.rows[0].is_locked) {
+      return res.status(403).json({ error: "Submission locked." });
+    }
+
+    const ext = adminGetExt(String(fileName)) || "bin";
+    const safeExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const key = `submissions/2026/user-${gate.userId}/order-${orderId}/${uuidv4()}.${safeExt}`;
+
+    const { uploadId } = await startMultipart(key, String(contentType));
+
+    return res.json({
+      ok: true,
+      key,
+      uploadId,
+      userId: gate.userId,
+    });
+  } catch (e: any) {
+    console.error("admin upload start error:", e);
+    return res.status(500).json({ error: e?.message || "Failed to start upload." });
+  }
+});
+
+router.post("/admin/submissions/upload/presign-parts", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const { orderId, userId, key, uploadId, partNumbers } = req.body;
+
+    if (!orderId || !userId || !key || !uploadId || !Array.isArray(partNumbers)) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    const gate = await adminSubmissionGate(String(orderId));
+    if (!gate.ok) return res.status(gate.code || 403).json({ error: gate.msg });
+
+    if (String(gate.userId) !== String(userId)) {
+      return res.status(403).json({ error: "User mismatch." });
+    }
+
+    if (!adminSubmissionKeyBelongs(String(orderId), String(userId), String(key))) {
+      return res.status(403).json({ error: "Invalid upload key." });
+    }
+
+    const urls = [];
+    for (const rawPart of partNumbers) {
+      const partNumber = Number(rawPart);
+      if (!Number.isInteger(partNumber) || partNumber < 1 || partNumber > 10000) {
+        return res.status(400).json({ error: "Invalid part number." });
+      }
+
+      const url = await presignPart(String(key), String(uploadId), partNumber);
+      urls.push({ partNumber, url });
+    }
+
+    return res.json({ ok: true, urls });
+  } catch (e: any) {
+    console.error("admin presign parts error:", e);
+    return res.status(500).json({ error: e?.message || "Failed to presign parts." });
+  }
+});
+
+router.post("/admin/submissions/upload/complete", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const { orderId, userId, key, uploadId, parts, contentType, originalName, fileSize } = req.body;
+
+    if (!orderId || !userId || !key || !uploadId || !Array.isArray(parts)) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    const gate = await adminSubmissionGate(String(orderId));
+    if (!gate.ok) return res.status(gate.code || 403).json({ error: gate.msg });
+
+    if (String(gate.userId) !== String(userId)) {
+      return res.status(403).json({ error: "User mismatch." });
+    }
+
+    if (!adminSubmissionKeyBelongs(String(orderId), String(userId), String(key))) {
+      return res.status(403).json({ error: "Invalid upload key." });
+    }
+
+    const size = Number(fileSize);
+    if (!Number.isFinite(size) || size <= 0 || size > ADMIN_MAX_BYTES) {
+      return res.status(400).json({
+        error: `File is too large. Maximum allowed size is ${ADMIN_MAX_UPLOAD_MB} MB.`,
+      });
+    }
+
+    if (!adminUploadAllowed(String(contentType || ""), String(originalName || ""))) {
+      return res.status(400).json({
+        error: "Only PDF, DOC, DOCX, JPG, JPEG, PNG, or WEBP files are allowed.",
+      });
+    }
+
+    const existing = await pool.query(
+      `SELECT id, is_locked FROM submissions WHERE order_id = $1 LIMIT 1`,
+      [orderId]
+    );
+
+    if (existing.rows.length && existing.rows[0].is_locked) {
+      return res.status(403).json({ error: "Submission locked." });
+    }
+
+    await completeMultipart(String(key), String(uploadId), parts);
+
+    const publicUrl = `${process.env.S3_PUBLIC_BASE}/${key}`;
+
+    if (!existing.rows.length) {
+      await pool.query(
+        `
+        INSERT INTO submissions
+          (order_id, file_url, file_size, s3_key, content_type, original_name, uploaded_at, last_updated_at)
+        VALUES
+          ($1, $2, $3, $4, $5, $6, (NOW() AT TIME ZONE 'Asia/Kolkata'), (NOW() AT TIME ZONE 'Asia/Kolkata'))
+        `,
+        [orderId, publicUrl, size, key, contentType || null, originalName || null]
+      );
+    } else {
+      await pool.query(
+        `
+        UPDATE submissions
+        SET file_url = $1,
+            file_size = $2,
+            s3_key = $3,
+            content_type = $4,
+            original_name = $5,
+            uploaded_at = (NOW() AT TIME ZONE 'Asia/Kolkata'),
+            last_updated_at = (NOW() AT TIME ZONE 'Asia/Kolkata')
+        WHERE order_id = $6
+        `,
+        [publicUrl, size, key, contentType || null, originalName || null, orderId]
+      );
+    }
+
+    await pool.query(
+      `
+      INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+      VALUES ($1, $2, 'complete_ok', 'admin submission saved', $3::jsonb)
+      `,
+      [
+        userId,
+        String(orderId),
+        JSON.stringify({
+          originalName: originalName || null,
+          fileSize: size,
+          contentType: contentType || null,
+          uploadedBy: "admin",
+          adminUserId: req.userId || null,
+        }),
+      ]
+    );
+
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error("admin upload complete error:", e);
+    return res.status(500).json({ error: e?.message || "Failed to complete upload." });
+  }
+});
+
+router.post("/admin/submissions/upload/abort", authMiddleware, adminMiddleware, async (req: any, res) => {
+  try {
+    const { orderId, userId, key, uploadId } = req.body;
+
+    if (!orderId || !userId || !key || !uploadId) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    if (!adminSubmissionKeyBelongs(String(orderId), String(userId), String(key))) {
+      return res.status(403).json({ error: "Invalid upload key." });
+    }
+
+    await abortMultipart(String(key), String(uploadId));
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error("admin upload abort error:", e);
+    return res.status(500).json({ error: e?.message || "Failed to abort upload." });
+  }
+});
 
 export default router;

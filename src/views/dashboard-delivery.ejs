@@ -17,7 +17,7 @@
       --safe-bottom:calc(76px + env(safe-area-inset-bottom));
     }
     *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
-    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding-bottom:var(--safe-bottom);-webkit-font-smoothing:antialiased}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text-b);padding-bottom:calc(var(--safe-bottom) + 80px);-webkit-font-smoothing:antialiased}
     a{text-decoration:none;color:inherit}
 
     .app{max-width:560px;margin:0 auto;min-height:100vh}
@@ -169,7 +169,7 @@
       <div class="emptyCard">
         <div class="emptyIcon">📭</div>
         <div class="emptyTitle">No Delivery Records Found</div>
-        <div class="emptyText">No shipment or temple-pickup record is available yet for your paid gift-book orders. Donation orders will not appear here.</div>
+        <div class="emptyText">No shipment or temple-pickup record is available yet for your paid or COD orders. Donation orders will not appear here.</div>
       </div>
     <% } else { %>
       <div class="grid">
@@ -178,6 +178,8 @@
             const st = String(s.status || 'pending').trim().toLowerCase();
             const mode = String(s.delivery_mode || 'home_delivery').trim().toLowerCase();
             const normalizedTrackingId = String(s.tracking_id || '').trim();
+            const isCodPending = String(s.payment_status || '').trim() === 'cod_pending';
+            const paymentMode  = String(s.payment_mode || 'Online').trim();
 
             let statusClass = 'status-processing';
             if (st === 'dispatched') statusClass = 'status-dispatched';
@@ -228,8 +230,10 @@
           <div class="deliveryCard">
             <div class="cardHeader">
               <div>
-                <div class="cardTitle"><%= s.title %></div>
-                <div style="margin-top:6px;font-size:12px;color:var(--text-muted);font-weight:700;"><%= modeLabel %></div>
+                <div class="cardTitle"><%= modeLabel %></div>
+                <div style="margin-top:4px;font-size:11px;color:var(--text-muted);font-weight:600;font-family:monospace">
+                  ID: <%= s.shipment_id ? s.shipment_id.slice(0,8).toUpperCase() : '—' %>
+                </div>
               </div>
               <span class="statusBadge <%= statusClass %>">
                 <%= statusIcon %> <%= displayStatus %>
@@ -237,6 +241,50 @@
             </div>
 
             <div class="cardBody">
+
+              <!-- COD Pending Notice -->
+              <% if (isCodPending) { %>
+              <div style="
+                background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.05));
+                border:1.5px solid rgba(245,158,11,.35);border-radius:12px;
+                padding:12px 14px;margin-bottom:14px;
+              ">
+                <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">
+                  💵 Cash on Delivery — Awaiting Payment
+                </div>
+                <div style="font-size:12px;color:#b45309;line-height:1.6">
+                  Your book will be dispatched soon. Please keep the payment ready.
+                  Your contest will be confirmed once our team verifies the cash collection.
+                </div>
+              </div>
+              <% } %>
+
+              <!-- Books Summary -->
+              <% if (s.title) { %>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:11px 14px;margin-bottom:12px">
+                <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+                  📚 Books in this shipment
+                </div>
+                <% s.title.split(', ').forEach(function(book){ %>
+                  <div style="font-size:12px;color:#1e1b4b;font-weight:600;padding:3px 0;border-bottom:1px solid #f1f5f9">
+                    📖 <%= book %>
+                  </div>
+                <% }) %>
+                <% if (s.bonus_books) { %>
+                  <div style="margin-top:6px;padding-top:6px;border-top:1px solid #e2e8f0">
+                    <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">
+                      🎁 Bonus Book
+                    </div>
+                    <% s.bonus_books.split(', ').forEach(function(b){ %>
+                      <div style="font-size:12px;color:#1e1b4b;font-weight:600;padding:3px 0">
+                        📖 <%= b %>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+              <% } %>
+
               <div class="trackRow">
                 <div class="trackDot"><%= mode === 'temple_pickup' ? '🏛️' : '🚛' %></div>
                 <div class="trackInfo">
@@ -244,6 +292,17 @@
                   <div class="trackVal"><%= modeLabel %></div>
                 </div>
               </div>
+
+              <% if (paymentMode === 'COD') { %>
+              <div class="divider"></div>
+              <div class="trackRow">
+                <div class="trackDot">💵</div>
+                <div class="trackInfo">
+                  <div class="trackLabel">Payment Method</div>
+                  <div class="trackVal">Cash on Delivery — Pay at doorstep</div>
+                </div>
+              </div>
+              <% } %>
 
               <div class="divider"></div>
 

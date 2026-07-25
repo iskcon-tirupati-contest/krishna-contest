@@ -18,7 +18,7 @@ export async function startMultipart(key: string, contentType: string) {
   const out = await s3.send(cmd);
   return { uploadId: out.UploadId! };
 }
-
+/*
 export async function presignPart(key: string, uploadId: string, partNumber: number) {
   const cmd = new UploadPartCommand({
     Bucket: process.env.S3_BUCKET!,
@@ -27,6 +27,17 @@ export async function presignPart(key: string, uploadId: string, partNumber: num
     PartNumber: partNumber,
   });
   return getSignedUrl(s3, cmd, { expiresIn: 60 }); // short-lived
+}
+*/
+export async function presignPart(key: string, uploadId: string, partNumber: number, contentType?: string) {
+  const cmd = new UploadPartCommand({
+    Bucket: process.env.S3_BUCKET!,
+    Key: key,
+    UploadId: uploadId,
+    PartNumber: partNumber,
+    ...(contentType ? { ContentType: contentType } : {}),
+  });
+  return getSignedUrl(s3, cmd, { expiresIn: 900 });
 }
 
 export async function completeMultipart(

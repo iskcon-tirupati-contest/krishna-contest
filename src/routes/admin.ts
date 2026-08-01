@@ -4296,7 +4296,7 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     LEFT JOIN contests c ON c.id = o.contest_id
     WHERE o.user_id = $1
       AND o.book_option = 'book'
-      AND o.payment_status = 'paid'
+      AND o.payment_status IN ('paid', 'cod_pending')
     GROUP BY
       sh.id, sh.order_id, sh.payment_id, sh.delivery_mode,
       sh.recipient_name, sh.recipient_phone,
@@ -5471,7 +5471,7 @@ router.get("/admin/user360/:userId", authMiddleware, adminMiddleware, async (req
     LEFT JOIN contests c ON c.id = o.contest_id
     WHERE o.user_id = $1
       AND o.book_option = 'book'
-      AND o.payment_status = 'paid'
+      AND o.payment_status IN ('paid', 'cod_pending')
     GROUP BY
       sh.id, sh.order_id, sh.payment_id, sh.delivery_mode,
       sh.recipient_name, sh.recipient_phone,

@@ -268,8 +268,7 @@
   </div>
 
 <script>
-  const MAX_MB = 500;
-  const PART_SIZE = 10 * 1024 * 1024;
+  const MAX_MB = 5;
 
   function st(orderId){ return document.getElementById("st-" + orderId); }
   function pg(orderId){ return document.getElementById("pg-" + orderId); }
@@ -286,7 +285,7 @@
     input.onchange = async () => {
       if (!input.files || !input.files[0]) return;
       try {
-        await adminUploadMultipart(orderId, input.files[0]);
+        await adminUploadFile(orderId, input.files[0]);
       } catch (e) {
         setMsg(orderId, (e && e.message) ? e.message : "Upload error");
         pg(orderId).style.display = "none";
@@ -298,76 +297,58 @@
     input.click();
   }
 
-  async function adminUploadMultipart(orderId, file){
+  async function adminUploadFile(orderId, file){
     if (file.size > MAX_MB * 1024 * 1024) throw new Error(`Max file size is ${MAX_MB}MB`);
 
     setMsg(orderId, "Starting upload...");
     pg(orderId).style.display = "block";
     pg(orderId).value = 0;
 
-    // 1) start
+    const contentType = file.type || "application/octet-stream";
+
     const startRes = await fetch("/admin/submissions/upload/start", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         orderId,
         fileName: file.name,
-        contentType: file.type || "application/octet-stream",
+        contentType,
         fileSize: file.size
       })
     });
     const start = await startRes.json().catch(()=> ({}));
     if (!startRes.ok) throw new Error(start.error || "Failed to start upload");
+    if (!start.key || !start.userId) throw new Error("Failed to start upload");
 
-    const { key, uploadId, userId } = start;
+    pg(orderId).value = 25;
+    setMsg(orderId, "Uploading...");
 
-    const totalParts = Math.ceil(file.size / PART_SIZE);
-    const partNumbers = Array.from({length: totalParts}, (_, i) => i+1);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("orderId", orderId);
+    fd.append("userId", start.userId);
+    fd.append("key", start.key);
+    fd.append("contentType", contentType);
+    fd.append("originalName", file.name);
 
-    // 2) presign
-    setMsg(orderId, "Preparing parts...");
-    const presignRes = await fetch("/admin/submissions/upload/presign-parts", {
+    const upRes = await fetch("/admin/submissions/upload/fallback", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ orderId, userId, key, uploadId, partNumbers })
+      body: fd
     });
-    const presign = await presignRes.json().catch(()=> ({}));
-    if (!presignRes.ok) throw new Error(presign.error || "Failed to presign parts");
+    const upJson = await upRes.json().catch(() => ({}));
+    if (!upRes.ok) throw new Error(upJson.error || "Upload failed. Please try again.");
 
-    const urlMap = new Map((presign.urls || []).map(x => [x.partNumber, x.url]));
-    const uploadedParts = [];
-
-    // 3) upload parts
-    for (let partNumber = 1; partNumber <= totalParts; partNumber++){
-      const startByte = (partNumber - 1) * PART_SIZE;
-      const endByte = Math.min(partNumber * PART_SIZE, file.size);
-      const blob = file.slice(startByte, endByte);
-
-      setMsg(orderId, `Uploading part ${partNumber}/${totalParts}...`);
-
-      const putRes = await fetch(urlMap.get(partNumber), { method:"PUT", body: blob });
-      if (!putRes.ok) {
-        await fetch("/admin/submissions/upload/abort", {
-          method:"POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ orderId, userId, key, uploadId })
-        }).catch(()=>{});
-        throw new Error("Upload failed. Please retry (Wi-Fi recommended).");
-      }
-
-      uploadedParts.push({ ETag: putRes.headers.get("ETag"), PartNumber: partNumber });
-      pg(orderId).value = Math.round((partNumber / totalParts) * 100);
-    }
-
-    // 4) complete
+    pg(orderId).value = 80;
     setMsg(orderId, "Finalizing...");
+
     const completeRes = await fetch("/admin/submissions/upload/complete", {
       method:"POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
-        orderId, userId, key, uploadId,
-        parts: uploadedParts,
-        contentType: file.type || "application/octet-stream",
+        orderId,
+        userId: start.userId,
+        key: start.key,
+        contentType,
         originalName: file.name,
         fileSize: file.size
       })
@@ -375,6 +356,7 @@
     const complete = await completeRes.json().catch(()=> ({}));
     if (!completeRes.ok) throw new Error(complete.error || "Failed to save submission");
 
+    pg(orderId).value = 100;
     setMsg(orderId, "✅ Uploaded successfully!");
     setTimeout(()=> window.location.reload(), 700);
   }

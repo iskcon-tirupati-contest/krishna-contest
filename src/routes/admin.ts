@@ -3,6 +3,8 @@ import { pool } from "../config/db";
 import { authMiddleware } from "../middleware/auth";
 import { adminMiddleware } from "../middleware/admin";
 import { presignGet } from "../utils/s3Get";
+import { s3 } from "../utils/s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { startMultipart, presignPart, completeMultipart, abortMultipart } from "../utils/s3Multipart";
 import multer from "multer";
@@ -6175,6 +6177,11 @@ const ADMIN_ALLOWED_MIME = new Set([
 
 const ADMIN_MAX_BYTES = (Number(process.env.MAX_UPLOAD_MB || 500) * 1024 * 1024);
 
+const submissionUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: ADMIN_MAX_BYTES },
+});
+
 function getExt(fileName: string) {
   const parts = (fileName || "").toLowerCase().split(".");
   return parts.length > 1 ? parts.pop()! : "";
@@ -6219,7 +6226,10 @@ function keyBelongs(orderId: string, userId: string, key: string) {
 
 router.post("/admin/submissions/upload/start", authMiddleware, adminMiddleware, async (req: any, res) => {
   const { orderId, fileName, contentType, fileSize } = req.body;
-  if (!orderId || !fileName || !contentType || !fileSize) return res.status(400).json({ error:"Missing fields" });
+  if (!orderId || !fileName || !fileSize) return res.status(400).json({ error:"Missing fields" });
+
+  const normalizedContentType =
+    String(contentType || "").trim() || "application/octet-stream";
 
   const gate = await adminGate(String(orderId));
   if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
@@ -6228,7 +6238,7 @@ router.post("/admin/submissions/upload/start", authMiddleware, adminMiddleware, 
   if (!Number.isFinite(size) || size <= 0 || size > ADMIN_MAX_BYTES) {
     return res.status(400).json({ error:`Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB` });
   }
-  if (!isAllowed(String(contentType), String(fileName))) {
+  if (!isAllowed(normalizedContentType, String(fileName))) {
     return res.status(400).json({ error:"File type not allowed." });
   }
 
@@ -6242,9 +6252,101 @@ router.post("/admin/submissions/upload/start", authMiddleware, adminMiddleware, 
   const safeExt = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
   const key = `submissions/2026/user-${userId}/order-${orderId}/${uuidv4()}.${safeExt}`;
 
-  const { uploadId } = await startMultipart(key, String(contentType));
-  return res.json({ key, uploadId, userId });
+  // Server-side upload path (same as customer): key only, no browser→S3 multipart
+  return res.json({ key, userId });
 });
+
+function parseAdminSubmissionUpload(req: any, res: any, next: any) {
+  submissionUpload.single("file")(req, res, (err: any) => {
+    if (!err) return next();
+    const msg =
+      err.code === "LIMIT_FILE_SIZE"
+        ? `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB`
+        : err.message || "Upload rejected.";
+    console.error("admin submission multer error:", err);
+    return res.status(400).json({ error: msg });
+  });
+}
+
+// Browser → Express → S3 (avoids flaky admin browser→S3 uploads)
+router.post(
+  "/admin/submissions/upload/fallback",
+  authMiddleware,
+  adminMiddleware,
+  parseAdminSubmissionUpload,
+  async (req: any, res) => {
+    try {
+      const { orderId, userId, key, contentType, originalName } = req.body || {};
+
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+      if (!orderId || !userId || !key) return res.status(400).json({ error: "Missing fields" });
+
+      const gate = await adminGate(String(orderId));
+      if (!gate.ok) return res.status(gate.code!).json({ error: gate.msg });
+
+      if (String(gate.userId) !== String(userId)) {
+        return res.status(403).json({ error: "User mismatch" });
+      }
+      if (!keyBelongs(String(orderId), String(userId), String(key))) {
+        return res.status(403).json({ error: "Invalid upload key" });
+      }
+
+      if (
+        !isAllowed(
+          contentType || req.file.mimetype,
+          originalName || req.file.originalname
+        )
+      ) {
+        return res.status(400).json({ error: "File type not allowed." });
+      }
+
+      if (req.file.size > ADMIN_MAX_BYTES) {
+        return res.status(400).json({
+          error: `Max file size is ${process.env.MAX_UPLOAD_MB || 500}MB`,
+        });
+      }
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.S3_BUCKET!,
+          Key: key,
+          Body: req.file.buffer,
+          ContentType:
+            contentType ||
+            req.file.mimetype ||
+            "application/octet-stream",
+        })
+      );
+
+      await pool.query(
+        `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+         VALUES ($1,$2,'admin_server_upload_ok','Admin backend upload successful',$3::jsonb)`,
+        [
+          userId,
+          String(orderId),
+          JSON.stringify({
+            originalName: originalName || req.file.originalname || null,
+            fileSize: req.file.size,
+            uploadedBy: "admin",
+            adminUserId: req.userId || null,
+          }),
+        ]
+      );
+
+      return res.json({ ok: true });
+    } catch (e: any) {
+      console.error("admin server upload error:", e);
+      try {
+        await pool.query(
+          `INSERT INTO upload_logs (user_id, order_id, stage, message)
+           VALUES ($1,$2,'admin_server_upload_failed',$3)`,
+          [req.body?.userId || null, req.body?.orderId || null, String(e)]
+        );
+      } catch (_) {}
+      return res.status(500).json({ error: e?.message || "S3 upload failed." });
+    }
+  }
+);
 
 router.post("/admin/submissions/upload/presign-parts", authMiddleware, adminMiddleware, async (req: any, res) => {
   const { orderId, userId, key, uploadId, partNumbers } = req.body;
@@ -6270,7 +6372,7 @@ router.post("/admin/submissions/upload/presign-parts", authMiddleware, adminMidd
 
 router.post("/admin/submissions/upload/complete", authMiddleware, adminMiddleware, async (req: any, res) => {
   const { orderId, userId, key, uploadId, parts, contentType, originalName, fileSize } = req.body;
-  if (!orderId || !userId || !key || !uploadId || !Array.isArray(parts) || parts.length === 0) {
+  if (!orderId || !userId || !key) {
     return res.status(400).json({ error:"Missing fields" });
   }
 
@@ -6285,7 +6387,10 @@ router.post("/admin/submissions/upload/complete", authMiddleware, adminMiddlewar
     return res.status(403).json({ error:"Submission locked" });
   }
 
-  await completeMultipart(String(key), String(uploadId), parts);
+  // Legacy multipart path (optional). Server-upload path skips this.
+  if (uploadId && Array.isArray(parts) && parts.length > 0) {
+    await completeMultipart(String(key), String(uploadId), parts);
+  }
 
   const publicUrl = `${process.env.S3_PUBLIC_BASE}/${key}`;
 
@@ -6305,6 +6410,22 @@ router.post("/admin/submissions/upload/complete", authMiddleware, adminMiddlewar
       [publicUrl, key, contentType || null, originalName || null, Number(fileSize) || null, orderId]
     );
   }
+
+  await pool.query(
+    `INSERT INTO upload_logs (user_id, order_id, stage, message, meta)
+     VALUES ($1,$2,'complete_ok','admin submission saved',$3::jsonb)`,
+    [
+      userId,
+      String(orderId),
+      JSON.stringify({
+        originalName: originalName || null,
+        fileSize: Number(fileSize) || null,
+        contentType: contentType || null,
+        uploadedBy: "admin",
+        adminUserId: req.userId || null,
+      }),
+    ]
+  );
 
   return res.json({ ok:true });
 });

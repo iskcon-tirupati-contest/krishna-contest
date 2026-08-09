@@ -503,7 +503,6 @@
     });
 
     (function(){
-      const PART_SIZE = 5 * 1024 * 1024;
       const MAX_MB = 5;
       const allowedExt = new Set(['pdf','doc','docx','jpg','jpeg','png','webp']);
 
@@ -551,7 +550,7 @@
         return { ok:true };
       }
 
-      async function uploadMultipart(row, file){
+      async function uploadFile(row, file){
         const orderId = row.getAttribute('data-order-id');
         const hasSubmission = row.getAttribute('data-has-submission') === '1';
 
@@ -563,7 +562,7 @@
         setProgress(row, 0, true);
         setStatus(row, 'Starting upload...', 'info');
 
-        let start;
+        const contentType = file.type || 'application/octet-stream';
 
         const startRes = await fetch('/admin/submissions/upload/start', {
           method: 'POST',
@@ -571,120 +570,57 @@
           body: JSON.stringify({
             orderId,
             fileName: file.name,
-            contentType: file.type || 'application/octet-stream',
+            contentType,
             fileSize: file.size
           })
         });
 
-        start = await startRes.json().catch(() => ({}));
-        console.log("START RESPONSE");
-        console.log(start);
-        console.log({
-            name: file.name,
-            size: file.size,
-            type: file.type
-        });
+        const start = await startRes.json().catch(() => ({}));
         if (!startRes.ok) throw new Error(start.error || 'Failed to start upload.');
+        if (!start.key || !start.userId) throw new Error('Failed to start upload.');
 
-        const totalParts = Math.ceil(file.size / PART_SIZE);
-        const partNumbers = Array.from({length: totalParts}, (_, i) => i + 1);
+        setProgress(row, 25, true);
+        setStatus(row, 'Uploading...', 'info');
 
-        setStatus(row, 'Preparing upload parts...', 'info');
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('orderId', orderId);
+        fd.append('userId', start.userId);
+        fd.append('key', start.key);
+        fd.append('contentType', contentType);
+        fd.append('originalName', file.name);
 
-        const presignRes = await fetch('/admin/submissions/upload/presign-parts', {
+        const upRes = await fetch('/admin/submissions/upload/fallback', {
+          method: 'POST',
+          body: fd
+        });
+        const upJson = await upRes.json().catch(() => ({}));
+        if (!upRes.ok) {
+          throw new Error(upJson.error || 'Upload failed. Please try again.');
+        }
+
+        setProgress(row, 80, true);
+        setStatus(row, 'Saving submission...', 'info');
+
+        const completeRes = await fetch('/admin/submissions/upload/complete', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({
             orderId,
             userId: start.userId,
             key: start.key,
-            uploadId: start.uploadId,
-            partNumbers
+            contentType,
+            originalName: file.name,
+            fileSize: file.size
           })
         });
 
-        const presign = await presignRes.json().catch(() => ({}));
-        if (!presignRes.ok) throw new Error(presign.error || 'Failed to prepare upload parts.');
+        const complete = await completeRes.json().catch(() => ({}));
+        if (!completeRes.ok) throw new Error(complete.error || 'Failed to save submission.');
 
-        const urlMap = new Map((presign.urls || []).map(x => [Number(x.partNumber), x.url]));
-        const uploadedParts = [];
-
-        try {
-          for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
-            const startByte = (partNumber - 1) * PART_SIZE;
-            const endByte = Math.min(partNumber * PART_SIZE, file.size);
-            const blob = file.slice(startByte, endByte);
-
-            setStatus(row, `Uploading part ${partNumber}/${totalParts}...`, 'info');
-
-
-            console.log("Uploading part", partNumber);
-            console.log(urlMap.get(partNumber));
-
-            const putRes = await fetch(urlMap.get(partNumber), {
-              method: 'PUT',
-              body: blob
-            });
-
-            console.log("Status", putRes.status);
-            console.log("OK", putRes.ok);
-            console.log("Headers", [...putRes.headers.entries()]);
-
-            if (!putRes.ok) throw new Error(`Upload failed at part ${partNumber}.`);
-
-            uploadedParts.push({
-              ETag: putRes.headers.get('ETag'),
-              PartNumber: partNumber
-            });
-
-            setProgress(row, Math.round((partNumber / totalParts) * 100), true);
-          }
-
-          setStatus(row, 'Saving submission...', 'info');
-
-          const completeRes = await fetch('/admin/submissions/upload/complete', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              orderId,
-              userId: start.userId,
-              key: start.key,
-              uploadId: start.uploadId,
-              parts: uploadedParts,
-              contentType: file.type || 'application/octet-stream',
-              originalName: file.name,
-              fileSize: file.size
-            })
-          });
-
-          const complete = await completeRes.json().catch(() => ({}));
-          if (!completeRes.ok) throw new Error(complete.error || 'Failed to save submission.');
-
-          setStatus(row, 'Uploaded successfully. Refreshing...', 'ok');
-          setTimeout(() => window.location.reload(), 700);
-        } catch (err) {
-          try {
-            await fetch('/admin/submissions/upload/abort', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({
-                orderId,
-                userId: start.userId,
-                key: start.key,
-                uploadId: start.uploadId
-              })
-            });
-          } catch (_) {}
-
-          console.error(err);
-console.error({
-    online: navigator.onLine,
-    browser: navigator.userAgent,
-    message: err.message
-});
-
-throw err;
-        }
+        setProgress(row, 100, true);
+        setStatus(row, 'Uploaded successfully. Refreshing...', 'ok');
+        setTimeout(() => window.location.reload(), 700);
       }
 
       document.querySelectorAll('.admin-submission-row').forEach(row => {
@@ -707,8 +643,13 @@ throw err;
           btn.disabled = true;
 
           try {
-            await uploadMultipart(row, file);
+            await uploadFile(row, file);
           } catch (e) {
+            console.error({
+              online: navigator.onLine,
+              browser: navigator.userAgent,
+              message: e && e.message
+            });
             setStatus(row, e.message || 'Upload failed.', 'err');
             setProgress(row, 0, false);
             btn.disabled = false;
